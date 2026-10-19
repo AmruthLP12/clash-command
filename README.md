@@ -259,6 +259,7 @@ Planning and architecture guidance for the full product are in:
 - [docs/prod.md](docs/prod.md)
 - [docs/architecture.md](docs/architecture.md)
 - [docs/essential-architecture.md](docs/essential-architecture.md)
+- [docs/development-guide.md](docs/development-guide.md)
 - [docs/agent.md](docs/agent.md)
 - [docs/README.md](docs/README.md)
 
