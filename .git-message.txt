@@ -1,0 +1,8 @@
+Clash Command: add project setup, runtime validation, and initial MVP domain flow
+
+- set up Flutter Android project structure and environment validation
+- configure supported local targets for Linux and Chrome
+- add core timer/domain logic and village summary service
+- add regression tests for upgrade and village behavior
+- document setup, app run commands, port/IP usage, and APK build flow
+- keep the project aligned with the architecture and local-first app goals
