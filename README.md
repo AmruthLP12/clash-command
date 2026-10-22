@@ -1,71 +1,74 @@
 # Clash Command
 
+<p align="center">
+  <img src="assets/branding/logo.png" alt="Clash Command Logo" width="140" style="border-radius: 24px;" />
+  <br>
+  <strong>Offline-first Clash of Clans upgrade & builder tracker for Android</strong>
+</p>
+
 <!--
-SEO description: Clash Command is a Flutter Android app for tracking Clash of Clans upgrade timers offline, managing villages, and monitoring builder availability.
-Keywords: Clash Command, Clash of Clans timer tracker, Flutter Android app, offline upgrade assistant, village timer manager, local SQLite app, APK build guide
+SEO description: Clash Command is an offline-first Flutter Android app for tracking Clash of Clans upgrade timers, managing multiple villages, monitoring builder availability, and scheduling local reminders.
+Keywords: Clash Command, Clash of Clans timer tracker, Flutter Android app, offline upgrade assistant, village timer manager, local SQLite app, APK build guide, Drift SQLite, Riverpod
 -->
 
-Clash Command is an Android-first Flutter app for tracking Clash of Clans upgrade timers offline. It helps users quickly see what is upgrading, when it will finish, and which builder or slot will become available next. The app is intentionally local-first, manual, and privacy-friendly rather than depending on cloud sync or a backend.
+Clash Command is an Android-first, offline-first Flutter application designed to track Clash of Clans upgrades, monitor builder availability, and schedule local completion reminders. It is intentionally local-first, privacy-friendly, and lightweight—operating with zero cloud dependencies, user accounts, or external backends.
 
-## Current status
+---
 
-This project is now in an active implementation phase. The repository includes:
+## Features
 
-- a Flutter Android project scaffold
-- basic domain logic for upgrade timing
-- a working timer service and tests
-- a sample village dashboard using Riverpod
-- planning and architecture docs for the full MVP
+- **Multi-Village Management**: Create and switch between multiple villages, customize Town Hall levels, notes, and builder capacities (1–6 builders).
+- **Upgrade Tracking & Timing**: Accurate countdown timers computed from absolute UTC timestamps. Supports custom remaining durations, builder slot assignment, and upgrade categories.
+- **Inspect & Edit Upgrades**: Tap any active upgrade to view progress, start time, expected completion, notes, and quick actions (Complete, Edit, Cancel, Delete).
+- **Activity History & Audit Trail**: Full event logging of village modifications and upgrade status transitions stored in local SQLite, filterable by village and event type.
+- **Local Completion Reminders**: Configurable local notifications for upgrade completion and upcoming warnings (60m, 30m, 10m, 5m, 1m) with in-app permission checks.
+- **Modern Dark UI**: Material 3 dark-themed interface built for tactical focus.
+- **Offline & Private**: All data is stored locally in an embedded SQLite database using Drift. No tracking, no analytics, no external network calls.
 
-The app is not a full production release yet, but the foundation is now in place and can be expanded into the complete MVP described in the planning docs.
+---
 
-## Problem it solves
+## Tech Stack
 
-Clash Command helps answer these questions fast:
+- **Framework**: [Flutter](https://flutter.dev) (Dart 3.x)
+- **State Management**: [Riverpod](https://riverpod.dev)
+- **Local Persistence**: [Drift](https://drift.simonbinder.eu/) (SQLite) with automated schema migrations
+- **Local Notifications**: `flutter_local_notifications` (Android notification channels & timezone scheduling)
+- **Design System**: Material 3 Dark Theme with custom branding and adaptive launcher icons
 
-- What is currently upgrading in each village?
-- When does each upgrade finish?
-- Which builder or slot becomes available next?
-- What is the next completion window across villages?
+---
 
-## Product goals
+## Repository Structure
 
-- Android-first Flutter experience
-- Offline-first local data workflow
-- No backend or cloud sync required
-- Local SQLite persistence for villages and upgrades
-- Reliable absolute timestamp tracking
-- Manual upgrade entry and optional local reminder support
-- Clear recovery after app restart or device reboot
+```
+├── android/                 # Android native project, adaptive icons, Gradle configuration
+├── assets/                  # Branding assets (emblem, transparent badges)
+├── docs/                    # Architecture guides, release workflow, and technical docs
+│   ├── releases.md          # Versioning strategy, APK build, and release checklist
+│   ├── architecture.md      # Full architecture specification
+│   ├── prod.md              # Production specifications & data model
+│   └── agent.md             # Development agent instructions
+├── lib/                     # Flutter application source code
+│   ├── core/                # Colors, themes, and shared utilities
+│   ├── database/            # Drift SQLite database, tables, and DAOs
+│   ├── features/            # Feature modules (dashboard, villages, upgrades, history, settings)
+│   └── main.dart            # Application entry point
+├── scripts/                 # Asset generation scripts (Pillow-based branding)
+├── test/                    # Unit, DAO, service, and widget test suite
+├── CHANGELOG.md             # Version history adhering to Keep a Changelog
+├── Makefile                 # Convenient build and run targets
+└── pubspec.yaml             # Dependencies and app metadata (v1.0.1+2)
+```
 
-## Tech stack
-
-- Flutter + Dart
-- Riverpod for app state management
-- SQLite via Drift planned for persistent data
-- Local notifications planned for reminder alerts
-- Material 3 dark themed UI
-- Flutter testing and analysis tools
-
-## Repository structure
-
-- [lib/](lib/) — Flutter application source
-- [test/](test/) — project tests
-- [android/](android/) — Android platform configuration
-- [docs/](docs/) — product, architecture, and agent planning documents
-- [README.md](README.md) — project overview and setup guide
+---
 
 ## Prerequisites
 
-Before running the app, install the required tools:
+- **Flutter SDK**: 3.24+ (Dart 3.5+)
+- **Android SDK**: API 34+ (with Build-Tools 34.0.0+)
+- **Java**: JDK 17
+- Android device or emulator running Android 8.0+ (API 26+)
 
-- Flutter SDK
-- Android SDK
-- Java 17+
-- Android emulator or a physical Android device
-- A working Linux/macOS/Windows environment with Flutter configured
-
-For Linux, the setup usually looks like this:
+Set up your Android environment (Linux/macOS):
 
 ```bash
 export ANDROID_HOME="$HOME/android-sdk"
@@ -74,195 +77,126 @@ export PATH="$HOME/flutter/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdlin
 flutter doctor
 ```
 
-If Flutter reports missing Android SDK components, install them with:
+---
+
+## Quick Start
+
+### 1. Clone & Install Dependencies
 
 ```bash
-sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-```
-
-## Run locally
-
-Clone the repository:
-
-```bash
-git clone https://github.com/<your-username>/clash-command.git
+git clone https://github.com/AmruthLP12/clash-command.git
 cd clash-command
-```
-
-Install dependencies:
-
-```bash
 flutter pub get
 ```
 
-Run the app:
-
-```bash
-flutter run
-```
-
-If you want to run on a connected device or emulator:
+### 2. Run on a Connected Android Device or Emulator
 
 ```bash
 flutter devices
-flutter run -d <device-id>
-```
-
-### Run on a custom web port
-
-Use a fixed port for local browser testing:
-
-```bash
-flutter run -d chrome --web-port 8081
-```
-
-Or run the web-server target on a custom port:
-
-```bash
-flutter run -d web-server --web-port 8081 --web-hostname 127.0.0.1
-```
-
-### Run and access from your machine IP
-
-To expose the app to other devices on the same network, bind to all interfaces and use your machine IP:
-
-```bash
-flutter run -d web-server --web-port 8080 --web-hostname 0.0.0.0
-```
-
-Then open:
-
-```bash
-http://<your-machine-ip>:8080
-```
-
-Example:
-
-```bash
-hostname -I
-# example output: 192.168.1.25
-# open http://192.168.1.25:8080
-```
-
-You can also use the project Makefile:
-
-```bash
-make run-chrome-port PORT=8081
-make run-web-local PORT=8081
-make run-web-network PORT=8080 HOST=0.0.0.0
-make run-web-ip PORT=8080 HOST=0.0.0.0
-```
-
-## Build Android APK
-
-### Debug APK
-
-```bash
-flutter build apk --debug
-```
-
-This produces a debug APK in:
-
-```bash
-build/app/outputs/flutter-apk/app-debug.apk
-```
-
-### Release APK
-
-```bash
-flutter build apk --release
-```
-
-This creates a release APK in:
-
-```bash
-build/app/outputs/flutter-apk/app-release.apk
-```
-
-### Signed release APK for distribution
-
-For a production-ready APK, create a keystore and configure signing:
-
-```bash
-keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
-```
-
-Then create `android/key.properties` with values like:
-
-```properties
-storePassword=your_store_password
-keyPassword=your_key_password
-keyAlias=upload
-storeFile=/home/you/upload-keystore.jks
-```
-
-Then build the signed APK:
-
-```bash
-flutter build apk --release
-```
-
-If you want an Android App Bundle for Play Store submission instead of a plain APK:
-
-```bash
-flutter build appbundle --release
-```
-
-The output goes to:
-
-```bash
-build/app/outputs/bundle/release/app-release.aab
-```
-
-## Useful commands
-
-```bash
-flutter clean
-flutter pub get
-flutter test
-flutter analyze
 flutter run
-flutter build apk --debug
-flutter build apk --release
-flutter build appbundle --release
 ```
 
-## Quality and validation
+### 3. Run on Web / Chrome (Optional)
 
-The project is expected to follow these rules:
+```bash
+# In Google Chrome
+make run-chrome-port PORT=8081
 
-- keep all core timers and logic testable
-- store absolute timestamps and compute remaining time from the current clock
-- keep business rules separate from UI code
-- avoid direct SQL work in widgets
-- prefer local first and offline-safe behaviors
+# Or as a local network web server
+make run-web-ip PORT=8080
+```
 
-## Development notes
+---
 
-This app is being built as a local utility for personal upgrade tracking. It deliberately avoids:
+## Building Android APKs
 
-- user accounts
-- cloud sync
-- backend services
-- live game automation
-- Supercell login or game-state scraping
-- ad or tracking systems
+### Debug APK (For Testing)
 
-## SEO and AI crawler friendly summary
+```bash
+make build-apk-debug
+# Output: build/app/outputs/flutter-apk/app-debug.apk
+```
 
-Clash Command is a Flutter Android app for managing Clash of Clans upgrade timers offline. It tracks village upgrades, monitors builder availability, and helps users understand completion times without cloud sync or live game integration. The project is built with Flutter, Dart, Riverpod, and Android tooling, and it supports local development, testing, and APK generation for Android distribution.
+### Release APK (Optimized & Tree-Shaken)
 
-## Documentation
+```bash
+make build-apk-release
+# Output: build/app/outputs/flutter-apk/app-release.apk
+```
 
-Planning and architecture guidance for the full product are in:
+### Release Signing Setup
 
-- [docs/prod.md](docs/prod.md)
-- [docs/architecture.md](docs/architecture.md)
-- [docs/essential-architecture.md](docs/essential-architecture.md)
-- [docs/development-guide.md](docs/development-guide.md)
-- [docs/agent.md](docs/agent.md)
-- [docs/README.md](docs/README.md)
+By default, release builds compile with debug keys so testers can immediately install them. To sign with a production key:
 
-## Notes
+1. Generate your release keystore:
+   ```bash
+   keytool -genkey -v -keystore android/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias clashcommand
+   ```
+2. Create `android/key.properties` (ignored by git):
+   ```properties
+   storePassword=YOUR_STORE_PASSWORD
+   keyPassword=YOUR_KEY_PASSWORD
+   keyAlias=clashcommand
+   storeFile=../upload-keystore.jks
+   ```
+3. Run `make build-apk-release`.
 
-This README is intended to be both human-readable and machine-readable for search and AI indexing. It reflects the current state of the project and includes the command set needed to run, test, and package the app into Android APK output.
+See [docs/releases.md](docs/releases.md) for full release, versioning, and distribution details.
+
+---
+
+## Branding & Asset Generation
+
+Master brand emblems and multi-density Android launcher icons (legacy and adaptive mipmaps) can be regenerated reproducibly:
+
+```bash
+make branding
+# Or: python3 scripts/generate_branding_assets.py
+```
+
+---
+
+## Testing & Quality Assurance
+
+Run the test suite and static analysis:
+
+```bash
+# Run static analysis
+make analyze
+# flutter analyze
+
+# Run all unit, service, and widget tests
+make test
+# flutter test
+```
+
+---
+
+## Useful Makefile Commands
+
+| Command | Description |
+| :--- | :--- |
+| `make help` | Display available commands |
+| `make test` | Run all automated tests |
+| `make analyze` | Run static Dart analysis |
+| `make build-apk-debug` | Build unoptimized debug APK |
+| `make build-apk-release` | Build AOT-compiled release APK |
+| `make build-appbundle` | Build Android App Bundle (`.aab`) |
+| `make branding` | Regenerate logo and adaptive Android icons |
+| `make clean` | Clean Flutter build cache and generated files |
+
+---
+
+## Documentation Links
+
+- [Release & Versioning Guide](docs/releases.md)
+- [Changelog](CHANGELOG.md)
+- [Architecture Details](docs/architecture.md)
+- [Product Specifications](docs/prod.md)
+- [Development Guide](docs/development-guide.md)
+
+---
+
+## License
+
+Personal and community project. Not affiliated with, endorsed, sponsored, or specifically approved by Supercell.

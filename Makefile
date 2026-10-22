@@ -8,7 +8,7 @@ HOST ?= 0.0.0.0
 
 .DEFAULT_GOAL := help
 
-.PHONY: help doctor devices deps test analyze run run-chrome run-chrome-port run-linux run-web-local run-web-network run-web-ip clean build-apk-debug build-apk-release build-appbundle
+.PHONY: help doctor devices deps test analyze run run-chrome run-chrome-port run-linux run-web-local run-web-network run-web-ip clean build-apk-debug build-apk-release build-appbundle branding
 
 help: ## Show available commands and descriptions
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_0-9-]+:.*## / {printf "\033[36m%-25s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -62,3 +62,6 @@ build-apk-release: ## Build a release APK
 
 build-appbundle: ## Build an Android App Bundle for Play Store upload
 	flutter build appbundle --release
+
+branding: ## Regenerate app logos and launcher icons
+	python3 scripts/generate_branding_assets.py

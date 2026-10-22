@@ -4,9 +4,21 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.1] - 2026-10-22
 
 ### Added
+- **Distinctive App Branding & Launcher Icons**:
+  - Designed an original Clash Command emblem featuring a reinforced war crest shield, upward progression arrow, strategic command star, and golden studs on an obsidian battle background.
+  - Added high-resolution master asset (`assets/branding/logo.png`) and transparent badge (`assets/branding/logo_transparent.png`).
+  - Generated full Android mipmap legacy icons (`ic_launcher.png`) and adaptive foreground icons (`ic_launcher_foreground.png`) across `mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, and `xxxhdpi`.
+  - Added Android adaptive icon definition (`mipmap-anydpi-v26/ic_launcher.xml`) with safe-zone margin geometry and dark background color (`#1A1A1A`).
+  - Added web icons and favicon (`web/icons/`, `web/favicon.png`).
+  - Added reproducible asset generation script (`scripts/generate_branding_assets.py`) and `make branding` target.
+  - Integrated emblem and active version display (`Version 1.0.1 (Build 2)`) into the in-app Settings screen.
+- **Release & Versioning Documentation**:
+  - Created comprehensive release guide in `docs/releases.md` detailing versioning strategy (`MAJOR.MINOR.PATCH+BUILD`), debug vs release APKs, release signing setup, pre-release quality checklist, and release notes template.
+  - Added optional release keystore support via `android/key.properties` with fallback to debug keys in `android/app/build.gradle.kts`.
+  - Explicitly ignored release keys and `key.properties` in `.gitignore`.
 - **Full Village Editing & Deletion**: Added edit modal and deletion confirmation dialog explaining cascade deletion of active upgrades and activity events.
 - **Village Notes & Capacity**: Added notes field and 1-6 builder capacity configuration.
 - **Visible Upgrade Action Controls**: Replaced hidden long-press actions with visible popup menu affordance (`PopupMenuButton`) on every upgrade card.
