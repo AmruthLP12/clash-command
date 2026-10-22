@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/services/village_service.dart';
+import 'package:clash_command/features/history/presentation/history_screen.dart';
+import 'package:clash_command/features/settings/presentation/settings_screen.dart';
 import 'package:clash_command/features/upgrades/application/upgrades_notifier.dart';
 import 'package:clash_command/features/upgrades/presentation/add_upgrade_sheet.dart';
 import 'package:clash_command/features/upgrades/presentation/upgrade_card.dart';
@@ -18,23 +20,45 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  int _navIndex = 0;
   String? _selectedVillageId;
 
   @override
   Widget build(BuildContext context) {
+    if (_navIndex == 1) {
+      return Scaffold(
+        body: HistoryScreen(initialVillageId: _selectedVillageId),
+        bottomNavigationBar: _buildBottomNav(),
+      );
+    }
+
+    if (_navIndex == 2) {
+      return Scaffold(
+        body: const SettingsScreen(),
+        bottomNavigationBar: _buildBottomNav(),
+      );
+    }
+
     final villagesAsync = ref.watch(villagesStreamProvider);
 
     return villagesAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      loading: () => Scaffold(
+        body: const Center(child: CircularProgressIndicator()),
+        bottomNavigationBar: _buildBottomNav(),
       ),
       error: (e, _) => Scaffold(
         body: Center(child: Text('Error: $e')),
+        bottomNavigationBar: _buildBottomNav(),
       ),
       data: (villages) {
-        // Auto-select first village if none selected
-        if (_selectedVillageId == null && villages.isNotEmpty) {
-          _selectedVillageId = villages.first.id;
+        // Auto-select first village if none selected or previous selection was deleted
+        if (villages.isNotEmpty) {
+          if (_selectedVillageId == null ||
+              !villages.any((v) => v.id == _selectedVillageId)) {
+            _selectedVillageId = villages.first.id;
+          }
+        } else {
+          _selectedVillageId = null;
         }
 
         final selectedVillage = villages.isEmpty
@@ -49,7 +73,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             title: const Text('Clash Command'),
             actions: [
               IconButton(
-                icon: const Icon(Icons.add_home),
+                icon: const Icon(Icons.add_home_outlined),
                 tooltip: 'Add village',
                 onPressed: () => _showAddVillage(context),
               ),
@@ -62,6 +86,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   selectedVillage: selectedVillage!,
                   onVillageSelected: (id) =>
                       setState(() => _selectedVillageId = id),
+                  onEditVillage: () =>
+                      _showEditVillage(context, selectedVillage),
+                  onDeleteVillage: () =>
+                      _confirmDeleteVillage(context, selectedVillage),
                 ),
           floatingActionButton: villages.isEmpty
               ? null
@@ -72,8 +100,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.black,
                 ),
+          bottomNavigationBar: _buildBottomNav(),
         );
       },
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return NavigationBar(
+      selectedIndex: _navIndex,
+      backgroundColor: AppColors.surface,
+      indicatorColor: AppColors.accent,
+      onDestinationSelected: (index) => setState(() => _navIndex = index),
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.dashboard_outlined),
+          selectedIcon: Icon(Icons.dashboard, color: Colors.black),
+          label: 'Dashboard',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.history_outlined),
+          selectedIcon: Icon(Icons.history, color: Colors.black),
+          label: 'History',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.settings_outlined),
+          selectedIcon: Icon(Icons.settings, color: Colors.black),
+          label: 'Settings',
+        ),
+      ],
     );
   }
 
@@ -87,6 +142,52 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       ),
       builder: (_) => const AddVillageSheet(),
     );
+  }
+
+  void _showEditVillage(BuildContext context, Village village) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => AddVillageSheet(village: village),
+    );
+  }
+
+  Future<void> _confirmDeleteVillage(
+    BuildContext context,
+    Village village,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete village?'),
+        content: Text(
+          'Permanently delete "${village.name}"?\n\n'
+          '⚠️ All active upgrades and activity logs for this village will be permanently deleted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await ref
+          .read(villagesNotifierProvider.notifier)
+          .deleteVillage(village.id);
+      setState(() => _selectedVillageId = null);
+    }
   }
 
   void _showAddUpgrade(BuildContext context, Village village) {
@@ -107,11 +208,15 @@ class _DashboardBody extends ConsumerWidget {
     required this.villages,
     required this.selectedVillage,
     required this.onVillageSelected,
+    required this.onEditVillage,
+    required this.onDeleteVillage,
   });
 
   final List<Village> villages;
   final Village selectedVillage;
   final ValueChanged<String> onVillageSelected;
+  final VoidCallback onEditVillage;
+  final VoidCallback onDeleteVillage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -119,11 +224,10 @@ class _DashboardBody extends ConsumerWidget {
         ref.watch(activeUpgradesForVillageProvider(selectedVillage.id));
 
     return upgradesAsync.when(
-      loading: () =>
-          const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (upgrades) {
-        final villageService = const VillageService();
+        const villageService = VillageService();
         final activeCount = villageService.activeUpgradeCount(upgrades);
         final nextCompletion = villageService.nextCompletionAtUtc(upgrades);
         final available = villageService.availableSlots(
@@ -142,7 +246,7 @@ class _DashboardBody extends ConsumerWidget {
               ),
             ),
 
-            // Village summary card
+            // Village summary card with edit / delete actions
             SliverToBoxAdapter(
               child: Padding(
                 padding:
@@ -152,6 +256,8 @@ class _DashboardBody extends ConsumerWidget {
                   activeCount: activeCount,
                   availableSlots: available,
                   nextCompletion: nextCompletion,
+                  onEdit: onEditVillage,
+                  onDelete: onDeleteVillage,
                 ),
               ),
             ),
@@ -161,12 +267,24 @@ class _DashboardBody extends ConsumerWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               sliver: SliverToBoxAdapter(
-                child: Text(
-                  'Active upgrades',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Active upgrades',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    Text(
+                      '$activeCount active',
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 12,
                       ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -174,6 +292,7 @@ class _DashboardBody extends ConsumerWidget {
             // Upgrade cards or empty state
             upgrades.isEmpty
                 ? SliverFillRemaining(
+                    hasScrollBody: false,
                     child: _EmptyUpgradesState(
                       availableSlots: available,
                     ),
@@ -184,7 +303,10 @@ class _DashboardBody extends ConsumerWidget {
                       itemCount: upgrades.length,
                       itemBuilder: (context, index) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: UpgradeCard(upgrade: upgrades[index]),
+                        child: UpgradeCard(
+                          upgrade: upgrades[index],
+                          village: selectedVillage,
+                        ),
                       ),
                     ),
                   ),
@@ -226,8 +348,7 @@ class _VillageSwitcher extends StatelessWidget {
               selectedColor: AppColors.accent,
               labelStyle: TextStyle(
                 color: selected ? Colors.black : AppColors.textSecondary,
-                fontWeight:
-                    selected ? FontWeight.w700 : FontWeight.normal,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
               ),
               side: BorderSide.none,
             ),
@@ -244,12 +365,16 @@ class _VillageSummaryCard extends StatelessWidget {
     required this.activeCount,
     required this.availableSlots,
     required this.nextCompletion,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final Village village;
   final int activeCount;
   final int availableSlots;
   final DateTime? nextCompletion;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -287,6 +412,7 @@ class _VillageSummaryCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Builder capacity badge
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -309,8 +435,55 @@ class _VillageSummaryCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: 4),
+                // Village action menu
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, size: 20, color: AppColors.textSecondary),
+                  color: AppColors.surfaceVariant,
+                  onSelected: (val) {
+                    if (val == 'edit') {
+                      onEdit();
+                    } else if (val == 'delete') {
+                      onDelete();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 18, color: AppColors.accent),
+                          SizedBox(width: 8),
+                          Text('Edit village'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                          SizedBox(width: 8),
+                          Text('Delete village', style: TextStyle(color: AppColors.error)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
+            if (village.notes != null && village.notes!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                village.notes!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             Row(
               children: [

@@ -127,6 +127,33 @@ class LocalNotificationService implements NotificationService {
   }
 
   @override
+  Future<void> showTestNotification() async {
+    try {
+      const details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          'clash_command_upgrades',
+          'Upgrade reminders',
+          channelDescription:
+              'Notifications for Clash Command upgrade completions.',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      );
+      await _plugin.show(
+        999999,
+        '🛡️ Clash Command Test Alert',
+        'Notifications are working properly on your device!',
+        details,
+      );
+    } catch (e) {
+      developer.log(
+        'Failed to show test notification: $e',
+        name: 'notifications',
+      );
+    }
+  }
+
+  @override
   Future<void> reconcile(
     List<NotificationPlan> intendedPlans,
     List<int> activeNotificationIds,

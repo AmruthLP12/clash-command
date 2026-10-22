@@ -1,40 +1,32 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../domain/models/upgrade.dart';
 import '../domain/models/upgrade_category.dart';
 import '../domain/models/upgrade_status.dart';
 import '../domain/models/village.dart';
+import 'openers.dart';
+import 'tables/history_events_table.dart';
 import 'tables/notification_preferences_table.dart';
 import 'tables/upgrades_table.dart';
 import 'tables/villages_table.dart';
 
 part 'app_database.g.dart';
 
-/// Opens the SQLite database file from the app's documents directory.
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dir.path, 'clash_command.db'));
-    return NativeDatabase.createInBackground(file);
-  });
-}
-
+/// Opens the SQLite database used by the app.
+///
+/// On native platforms this runs SQLite through the native `sqlite3` library;
+/// on the web it uses the WebAssembly build of SQLite via drift's `WasmDatabase`.
 @DriftDatabase(
-  tables: [Villages, Upgrades, NotificationPreferences],
+  tables: [Villages, Upgrades, NotificationPreferences, HistoryEvents],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase() : super(openDatabase());
 
   /// Accepts a custom [QueryExecutor] for use in tests (in-memory SQLite).
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -48,6 +40,11 @@ class AppDatabase extends _$AppDatabase {
             updatedAtUtc: DateTime.now().toUtc(),
           ),
         );
+      },
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          await m.createTable(historyEvents);
+        }
       },
     );
   }

@@ -1896,6 +1896,542 @@ class NotificationPreferencesCompanion
   }
 }
 
+class $HistoryEventsTable extends HistoryEvents
+    with TableInfo<$HistoryEventsTable, HistoryEventRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HistoryEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _upgradeIdMeta = const VerificationMeta(
+    'upgradeId',
+  );
+  @override
+  late final GeneratedColumn<String> upgradeId = GeneratedColumn<String>(
+    'upgrade_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _villageIdMeta = const VerificationMeta(
+    'villageId',
+  );
+  @override
+  late final GeneratedColumn<String> villageId = GeneratedColumn<String>(
+    'village_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _eventTypeMeta = const VerificationMeta(
+    'eventType',
+  );
+  @override
+  late final GeneratedColumn<String> eventType = GeneratedColumn<String>(
+    'event_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _upgradeNameMeta = const VerificationMeta(
+    'upgradeName',
+  );
+  @override
+  late final GeneratedColumn<String> upgradeName = GeneratedColumn<String>(
+    'upgrade_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _villageNameMeta = const VerificationMeta(
+    'villageName',
+  );
+  @override
+  late final GeneratedColumn<String> villageName = GeneratedColumn<String>(
+    'village_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtUtcMeta = const VerificationMeta(
+    'createdAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAtUtc = GeneratedColumn<DateTime>(
+    'created_at_utc',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    upgradeId,
+    villageId,
+    eventType,
+    description,
+    upgradeName,
+    villageName,
+    createdAtUtc,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'history_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HistoryEventRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('upgrade_id')) {
+      context.handle(
+        _upgradeIdMeta,
+        upgradeId.isAcceptableOrUnknown(data['upgrade_id']!, _upgradeIdMeta),
+      );
+    }
+    if (data.containsKey('village_id')) {
+      context.handle(
+        _villageIdMeta,
+        villageId.isAcceptableOrUnknown(data['village_id']!, _villageIdMeta),
+      );
+    }
+    if (data.containsKey('event_type')) {
+      context.handle(
+        _eventTypeMeta,
+        eventType.isAcceptableOrUnknown(data['event_type']!, _eventTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eventTypeMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('upgrade_name')) {
+      context.handle(
+        _upgradeNameMeta,
+        upgradeName.isAcceptableOrUnknown(
+          data['upgrade_name']!,
+          _upgradeNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('village_name')) {
+      context.handle(
+        _villageNameMeta,
+        villageName.isAcceptableOrUnknown(
+          data['village_name']!,
+          _villageNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at_utc')) {
+      context.handle(
+        _createdAtUtcMeta,
+        createdAtUtc.isAcceptableOrUnknown(
+          data['created_at_utc']!,
+          _createdAtUtcMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtUtcMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HistoryEventRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HistoryEventRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      upgradeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}upgrade_id'],
+      ),
+      villageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}village_id'],
+      ),
+      eventType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_type'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      upgradeName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}upgrade_name'],
+      ),
+      villageName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}village_name'],
+      ),
+      createdAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at_utc'],
+      )!,
+    );
+  }
+
+  @override
+  $HistoryEventsTable createAlias(String alias) {
+    return $HistoryEventsTable(attachedDatabase, alias);
+  }
+}
+
+class HistoryEventRow extends DataClass implements Insertable<HistoryEventRow> {
+  final String id;
+  final String? upgradeId;
+  final String? villageId;
+  final String eventType;
+  final String description;
+  final String? upgradeName;
+  final String? villageName;
+  final DateTime createdAtUtc;
+  const HistoryEventRow({
+    required this.id,
+    this.upgradeId,
+    this.villageId,
+    required this.eventType,
+    required this.description,
+    this.upgradeName,
+    this.villageName,
+    required this.createdAtUtc,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || upgradeId != null) {
+      map['upgrade_id'] = Variable<String>(upgradeId);
+    }
+    if (!nullToAbsent || villageId != null) {
+      map['village_id'] = Variable<String>(villageId);
+    }
+    map['event_type'] = Variable<String>(eventType);
+    map['description'] = Variable<String>(description);
+    if (!nullToAbsent || upgradeName != null) {
+      map['upgrade_name'] = Variable<String>(upgradeName);
+    }
+    if (!nullToAbsent || villageName != null) {
+      map['village_name'] = Variable<String>(villageName);
+    }
+    map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
+    return map;
+  }
+
+  HistoryEventsCompanion toCompanion(bool nullToAbsent) {
+    return HistoryEventsCompanion(
+      id: Value(id),
+      upgradeId: upgradeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(upgradeId),
+      villageId: villageId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(villageId),
+      eventType: Value(eventType),
+      description: Value(description),
+      upgradeName: upgradeName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(upgradeName),
+      villageName: villageName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(villageName),
+      createdAtUtc: Value(createdAtUtc),
+    );
+  }
+
+  factory HistoryEventRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HistoryEventRow(
+      id: serializer.fromJson<String>(json['id']),
+      upgradeId: serializer.fromJson<String?>(json['upgradeId']),
+      villageId: serializer.fromJson<String?>(json['villageId']),
+      eventType: serializer.fromJson<String>(json['eventType']),
+      description: serializer.fromJson<String>(json['description']),
+      upgradeName: serializer.fromJson<String?>(json['upgradeName']),
+      villageName: serializer.fromJson<String?>(json['villageName']),
+      createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'upgradeId': serializer.toJson<String?>(upgradeId),
+      'villageId': serializer.toJson<String?>(villageId),
+      'eventType': serializer.toJson<String>(eventType),
+      'description': serializer.toJson<String>(description),
+      'upgradeName': serializer.toJson<String?>(upgradeName),
+      'villageName': serializer.toJson<String?>(villageName),
+      'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
+    };
+  }
+
+  HistoryEventRow copyWith({
+    String? id,
+    Value<String?> upgradeId = const Value.absent(),
+    Value<String?> villageId = const Value.absent(),
+    String? eventType,
+    String? description,
+    Value<String?> upgradeName = const Value.absent(),
+    Value<String?> villageName = const Value.absent(),
+    DateTime? createdAtUtc,
+  }) => HistoryEventRow(
+    id: id ?? this.id,
+    upgradeId: upgradeId.present ? upgradeId.value : this.upgradeId,
+    villageId: villageId.present ? villageId.value : this.villageId,
+    eventType: eventType ?? this.eventType,
+    description: description ?? this.description,
+    upgradeName: upgradeName.present ? upgradeName.value : this.upgradeName,
+    villageName: villageName.present ? villageName.value : this.villageName,
+    createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+  );
+  HistoryEventRow copyWithCompanion(HistoryEventsCompanion data) {
+    return HistoryEventRow(
+      id: data.id.present ? data.id.value : this.id,
+      upgradeId: data.upgradeId.present ? data.upgradeId.value : this.upgradeId,
+      villageId: data.villageId.present ? data.villageId.value : this.villageId,
+      eventType: data.eventType.present ? data.eventType.value : this.eventType,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      upgradeName: data.upgradeName.present
+          ? data.upgradeName.value
+          : this.upgradeName,
+      villageName: data.villageName.present
+          ? data.villageName.value
+          : this.villageName,
+      createdAtUtc: data.createdAtUtc.present
+          ? data.createdAtUtc.value
+          : this.createdAtUtc,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HistoryEventRow(')
+          ..write('id: $id, ')
+          ..write('upgradeId: $upgradeId, ')
+          ..write('villageId: $villageId, ')
+          ..write('eventType: $eventType, ')
+          ..write('description: $description, ')
+          ..write('upgradeName: $upgradeName, ')
+          ..write('villageName: $villageName, ')
+          ..write('createdAtUtc: $createdAtUtc')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    upgradeId,
+    villageId,
+    eventType,
+    description,
+    upgradeName,
+    villageName,
+    createdAtUtc,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HistoryEventRow &&
+          other.id == this.id &&
+          other.upgradeId == this.upgradeId &&
+          other.villageId == this.villageId &&
+          other.eventType == this.eventType &&
+          other.description == this.description &&
+          other.upgradeName == this.upgradeName &&
+          other.villageName == this.villageName &&
+          other.createdAtUtc == this.createdAtUtc);
+}
+
+class HistoryEventsCompanion extends UpdateCompanion<HistoryEventRow> {
+  final Value<String> id;
+  final Value<String?> upgradeId;
+  final Value<String?> villageId;
+  final Value<String> eventType;
+  final Value<String> description;
+  final Value<String?> upgradeName;
+  final Value<String?> villageName;
+  final Value<DateTime> createdAtUtc;
+  final Value<int> rowid;
+  const HistoryEventsCompanion({
+    this.id = const Value.absent(),
+    this.upgradeId = const Value.absent(),
+    this.villageId = const Value.absent(),
+    this.eventType = const Value.absent(),
+    this.description = const Value.absent(),
+    this.upgradeName = const Value.absent(),
+    this.villageName = const Value.absent(),
+    this.createdAtUtc = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HistoryEventsCompanion.insert({
+    required String id,
+    this.upgradeId = const Value.absent(),
+    this.villageId = const Value.absent(),
+    required String eventType,
+    required String description,
+    this.upgradeName = const Value.absent(),
+    this.villageName = const Value.absent(),
+    required DateTime createdAtUtc,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       eventType = Value(eventType),
+       description = Value(description),
+       createdAtUtc = Value(createdAtUtc);
+  static Insertable<HistoryEventRow> custom({
+    Expression<String>? id,
+    Expression<String>? upgradeId,
+    Expression<String>? villageId,
+    Expression<String>? eventType,
+    Expression<String>? description,
+    Expression<String>? upgradeName,
+    Expression<String>? villageName,
+    Expression<DateTime>? createdAtUtc,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (upgradeId != null) 'upgrade_id': upgradeId,
+      if (villageId != null) 'village_id': villageId,
+      if (eventType != null) 'event_type': eventType,
+      if (description != null) 'description': description,
+      if (upgradeName != null) 'upgrade_name': upgradeName,
+      if (villageName != null) 'village_name': villageName,
+      if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HistoryEventsCompanion copyWith({
+    Value<String>? id,
+    Value<String?>? upgradeId,
+    Value<String?>? villageId,
+    Value<String>? eventType,
+    Value<String>? description,
+    Value<String?>? upgradeName,
+    Value<String?>? villageName,
+    Value<DateTime>? createdAtUtc,
+    Value<int>? rowid,
+  }) {
+    return HistoryEventsCompanion(
+      id: id ?? this.id,
+      upgradeId: upgradeId ?? this.upgradeId,
+      villageId: villageId ?? this.villageId,
+      eventType: eventType ?? this.eventType,
+      description: description ?? this.description,
+      upgradeName: upgradeName ?? this.upgradeName,
+      villageName: villageName ?? this.villageName,
+      createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (upgradeId.present) {
+      map['upgrade_id'] = Variable<String>(upgradeId.value);
+    }
+    if (villageId.present) {
+      map['village_id'] = Variable<String>(villageId.value);
+    }
+    if (eventType.present) {
+      map['event_type'] = Variable<String>(eventType.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (upgradeName.present) {
+      map['upgrade_name'] = Variable<String>(upgradeName.value);
+    }
+    if (villageName.present) {
+      map['village_name'] = Variable<String>(villageName.value);
+    }
+    if (createdAtUtc.present) {
+      map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HistoryEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('upgradeId: $upgradeId, ')
+          ..write('villageId: $villageId, ')
+          ..write('eventType: $eventType, ')
+          ..write('description: $description, ')
+          ..write('upgradeName: $upgradeName, ')
+          ..write('villageName: $villageName, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1903,6 +2439,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $UpgradesTable upgrades = $UpgradesTable(this);
   late final $NotificationPreferencesTable notificationPreferences =
       $NotificationPreferencesTable(this);
+  late final $HistoryEventsTable historyEvents = $HistoryEventsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1911,6 +2448,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     villages,
     upgrades,
     notificationPreferences,
+    historyEvents,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3057,6 +3595,280 @@ typedef $$NotificationPreferencesTableProcessedTableManager =
       NotificationPreference,
       PrefetchHooks Function()
     >;
+typedef $$HistoryEventsTableCreateCompanionBuilder =
+    HistoryEventsCompanion Function({
+      required String id,
+      Value<String?> upgradeId,
+      Value<String?> villageId,
+      required String eventType,
+      required String description,
+      Value<String?> upgradeName,
+      Value<String?> villageName,
+      required DateTime createdAtUtc,
+      Value<int> rowid,
+    });
+typedef $$HistoryEventsTableUpdateCompanionBuilder =
+    HistoryEventsCompanion Function({
+      Value<String> id,
+      Value<String?> upgradeId,
+      Value<String?> villageId,
+      Value<String> eventType,
+      Value<String> description,
+      Value<String?> upgradeName,
+      Value<String?> villageName,
+      Value<DateTime> createdAtUtc,
+      Value<int> rowid,
+    });
+
+class $$HistoryEventsTableFilterComposer
+    extends Composer<_$AppDatabase, $HistoryEventsTable> {
+  $$HistoryEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get upgradeId => $composableBuilder(
+    column: $table.upgradeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get villageId => $composableBuilder(
+    column: $table.villageId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eventType => $composableBuilder(
+    column: $table.eventType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get upgradeName => $composableBuilder(
+    column: $table.upgradeName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get villageName => $composableBuilder(
+    column: $table.villageName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HistoryEventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HistoryEventsTable> {
+  $$HistoryEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get upgradeId => $composableBuilder(
+    column: $table.upgradeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get villageId => $composableBuilder(
+    column: $table.villageId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get eventType => $composableBuilder(
+    column: $table.eventType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get upgradeName => $composableBuilder(
+    column: $table.upgradeName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get villageName => $composableBuilder(
+    column: $table.villageName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HistoryEventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HistoryEventsTable> {
+  $$HistoryEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get upgradeId =>
+      $composableBuilder(column: $table.upgradeId, builder: (column) => column);
+
+  GeneratedColumn<String> get villageId =>
+      $composableBuilder(column: $table.villageId, builder: (column) => column);
+
+  GeneratedColumn<String> get eventType =>
+      $composableBuilder(column: $table.eventType, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get upgradeName => $composableBuilder(
+    column: $table.upgradeName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get villageName => $composableBuilder(
+    column: $table.villageName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => column,
+  );
+}
+
+class $$HistoryEventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HistoryEventsTable,
+          HistoryEventRow,
+          $$HistoryEventsTableFilterComposer,
+          $$HistoryEventsTableOrderingComposer,
+          $$HistoryEventsTableAnnotationComposer,
+          $$HistoryEventsTableCreateCompanionBuilder,
+          $$HistoryEventsTableUpdateCompanionBuilder,
+          (
+            HistoryEventRow,
+            BaseReferences<_$AppDatabase, $HistoryEventsTable, HistoryEventRow>,
+          ),
+          HistoryEventRow,
+          PrefetchHooks Function()
+        > {
+  $$HistoryEventsTableTableManager(_$AppDatabase db, $HistoryEventsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HistoryEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HistoryEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HistoryEventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String?> upgradeId = const Value.absent(),
+                Value<String?> villageId = const Value.absent(),
+                Value<String> eventType = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String?> upgradeName = const Value.absent(),
+                Value<String?> villageName = const Value.absent(),
+                Value<DateTime> createdAtUtc = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HistoryEventsCompanion(
+                id: id,
+                upgradeId: upgradeId,
+                villageId: villageId,
+                eventType: eventType,
+                description: description,
+                upgradeName: upgradeName,
+                villageName: villageName,
+                createdAtUtc: createdAtUtc,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String?> upgradeId = const Value.absent(),
+                Value<String?> villageId = const Value.absent(),
+                required String eventType,
+                required String description,
+                Value<String?> upgradeName = const Value.absent(),
+                Value<String?> villageName = const Value.absent(),
+                required DateTime createdAtUtc,
+                Value<int> rowid = const Value.absent(),
+              }) => HistoryEventsCompanion.insert(
+                id: id,
+                upgradeId: upgradeId,
+                villageId: villageId,
+                eventType: eventType,
+                description: description,
+                upgradeName: upgradeName,
+                villageName: villageName,
+                createdAtUtc: createdAtUtc,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HistoryEventsTable, HistoryEventRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $HistoryEventsTable,
+                    HistoryEventRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HistoryEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HistoryEventsTable,
+      HistoryEventRow,
+      $$HistoryEventsTableFilterComposer,
+      $$HistoryEventsTableOrderingComposer,
+      $$HistoryEventsTableAnnotationComposer,
+      $$HistoryEventsTableCreateCompanionBuilder,
+      $$HistoryEventsTableUpdateCompanionBuilder,
+      (
+        HistoryEventRow,
+        BaseReferences<_$AppDatabase, $HistoryEventsTable, HistoryEventRow>,
+      ),
+      HistoryEventRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3070,4 +3882,6 @@ class $AppDatabaseManager {
         _db,
         _db.notificationPreferences,
       );
+  $$HistoryEventsTableTableManager get historyEvents =>
+      $$HistoryEventsTableTableManager(_db, _db.historyEvents);
 }

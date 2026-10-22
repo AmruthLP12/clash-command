@@ -18,9 +18,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Minimal fake DAO wrappers that return empty streams/lists
-import 'helpers/fake_villages_dao.dart';
-import 'helpers/fake_upgrades_dao.dart';
+import 'helpers/fake_history_events_dao.dart';
+import 'helpers/fake_notification_preferences_dao.dart';
 import 'helpers/fake_notification_service.dart';
+import 'helpers/fake_upgrades_dao.dart';
+import 'helpers/fake_villages_dao.dart';
 
 void main() {
   final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
@@ -53,11 +55,15 @@ void main() {
     final fakeVillagesDao = FakeVillagesDao(villages);
     final fakeUpgradesDao = FakeUpgradesDao(upgrades);
     final fakeNotifService = FakeNotificationService();
+    final fakeHistoryDao = FakeHistoryEventsDao();
+    final fakePrefsDao = FakeNotificationPreferencesDao();
 
     return ProviderScope(
       overrides: [
         villagesDaoProvider.overrideWithValue(fakeVillagesDao),
         upgradesDaoProvider.overrideWithValue(fakeUpgradesDao),
+        historyEventsDaoProvider.overrideWithValue(fakeHistoryDao),
+        notificationPreferencesDaoProvider.overrideWithValue(fakePrefsDao),
         notificationServiceProvider.overrideWithValue(fakeNotifService),
         upgradeTimerServiceProvider
             .overrideWithValue(const UpgradeTimerService()),

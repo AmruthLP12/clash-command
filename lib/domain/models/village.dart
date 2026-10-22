@@ -30,21 +30,25 @@ class Village {
     String? id,
     String? name,
     int? townHallLevel,
+    bool clearTownHallLevel = false,
     int? builderCapacity,
     int? sortOrder,
+    bool clearSortOrder = false,
     bool? isArchived,
     String? notes,
+    bool clearNotes = false,
     DateTime? createdAtUtc,
     DateTime? updatedAtUtc,
   }) {
     return Village(
       id: id ?? this.id,
       name: name ?? this.name,
-      townHallLevel: townHallLevel ?? this.townHallLevel,
+      townHallLevel:
+          clearTownHallLevel ? null : (townHallLevel ?? this.townHallLevel),
       builderCapacity: builderCapacity ?? this.builderCapacity,
-      sortOrder: sortOrder ?? this.sortOrder,
+      sortOrder: clearSortOrder ? null : (sortOrder ?? this.sortOrder),
       isArchived: isArchived ?? this.isArchived,
-      notes: notes ?? this.notes,
+      notes: clearNotes ? null : (notes ?? this.notes),
       createdAtUtc: createdAtUtc ?? this.createdAtUtc,
       updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
     );

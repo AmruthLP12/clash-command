@@ -7,14 +7,24 @@ import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/formatting/date_time_format.dart';
 import 'package:clash_command/core/formatting/duration_format.dart';
 import 'package:clash_command/domain/models/upgrade.dart';
+import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/services/upgrade_timer_service.dart';
 import 'package:clash_command/features/upgrades/application/upgrades_notifier.dart';
+import 'package:clash_command/features/upgrades/presentation/add_upgrade_sheet.dart';
+import 'package:clash_command/features/upgrades/presentation/upgrade_detail_sheet.dart';
+import 'package:clash_command/features/villages/application/villages_notifier.dart';
 
-/// A card showing an active upgrade with a live countdown.
+/// A card showing an active upgrade with a live countdown, tap-to-inspect,
+/// and visible action controls.
 class UpgradeCard extends ConsumerStatefulWidget {
-  const UpgradeCard({super.key, required this.upgrade});
+  const UpgradeCard({
+    super.key,
+    required this.upgrade,
+    this.village,
+  });
 
   final Upgrade upgrade;
+  final Village? village;
 
   @override
   ConsumerState<UpgradeCard> createState() => _UpgradeCardState();
@@ -40,9 +50,51 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
     super.dispose();
   }
 
+  Village _resolveVillage(WidgetRef ref) {
+    if (widget.village != null) return widget.village!;
+    final villages = ref.read(villagesStreamProvider).valueOrNull ?? [];
+    return villages.firstWhere(
+      (v) => v.id == widget.upgrade.villageId,
+      orElse: () => Village(
+        id: widget.upgrade.villageId,
+        name: 'Village',
+        createdAtUtc: DateTime.now().toUtc(),
+        updatedAtUtc: DateTime.now().toUtc(),
+      ),
+    );
+  }
+
+  void _openDetails(BuildContext context, Village village) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => UpgradeDetailSheet(
+        upgrade: widget.upgrade,
+        village: village,
+      ),
+    );
+  }
+
+  void _openEdit(BuildContext context, Village village) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => AddUpgradeSheet(
+        village: village,
+        upgrade: widget.upgrade,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final upgrade = widget.upgrade;
+    final village = _resolveVillage(ref);
     const service = UpgradeTimerService();
     final remaining = service.remainingTime(_now, upgrade);
     final isPastDue = service.isPastDue(_now, upgrade);
@@ -50,9 +102,10 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
     return Card(
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onLongPress: () => _showActions(context, upgrade),
+        onTap: () => _openDetails(context, village),
+        onLongPress: () => _showActions(context, upgrade, village),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -101,7 +154,7 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                           Text(
                             upgrade.slotKey!,
                             style: const TextStyle(
-                              color: AppColors.textMuted,
+                              color: AppColors.accentLight,
                               fontSize: 12,
                             ),
                           ),
@@ -119,7 +172,7 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                   Text(
                     isPastDue ? 'Past due' : formatDuration(remaining),
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: isPastDue ? AppColors.pastDue : AppColors.active,
                     ),
@@ -134,6 +187,113 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                   ),
                 ],
               ),
+              const SizedBox(width: 4),
+
+              // Visible action menu affordance
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, size: 20, color: AppColors.textSecondary),
+                color: AppColors.surfaceVariant,
+                onSelected: (value) async {
+                  switch (value) {
+                    case 'details':
+                      _openDetails(context, village);
+                      break;
+                    case 'complete':
+                      await ref
+                          .read(upgradesNotifierProvider.notifier)
+                          .completeUpgrade(upgrade);
+                      break;
+                    case 'edit':
+                      _openEdit(context, village);
+                      break;
+                    case 'cancel':
+                      await ref
+                          .read(upgradesNotifierProvider.notifier)
+                          .cancelUpgrade(upgrade);
+                      break;
+                    case 'delete':
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Delete upgrade?'),
+                          content: Text(
+                            'Permanently delete "${upgrade.name}"? Historical activity will be preserved.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                              child: const Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await ref
+                            .read(upgradesNotifierProvider.notifier)
+                            .deleteUpgrade(upgrade.id);
+                      }
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'details',
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 18, color: AppColors.textPrimary),
+                        SizedBox(width: 8),
+                        Text('Details'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'complete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle_outline, size: 18, color: AppColors.active),
+                        SizedBox(width: 8),
+                        Text('Complete now'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, size: 18, color: AppColors.accent),
+                        SizedBox(width: 8),
+                        Text('Edit'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'cancel',
+                    child: Row(
+                      children: [
+                        Icon(Icons.cancel_outlined, size: 18, color: AppColors.pastDue),
+                        SizedBox(width: 8),
+                        Text('Cancel'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                        SizedBox(width: 8),
+                        Text('Delete', style: TextStyle(color: AppColors.error)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -141,14 +301,17 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
     );
   }
 
-  void _showActions(BuildContext context, Upgrade upgrade) {
+  void _showActions(BuildContext context, Upgrade upgrade, Village village) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => _UpgradeActionsSheet(upgrade: upgrade),
+      builder: (_) => _UpgradeActionsSheet(
+        upgrade: upgrade,
+        village: village,
+      ),
     );
   }
 
@@ -173,8 +336,13 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
 }
 
 class _UpgradeActionsSheet extends ConsumerWidget {
-  const _UpgradeActionsSheet({required this.upgrade});
+  const _UpgradeActionsSheet({
+    required this.upgrade,
+    required this.village,
+  });
+
   final Upgrade upgrade;
+  final Village village;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -195,8 +363,23 @@ class _UpgradeActionsSheet extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.check_circle_outline,
-                  color: AppColors.active),
+              leading: const Icon(Icons.info_outline, color: AppColors.textPrimary),
+              title: const Text('View full details'),
+              onTap: () {
+                Navigator.pop(context);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => UpgradeDetailSheet(
+                    upgrade: upgrade,
+                    village: village,
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.check_circle_outline, color: AppColors.active),
               title: const Text('Mark complete'),
               onTap: () async {
                 Navigator.pop(context);
@@ -206,8 +389,26 @@ class _UpgradeActionsSheet extends ConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.cancel_outlined,
-                  color: AppColors.pastDue),
+              leading: const Icon(Icons.edit_outlined, color: AppColors.accent),
+              title: const Text('Edit upgrade'),
+              onTap: () {
+                Navigator.pop(context);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: AppColors.surface,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  builder: (_) => AddUpgradeSheet(
+                    village: village,
+                    upgrade: upgrade,
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.cancel_outlined, color: AppColors.pastDue),
               title: const Text('Cancel upgrade'),
               onTap: () async {
                 Navigator.pop(context);
@@ -229,7 +430,7 @@ class _UpgradeActionsSheet extends ConsumerWidget {
                   builder: (_) => AlertDialog(
                     title: const Text('Delete upgrade?'),
                     content: Text(
-                      'This will permanently remove "${upgrade.name}".',
+                      'Permanently delete "${upgrade.name}"? Historical activity will be preserved.',
                     ),
                     actions: [
                       TextButton(
@@ -238,6 +439,7 @@ class _UpgradeActionsSheet extends ConsumerWidget {
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
+                        style: TextButton.styleFrom(foregroundColor: AppColors.error),
                         child: const Text('Delete'),
                       ),
                     ],

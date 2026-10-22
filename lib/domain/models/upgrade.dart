@@ -47,8 +47,11 @@ class Upgrade {
     String? name,
     UpgradeCategory? category,
     String? slotKey,
+    bool clearSlotKey = false,
     String? catalogItemId,
+    bool clearCatalogItemId = false,
     int? durationSeconds,
+    bool clearDurationSeconds = false,
     DateTime? startedAtUtc,
     DateTime? expectedCompletionAtUtc,
     UpgradeStatus? status,
@@ -56,6 +59,7 @@ class Upgrade {
     bool clearCompletedAt = false,
     int? notificationRevision,
     String? notes,
+    bool clearNotes = false,
     DateTime? createdAtUtc,
     DateTime? updatedAtUtc,
   }) {
@@ -64,9 +68,11 @@ class Upgrade {
       villageId: villageId ?? this.villageId,
       name: name ?? this.name,
       category: category ?? this.category,
-      slotKey: slotKey ?? this.slotKey,
-      catalogItemId: catalogItemId ?? this.catalogItemId,
-      durationSeconds: durationSeconds ?? this.durationSeconds,
+      slotKey: clearSlotKey ? null : (slotKey ?? this.slotKey),
+      catalogItemId:
+          clearCatalogItemId ? null : (catalogItemId ?? this.catalogItemId),
+      durationSeconds:
+          clearDurationSeconds ? null : (durationSeconds ?? this.durationSeconds),
       startedAtUtc: startedAtUtc ?? this.startedAtUtc,
       expectedCompletionAtUtc:
           expectedCompletionAtUtc ?? this.expectedCompletionAtUtc,
@@ -74,7 +80,7 @@ class Upgrade {
       completedAtUtc:
           clearCompletedAt ? null : (completedAtUtc ?? this.completedAtUtc),
       notificationRevision: notificationRevision ?? this.notificationRevision,
-      notes: notes ?? this.notes,
+      notes: clearNotes ? null : (notes ?? this.notes),
       createdAtUtc: createdAtUtc ?? this.createdAtUtc,
       updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
     );

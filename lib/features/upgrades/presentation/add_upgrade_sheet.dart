@@ -2,15 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:clash_command/app/theme/app_colors.dart';
+import 'package:clash_command/domain/models/upgrade.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village.dart';
+import 'package:clash_command/domain/services/upgrade_timer_service.dart';
 import 'package:clash_command/features/upgrades/application/upgrades_notifier.dart';
 
-/// Bottom sheet for adding a new upgrade to a village.
+/// Bottom sheet for adding or editing an upgrade in a village.
 class AddUpgradeSheet extends ConsumerStatefulWidget {
-  const AddUpgradeSheet({super.key, required this.village});
+  const AddUpgradeSheet({
+    super.key,
+    required this.village,
+    this.upgrade,
+  });
 
   final Village village;
+  final Upgrade? upgrade;
+
+  bool get isEditing => upgrade != null;
 
   @override
   ConsumerState<AddUpgradeSheet> createState() => _AddUpgradeSheetState();
@@ -18,13 +27,41 @@ class AddUpgradeSheet extends ConsumerStatefulWidget {
 
 class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _daysController = TextEditingController(text: '0');
-  final _hoursController = TextEditingController(text: '0');
-  final _minutesController = TextEditingController(text: '0');
-  final _slotController = TextEditingController();
-  UpgradeCategory _category = UpgradeCategory.building;
+  late final TextEditingController _nameController;
+  late final TextEditingController _daysController;
+  late final TextEditingController _hoursController;
+  late final TextEditingController _minutesController;
+  late final TextEditingController _slotController;
+  late final TextEditingController _notesController;
+  late UpgradeCategory _category;
+  Duration _initialRemaining = Duration.zero;
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final up = widget.upgrade;
+    _nameController = TextEditingController(text: up?.name ?? '');
+    _category = up?.category ?? UpgradeCategory.building;
+    _slotController = TextEditingController(text: up?.slotKey ?? '');
+    _notesController = TextEditingController(text: up?.notes ?? '');
+
+    if (up != null) {
+      final now = DateTime.now().toUtc();
+      const timerService = UpgradeTimerService();
+      _initialRemaining = timerService.remainingTime(now, up);
+      final days = _initialRemaining.inDays;
+      final hours = _initialRemaining.inHours % 24;
+      final minutes = _initialRemaining.inMinutes % 60;
+      _daysController = TextEditingController(text: '$days');
+      _hoursController = TextEditingController(text: '$hours');
+      _minutesController = TextEditingController(text: '$minutes');
+    } else {
+      _daysController = TextEditingController(text: '0');
+      _hoursController = TextEditingController(text: '0');
+      _minutesController = TextEditingController(text: '0');
+    }
+  }
 
   @override
   void dispose() {
@@ -33,6 +70,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
     _hoursController.dispose();
     _minutesController.dispose();
     _slotController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -56,15 +94,45 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
 
     setState(() => _saving = true);
     try {
-      await ref.read(upgradesNotifierProvider.notifier).startUpgrade(
-            villageId: widget.village.id,
-            name: _nameController.text.trim(),
-            category: _category,
-            duration: _duration,
-            slotKey: _slotController.text.trim().isEmpty
-                ? null
-                : _slotController.text.trim(),
-          );
+      final name = _nameController.text.trim();
+      final slotKey = _slotController.text.trim().isEmpty
+          ? null
+          : _slotController.text.trim();
+      final notes = _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim();
+
+      if (widget.isEditing) {
+        final up = widget.upgrade!;
+        final now = DateTime.now().toUtc();
+
+        // Check if duration was modified (allow 1 minute tolerance for live timer progress)
+        DateTime? newExpectedCompletion;
+        final diff = (_duration - _initialRemaining).inMinutes.abs();
+        if (diff > 1) {
+          newExpectedCompletion = now.add(_duration);
+        }
+
+        await ref.read(upgradesNotifierProvider.notifier).editUpgradeDetails(
+              up,
+              name: name,
+              category: _category,
+              slotKey: slotKey,
+              clearSlotKey: slotKey == null,
+              notes: notes,
+              clearNotes: notes == null,
+              newExpectedCompletionAtUtc: newExpectedCompletion,
+            );
+      } else {
+        await ref.read(upgradesNotifierProvider.notifier).startUpgrade(
+              villageId: widget.village.id,
+              name: name,
+              category: _category,
+              duration: _duration,
+              slotKey: slotKey,
+              notes: notes,
+            );
+      }
       if (mounted) Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -88,7 +156,9 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Track upgrade — ${widget.village.name}',
+                widget.isEditing
+                    ? 'Edit upgrade'
+                    : 'Track upgrade — ${widget.village.name}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -102,7 +172,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Upgrade name *',
-                  hintText: 'e.g. Barracks, Archer Queen',
+                  hintText: 'e.g. Barracks, Archer Queen, Custom Trap',
                 ),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Required' : null,
@@ -128,9 +198,9 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
               const SizedBox(height: 12),
 
               // Duration row
-              const Text(
-                'Duration *',
-                style: TextStyle(
+              Text(
+                widget.isEditing ? 'Remaining duration *' : 'Duration *',
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
                 ),
@@ -164,13 +234,43 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
               ),
               const SizedBox(height: 12),
 
-              // Optional slot
+              // Builder / slot
               TextFormField(
                 controller: _slotController,
                 decoration: const InputDecoration(
-                  labelText: 'Builder/slot (optional)',
-                  hintText: 'e.g. Builder 1',
+                  labelText: 'Builder / slot (optional)',
+                  hintText: 'e.g. Builder 1, Master Builder',
                 ),
+              ),
+              const SizedBox(height: 6),
+              // Builder quick chips
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: List.generate(
+                  widget.village.builderCapacity,
+                  (i) {
+                    final label = 'Builder ${i + 1}';
+                    return ActionChip(
+                      label: Text(label, style: const TextStyle(fontSize: 11)),
+                      backgroundColor: AppColors.surfaceVariant,
+                      onPressed: () {
+                        setState(() => _slotController.text = label);
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Notes
+              TextFormField(
+                controller: _notesController,
+                decoration: const InputDecoration(
+                  labelText: 'Notes (optional)',
+                  hintText: 'e.g. Hammer of Building ready',
+                ),
+                maxLines: 2,
               ),
               const SizedBox(height: 20),
 
@@ -188,7 +288,11 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                             color: Colors.black,
                           ),
                         )
-                      : const Text('Start tracking'),
+                      : Text(
+                          widget.isEditing
+                              ? 'Save changes'
+                              : 'Start tracking',
+                        ),
                 ),
               ),
             ],

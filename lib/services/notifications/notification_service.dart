@@ -26,4 +26,7 @@ abstract class NotificationService {
     List<NotificationPlan> intendedPlans,
     List<int> activeNotificationIds,
   );
+
+  /// Shows an immediate test notification to verify delivery on device.
+  Future<void> showTestNotification();
 }

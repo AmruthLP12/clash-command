@@ -23,4 +23,7 @@ class FakeNotificationService implements NotificationService {
     List<NotificationPlan> intendedPlans,
     List<int> activeNotificationIds,
   ) async {}
+
+  @override
+  Future<void> showTestNotification() async {}
 }

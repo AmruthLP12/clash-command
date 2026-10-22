@@ -19,6 +19,8 @@ void main() async {
     upgradesDao: container.read(upgradesDaoProvider),
     notificationService: container.read(notificationServiceProvider),
     planService: container.read(notificationPlanServiceProvider),
+    preferencesDao: container.read(notificationPreferencesDaoProvider),
+    villagesDao: container.read(villagesDaoProvider),
   );
   await reconciler.reconcile();
 

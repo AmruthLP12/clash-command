@@ -42,6 +42,7 @@ class NotificationPlanService {
     DateTime now, {
     List<int> reminderOffsetMinutes = defaultReminderOffsets,
     bool completionEnabled = true,
+    String? villageName,
   }) {
     if (upgrade.status != UpgradeStatus.active) return [];
 
@@ -51,6 +52,7 @@ class NotificationPlanService {
     if (completionEnabled) {
       final scheduledAt = upgrade.expectedCompletionAtUtc;
       if (scheduledAt.isAfter(now)) {
+        final vName = villageName ?? upgrade.villageId;
         plans.add(
           NotificationPlan(
             id: completionId(upgrade.id),
@@ -59,7 +61,7 @@ class NotificationPlanService {
             type: NotificationPlanType.completion,
             title: '✅ ${upgrade.name} is done!',
             body:
-                'Your ${upgrade.name} upgrade has completed in ${upgrade.villageId}.',
+                'Your ${upgrade.name} upgrade has completed in $vName.',
           ),
         );
       }
@@ -71,6 +73,9 @@ class NotificationPlanService {
       final scheduledAt = upgrade.expectedCompletionAtUtc
           .subtract(Duration(minutes: offset));
       if (scheduledAt.isAfter(now)) {
+        final offsetText = offset >= 60
+            ? '${offset ~/ 60} hour${offset >= 120 ? 's' : ''}'
+            : '$offset minute${offset == 1 ? '' : 's'}';
         plans.add(
           NotificationPlan(
             id: preAlertId(upgrade.id, i),
@@ -79,7 +84,7 @@ class NotificationPlanService {
             type: NotificationPlanType.preAlert,
             title: '⏰ ${upgrade.name} finishing soon',
             body:
-                '${upgrade.name} completes in $offset minutes.',
+                '${upgrade.name} completes in $offsetText.',
           ),
         );
       }
