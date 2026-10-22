@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_upgrade_overview_desc">Monitor active upgrades, completion countdowns, and progress for your village.</string>
+    <string name="widget_builder_status_desc">Track available and busy builders and builder assignments for your village.</string>
+</resources>
+

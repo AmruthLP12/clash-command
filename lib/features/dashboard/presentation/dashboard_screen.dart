@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/services/village_service.dart';
@@ -84,8 +85,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               : _DashboardBody(
                   villages: villages,
                   selectedVillage: selectedVillage!,
-                  onVillageSelected: (id) =>
-                      setState(() => _selectedVillageId = id),
+                  onVillageSelected: (id) {
+                    setState(() => _selectedVillageId = id);
+                    ref
+                        .read(homeWidgetSyncServiceProvider)
+                        .syncWidgets(specificVillageId: id);
+                  },
                   onEditVillage: () =>
                       _showEditVillage(context, selectedVillage),
                   onDeleteVillage: () =>

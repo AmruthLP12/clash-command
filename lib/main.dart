@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_theme.dart';
 import 'package:clash_command/features/dashboard/presentation/dashboard_screen.dart';
-import 'package:clash_command/services/notifications/notification_reconciler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,14 +14,10 @@ void main() async {
   await container.read(notificationServiceProvider).initialize();
 
   // Reconcile notifications on launch
-  final reconciler = NotificationReconciler(
-    upgradesDao: container.read(upgradesDaoProvider),
-    notificationService: container.read(notificationServiceProvider),
-    planService: container.read(notificationPlanServiceProvider),
-    preferencesDao: container.read(notificationPreferencesDaoProvider),
-    villagesDao: container.read(villagesDaoProvider),
-  );
-  await reconciler.reconcile();
+  await container.read(notificationReconcilerProvider).reconcile();
+
+  // Sync home-screen widgets on launch
+  await container.read(homeWidgetSyncServiceProvider).syncWidgets();
 
   runApp(
     UncontrolledProviderScope(

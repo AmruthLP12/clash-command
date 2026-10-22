@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2026-10-22
 
 ### Added
+- **Native Android Home-Screen Widgets**:
+  - **Upgrade Overview Widget (`UpgradeOverviewWidgetProvider`)**: Shows Clash Command badge, village name, active upgrades badge, nearest upcoming upgrade name/category, countdown timer, and styled progress bar. Tap opens app.
+  - **Builder Status Widget (`BuilderStatusWidgetProvider`)**: Shows village name, free vs busy builder counts, total builders, and compact builder occupancy summary. Tap opens app.
+  - **Widget Data Synchronization (`HomeWidgetSyncService`)**: Maintains a lightweight, read-only native snapshot updated automatically on upgrade creation, editing, status change, village switching, and app launch.
+  - **Android Widget Manifest & Layouts**: Added `res/layout/widget_upgrade_overview.xml`, `res/layout/widget_builder_status.xml`, provider metadata in `res/xml/`, and receivers in `AndroidManifest.xml`.
+- **Notification Diagnostics Section in Settings**:
+  - Live readout of system notification permission status.
+  - Exact-alarm scheduling mode status (Exact vs Inexact While-Idle).
+  - Count of currently active upgrades in the database.
+  - Real-time count of pending alarms/notifications queued in the Android system.
+  - Next expected completion timestamp in device local time.
 - **Distinctive App Branding & Launcher Icons**:
   - Designed an original Clash Command emblem featuring a reinforced war crest shield, upward progression arrow, strategic command star, and golden studs on an obsidian battle background.
   - Added high-resolution master asset (`assets/branding/logo.png`) and transparent badge (`assets/branding/logo_transparent.png`).
@@ -39,6 +50,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **WebAssembly SQLite Assets**: Matched `sqlite3.wasm` and `drift_worker.js` with `drift: 2.35.2` to eliminate WebAssembly link/instantiation errors on web targets.
 
 ### Fixed
+- **Upgrade Completion Notification Delivery**: Fixed the bug where test notifications worked but scheduled upgrade notifications failed to fire.
+  - Declared `ScheduledNotificationReceiver` and `ScheduledNotificationBootReceiver` in `AndroidManifest.xml` (required by FlutterLocalNotifications 16+ so Android AlarmManager broadcasts are not dropped).
+  - Added `SCHEDULE_EXACT_ALARM` and `USE_EXACT_ALARM` permissions.
+  - Upgraded schedule mode to `AndroidScheduleMode.exactAllowWhileIdle` with graceful fallback to `inexactAllowWhileIdle` to guarantee execution while device is idle or in Android Doze mode.
+  - Ensured UTC TZDateTime interpretation to eliminate timezone offset discrepancies.
+  - Fixed notification reconciler bug where existing pending requests were incorrectly skipped instead of updating to the latest target fire time.
+  - Added native `requestExactAlarmsPermission()` and integrated an "Allow Exact Alarms" action in Settings diagnostics to ensure exact-to-the-minute delivery on Android 13/14+.
+  - Updated `upgrades_notifier.dart` to respect user notification preferences and village names across all upgrade lifecycle actions.
+  - Expanded `idsForUpgrade` to cancel all 10 possible pre-alerts and obsolete completion alarms.
+- **Android Home-Screen Widget Crash ("Error loading the widgets")**: Fixed the launcher inflation crash.
+  - Replaced forbidden `<View>` divider tags with `<FrameLayout>` across `widget_upgrade_overview.xml` and `widget_builder_status.xml`, satisfying Android's strict `RemoteViews` class allowlist.
+  - Fixed horizontal progress bar attribute resolution by referencing `@android:style/Widget.ProgressBar.Horizontal` instead of theme-dependent attributes.
+  - Added top-level `try / catch` error handlers with logging inside widget providers.
+  - Set `android:exported="true"` on widget receivers to ensure launcher compatibility across diverse OEM launchers.
+- **Live Seconds Countdown for Imminent Upgrades**:
+  - Implemented live `MM:SS` seconds countdown (`04:59`, `02:37`, `00:45`, etc.) whenever remaining time is strictly less than 5 minutes (< 300s).
+  - Added an adaptive 1-second refresh ticker that activates exclusively during the < 5 minute window and cleanly disposes when completed or inactive.
+  - Integrated seconds display across Dashboard upgrade cards, Upgrade Detail sheets, and native Android home-screen widgets.
+  - Added unit test coverage covering 5m, 4m59s, 1m, 1s, 0s, and negative durations.
+- **Village Builder Capacity**: Fixed builder availability counting to use village `builderCapacity` rather than hardcoded assumptions.
 - Fixed module export paths in `lib/database/openers.dart` to properly reference the `openers/` subfolder.
 - Fixed `Village.copyWith` and `Upgrade.copyWith` to allow nulling-out optional fields via explicit clear flags.
 - Fixed notification body text in `NotificationPlanService` to display actual village names instead of raw UUIDs.

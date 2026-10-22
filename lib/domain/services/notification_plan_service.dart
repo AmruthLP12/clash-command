@@ -96,7 +96,7 @@ class NotificationPlanService {
   /// Returns all notification IDs that should be cancelled for an upgrade.
   List<int> idsForUpgrade(
     String upgradeId, {
-    int maxPreAlerts = 4,
+    int maxPreAlerts = 10,
   }) {
     return [
       completionId(upgradeId),

@@ -95,11 +95,11 @@ class UpgradesNotifier extends AsyncNotifier<void> {
           ),
         );
 
-    // Schedule notifications
-    final planService = ref.read(notificationPlanServiceProvider);
-    final notifService = ref.read(notificationServiceProvider);
-    final plans = planService.buildPlan(upgrade, now);
-    await notifService.schedulePlans(plans);
+    // Reconcile notifications and sync home widgets
+    await ref.read(notificationReconcilerProvider).reconcile();
+    await ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: villageId);
 
     return id;
   }
@@ -132,6 +132,10 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     await ref.read(upgradesDaoProvider).upsert(result.value);
     await ref.read(notificationServiceProvider).cancelForUpgrade(upgrade.id);
+    await ref.read(notificationReconcilerProvider).reconcile();
+    await ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: upgrade.villageId);
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
@@ -157,6 +161,10 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     await ref.read(upgradesDaoProvider).upsert(result.value);
     await ref.read(notificationServiceProvider).cancelForUpgrade(upgrade.id);
+    await ref.read(notificationReconcilerProvider).reconcile();
+    await ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: upgrade.villageId);
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
@@ -189,11 +197,11 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     await ref.read(upgradesDaoProvider).upsert(result.value);
 
-    // Schedule notifications for reopened upgrade
-    final planService = ref.read(notificationPlanServiceProvider);
-    final notifService = ref.read(notificationServiceProvider);
-    final plans = planService.buildPlan(result.value, now);
-    await notifService.schedulePlans(plans);
+    // Reconcile notifications and sync home widgets
+    await ref.read(notificationReconcilerProvider).reconcile();
+    await ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: upgrade.villageId);
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
@@ -226,12 +234,12 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     await ref.read(upgradesDaoProvider).upsert(result.value);
 
-    // Reschedule notifications
-    final planService = ref.read(notificationPlanServiceProvider);
-    final notifService = ref.read(notificationServiceProvider);
-    await notifService.cancelForUpgrade(upgrade.id);
-    final plans = planService.buildPlan(result.value, now);
-    await notifService.schedulePlans(plans);
+    // Reschedule notifications and sync home widgets
+    await ref.read(notificationServiceProvider).cancelForUpgrade(upgrade.id);
+    await ref.read(notificationReconcilerProvider).reconcile();
+    await ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: upgrade.villageId);
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
@@ -284,15 +292,15 @@ class UpgradesNotifier extends AsyncNotifier<void> {
       if (result.isFailure) return;
       updated = result.value;
 
-      // Reschedule notifications for the new timer
-      final planService = ref.read(notificationPlanServiceProvider);
-      final notifService = ref.read(notificationServiceProvider);
-      await notifService.cancelForUpgrade(upgrade.id);
-      final plans = planService.buildPlan(updated, now);
-      await notifService.schedulePlans(plans);
+      // Cancel old alert for this upgrade
+      await ref.read(notificationServiceProvider).cancelForUpgrade(upgrade.id);
     }
 
     await ref.read(upgradesDaoProvider).upsert(updated);
+    await ref.read(notificationReconcilerProvider).reconcile();
+    await ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: upgrade.villageId);
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
@@ -314,8 +322,12 @@ class UpgradesNotifier extends AsyncNotifier<void> {
     final upgrade = await ref.read(upgradesDaoProvider).findById(id);
     await ref.read(upgradesDaoProvider).deleteUpgrade(id);
     await ref.read(notificationServiceProvider).cancelForUpgrade(id);
+    await ref.read(notificationReconcilerProvider).reconcile();
 
     if (upgrade != null) {
+      await ref
+          .read(homeWidgetSyncServiceProvider)
+          .syncWidgets(specificVillageId: upgrade.villageId);
       final village =
           await ref.read(villagesDaoProvider).findById(upgrade.villageId);
       await ref.read(historyEventsDaoProvider).insertEvent(

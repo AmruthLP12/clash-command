@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,7 +16,7 @@ import 'package:clash_command/features/upgrades/presentation/add_upgrade_sheet.d
 
 /// Full-detail bottom sheet for an upgrade with visible status actions,
 /// edit affordance, and event history.
-class UpgradeDetailSheet extends ConsumerWidget {
+class UpgradeDetailSheet extends ConsumerStatefulWidget {
   const UpgradeDetailSheet({
     super.key,
     required this.upgrade,
@@ -25,13 +27,75 @@ class UpgradeDetailSheet extends ConsumerWidget {
   final Village village;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UpgradeDetailSheet> createState() => _UpgradeDetailSheetState();
+}
+
+class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
+  Timer? _ticker;
+  DateTime _now = DateTime.now().toUtc();
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleTick();
+  }
+
+  void _scheduleTick() {
+    _ticker?.cancel();
+    final remaining = widget.upgrade.expectedCompletionAtUtc.difference(_now);
+    if (remaining.inSeconds <= 0) return;
+
+    if (remaining.inSeconds < 300) {
+      // 1-second ticker when strictly less than 5 minutes remain
+      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted) return;
+        final curRemaining =
+            widget.upgrade.expectedCompletionAtUtc.difference(DateTime.now().toUtc());
+        setState(() => _now = DateTime.now().toUtc());
+        if (curRemaining.inSeconds <= 0) {
+          _ticker?.cancel();
+        }
+      });
+    } else {
+      // Periodic check, scheduling next wake-up right at the 300s threshold if within 30s
+      final secondsUntil5Min = remaining.inSeconds - 300;
+      final nextInterval = secondsUntil5Min > 0 && secondsUntil5Min < 30
+          ? Duration(seconds: secondsUntil5Min + 1)
+          : const Duration(seconds: 30);
+      _ticker = Timer(nextInterval, () {
+        if (!mounted) return;
+        setState(() => _now = DateTime.now().toUtc());
+        _scheduleTick();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(UpgradeDetailSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.upgrade.expectedCompletionAtUtc != widget.upgrade.expectedCompletionAtUtc ||
+        oldWidget.upgrade.status != widget.upgrade.status) {
+      _now = DateTime.now().toUtc();
+      _scheduleTick();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final upgrade = widget.upgrade;
+    final village = widget.village;
     const timerService = UpgradeTimerService();
-    final now = DateTime.now().toUtc();
-    final remaining = timerService.remainingTime(now, upgrade);
-    final isPastDue = timerService.isPastDue(now, upgrade);
-    final totalDuration = upgrade.expectedCompletionAtUtc.difference(upgrade.startedAtUtc);
-    final elapsed = now.difference(upgrade.startedAtUtc);
+    final remaining = timerService.remainingTime(_now, upgrade);
+    final isPastDue = timerService.isPastDue(_now, upgrade);
+    final totalDuration =
+        upgrade.expectedCompletionAtUtc.difference(upgrade.startedAtUtc);
+    final elapsed = _now.difference(upgrade.startedAtUtc);
     final progress = totalDuration.inSeconds > 0
         ? (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0)
         : 1.0;
@@ -153,7 +217,9 @@ class UpgradeDetailSheet extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              isPastDue ? 'Past due' : formatDuration(remaining),
+                              isPastDue
+                                  ? 'Ready to collect'
+                                  : formatRemaining(remaining, completedLabel: 'Ready to collect'),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,

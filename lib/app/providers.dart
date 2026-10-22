@@ -10,7 +10,9 @@ import '../domain/services/upgrade_lifecycle_service.dart';
 import '../domain/services/upgrade_timer_service.dart';
 import '../domain/services/village_service.dart';
 import '../services/notifications/local_notification_service.dart';
+import '../services/notifications/notification_reconciler.dart';
 import '../services/notifications/notification_service.dart';
+import '../services/widgets/home_widget_sync_service.dart';
 
 // ---------- Database ----------
 
@@ -68,4 +70,23 @@ final notificationPlanServiceProvider =
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return LocalNotificationService();
+});
+
+final notificationReconcilerProvider = Provider<NotificationReconciler>((ref) {
+  return NotificationReconciler(
+    upgradesDao: ref.watch(upgradesDaoProvider),
+    notificationService: ref.watch(notificationServiceProvider),
+    planService: ref.watch(notificationPlanServiceProvider),
+    preferencesDao: ref.watch(notificationPreferencesDaoProvider),
+    villagesDao: ref.watch(villagesDaoProvider),
+  );
+});
+
+// ---------- Home Screen Widgets ----------
+
+final homeWidgetSyncServiceProvider = Provider<HomeWidgetSyncService>((ref) {
+  return HomeWidgetSyncService(
+    villagesDao: ref.watch(villagesDaoProvider),
+    upgradesDao: ref.watch(upgradesDaoProvider),
+  );
 });

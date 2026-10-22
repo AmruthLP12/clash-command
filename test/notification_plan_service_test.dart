@@ -133,5 +133,42 @@ void main() {
       expect(ids.length, 3); // 1 completion + 2 pre-alerts
       expect(ids.contains(service.completionId(upgradeId)), isTrue);
     });
+
+    test('default idsForUpgrade provides 11 IDs to cancel up to 10 pre-alerts', () {
+      const upgradeId = 'u1';
+      final ids = service.idsForUpgrade(upgradeId);
+      expect(ids.length, 11); // 1 completion + 10 pre-alerts
+    });
+
+    test('60-second test upgrade calculates completion at exactly 60 seconds and builds completion plan', () {
+      final start = DateTime.utc(2026, 10, 22, 10, 0, 0);
+      final completesAt = start.add(const Duration(seconds: 60));
+      final upgrade = Upgrade(
+        id: 'fast-upgrade-1',
+        villageId: 'v1',
+        name: 'Cannon Lv 1',
+        category: UpgradeCategory.defense,
+        startedAtUtc: start,
+        expectedCompletionAtUtc: completesAt,
+        status: UpgradeStatus.active,
+        createdAtUtc: start,
+        updatedAtUtc: start,
+      );
+
+      final testNow = start;
+      final plans = service.buildPlan(
+        upgrade,
+        testNow,
+        villageName: 'War Base',
+      );
+
+      expect(upgrade.expectedCompletionAtUtc.difference(start).inSeconds, 60);
+      expect(plans.length, 1); // 1 completion plan, pre-alerts (minutes) are skipped
+      final compPlan = plans.first;
+      expect(compPlan.type, NotificationPlanType.completion);
+      expect(compPlan.scheduledAtUtc, completesAt);
+      expect(compPlan.title, contains('Cannon Lv 1'));
+      expect(compPlan.body, contains('War Base'));
+    });
   });
 }

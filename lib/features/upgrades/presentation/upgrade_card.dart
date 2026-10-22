@@ -37,11 +37,47 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
   @override
   void initState() {
     super.initState();
-    // Refresh every 30 seconds for countdown display
-    _ticker = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => setState(() => _now = DateTime.now().toUtc()),
-    );
+    _scheduleTick();
+  }
+
+  void _scheduleTick() {
+    _ticker?.cancel();
+    final remaining = widget.upgrade.expectedCompletionAtUtc.difference(_now);
+    if (remaining.inSeconds <= 0) return;
+
+    if (remaining.inSeconds < 300) {
+      // 1-second ticker when strictly less than 5 minutes remain
+      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted) return;
+        final curRemaining =
+            widget.upgrade.expectedCompletionAtUtc.difference(DateTime.now().toUtc());
+        setState(() => _now = DateTime.now().toUtc());
+        if (curRemaining.inSeconds <= 0) {
+          _ticker?.cancel();
+        }
+      });
+    } else {
+      // Periodic check, scheduling next wake-up right at the 300s threshold if within 30s
+      final secondsUntil5Min = remaining.inSeconds - 300;
+      final nextInterval = secondsUntil5Min > 0 && secondsUntil5Min < 30
+          ? Duration(seconds: secondsUntil5Min + 1)
+          : const Duration(seconds: 30);
+      _ticker = Timer(nextInterval, () {
+        if (!mounted) return;
+        setState(() => _now = DateTime.now().toUtc());
+        _scheduleTick();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(UpgradeCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.upgrade.expectedCompletionAtUtc != widget.upgrade.expectedCompletionAtUtc ||
+        oldWidget.upgrade.status != widget.upgrade.status) {
+      _now = DateTime.now().toUtc();
+      _scheduleTick();
+    }
   }
 
   @override
@@ -170,7 +206,9 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    isPastDue ? 'Past due' : formatDuration(remaining),
+                    isPastDue
+                        ? 'Ready to collect'
+                        : formatRemaining(remaining, completedLabel: 'Ready to collect'),
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,

@@ -49,6 +49,7 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
         );
 
     ref.invalidateSelf();
+    await ref.read(homeWidgetSyncServiceProvider).syncWidgets(specificVillageId: id);
   }
 
   Future<void> updateVillage(Village village) async {
@@ -69,6 +70,7 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
         );
 
     ref.invalidateSelf();
+    await ref.read(homeWidgetSyncServiceProvider).syncWidgets(specificVillageId: village.id);
   }
 
   Future<void> archiveVillage(String id) async {
@@ -88,12 +90,14 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
           );
     }
     ref.invalidateSelf();
+    await ref.read(homeWidgetSyncServiceProvider).syncWidgets();
   }
 
   Future<void> deleteVillage(String id) async {
     await ref.read(historyEventsDaoProvider).deleteForVillage(id);
     await ref.read(villagesDaoProvider).deleteVillage(id);
     ref.invalidateSelf();
+    await ref.read(homeWidgetSyncServiceProvider).syncWidgets();
   }
 }
 

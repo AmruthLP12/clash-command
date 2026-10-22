@@ -21,7 +21,8 @@ Clash Command is an Android-first, offline-first Flutter application designed to
 - **Upgrade Tracking & Timing**: Accurate countdown timers computed from absolute UTC timestamps. Supports custom remaining durations, builder slot assignment, and upgrade categories.
 - **Inspect & Edit Upgrades**: Tap any active upgrade to view progress, start time, expected completion, notes, and quick actions (Complete, Edit, Cancel, Delete).
 - **Activity History & Audit Trail**: Full event logging of village modifications and upgrade status transitions stored in local SQLite, filterable by village and event type.
-- **Local Completion Reminders**: Configurable local notifications for upgrade completion and upcoming warnings (60m, 30m, 10m, 5m, 1m) with in-app permission checks.
+- **Native Android Home-Screen Widgets**: Glanceable **Upgrade Overview** and **Builder Status** widgets for your Android home screen displaying active countdowns, progress, and free builder availability.
+- **Local Completion Reminders**: Configurable local notifications for upgrade completion and upcoming warnings (60m, 30m, 10m, 5m, 1m) with in-app permission checks and diagnostic metrics.
 - **Modern Dark UI**: Material 3 dark-themed interface built for tactical focus.
 - **Offline & Private**: All data is stored locally in an embedded SQLite database using Drift. No tracking, no analytics, no external network calls.
 
@@ -33,6 +34,7 @@ Clash Command is an Android-first, offline-first Flutter application designed to
 - **State Management**: [Riverpod](https://riverpod.dev)
 - **Local Persistence**: [Drift](https://drift.simonbinder.eu/) (SQLite) with automated schema migrations
 - **Local Notifications**: `flutter_local_notifications` (Android notification channels & timezone scheduling)
+- **Home Screen Widgets**: Native Android AppWidgets powered by `home_widget`
 - **Design System**: Material 3 Dark Theme with custom branding and adaptive launcher icons
 
 ---

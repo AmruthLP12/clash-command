@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
-import 'package:clash_command/services/notifications/notification_reconciler.dart';
 
 /// Settings screen for managing notifications, permissions, and app preferences.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -17,16 +16,45 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool? _hasPermission;
+  bool? _exactAlarmsAllowed;
+  int _scheduledCount = 0;
+  int _activeUpgradesCount = 0;
+  DateTime? _nextCompletion;
 
   @override
   void initState() {
     super.initState();
     _checkPermission();
+    _loadDiagnostics();
   }
 
   Future<void> _checkPermission() async {
     final granted = await ref.read(notificationServiceProvider).hasPermission();
     if (mounted) setState(() => _hasPermission = granted);
+  }
+
+  Future<void> _loadDiagnostics() async {
+    final notifService = ref.read(notificationServiceProvider);
+    final upgradesDao = ref.read(upgradesDaoProvider);
+    final exactAllowed = await notifService.canScheduleExactAlarms();
+    final count = await notifService.getScheduledCount();
+    final active = await upgradesDao.getAllActive();
+    DateTime? nextComp;
+    if (active.isNotEmpty) {
+      active.sort(
+        (a, b) =>
+            a.expectedCompletionAtUtc.compareTo(b.expectedCompletionAtUtc),
+      );
+      nextComp = active.first.expectedCompletionAtUtc;
+    }
+    if (mounted) {
+      setState(() {
+        _exactAlarmsAllowed = exactAllowed;
+        _scheduledCount = count;
+        _activeUpgradesCount = active.length;
+        _nextCompletion = nextComp;
+      });
+    }
   }
 
   Future<void> _requestPermission() async {
@@ -58,6 +86,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         await ref.read(notificationServiceProvider).requestPermission();
     if (mounted) {
       setState(() => _hasPermission = granted);
+      _loadDiagnostics();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -71,14 +100,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _reconcile() async {
-    final reconciler = NotificationReconciler(
-      upgradesDao: ref.read(upgradesDaoProvider),
-      notificationService: ref.read(notificationServiceProvider),
-      planService: ref.read(notificationPlanServiceProvider),
-      preferencesDao: ref.read(notificationPreferencesDaoProvider),
-      villagesDao: ref.read(villagesDaoProvider),
-    );
-    await reconciler.reconcile();
+    await ref.read(notificationReconcilerProvider).reconcile();
+    await _loadDiagnostics();
   }
 
   @override
@@ -316,6 +339,85 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              // Section: Diagnostics
+              const Text(
+                'NOTIFICATION DIAGNOSTICS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.card,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _DiagnosticRow(
+                        label: 'System Notification Permission',
+                        value: _hasPermission == true
+                            ? 'Granted'
+                            : 'Denied / Not Granted',
+                        isOk: _hasPermission == true,
+                      ),
+                      const Divider(height: 20),
+                      _DiagnosticRow(
+                        label: 'Exact-Alarm Scheduling',
+                        value: _exactAlarmsAllowed == true
+                            ? 'Permitted (Exact to minute)'
+                            : 'Restricted (Delivery delayed by Android Doze)',
+                        isOk: _exactAlarmsAllowed == true,
+                      ),
+                      if (_exactAlarmsAllowed == false) ...[
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.accent,
+                              side: const BorderSide(color: AppColors.accent),
+                            ),
+                            icon: const Icon(Icons.alarm_on, size: 18),
+                            label: const Text('Allow Exact Alarms in System Settings'),
+                            onPressed: () async {
+                              await ref
+                                  .read(notificationServiceProvider)
+                                  .requestExactAlarmsPermission();
+                              await _loadDiagnostics();
+                            },
+                          ),
+                        ),
+                      ],
+                      const Divider(height: 20),
+                      _DiagnosticRow(
+                        label: 'Active Village Upgrades',
+                        value: '$_activeUpgradesCount active',
+                        isOk: true,
+                      ),
+                      const Divider(height: 20),
+                      _DiagnosticRow(
+                        label: 'Alarms Queued in Android',
+                        value: '$_scheduledCount scheduled',
+                        isOk: _scheduledCount > 0 || _activeUpgradesCount == 0,
+                      ),
+                      if (_nextCompletion != null) ...[
+                        const Divider(height: 20),
+                        _DiagnosticRow(
+                          label: 'Next Expected Completion',
+                          value:
+                              '${_nextCompletion!.toLocal().hour.toString().padLeft(2, '0')}:${_nextCompletion!.toLocal().minute.toString().padLeft(2, '0')} (${_nextCompletion!.toLocal().year}-${_nextCompletion!.toLocal().month.toString().padLeft(2, '0')}-${_nextCompletion!.toLocal().day.toString().padLeft(2, '0')})',
+                          isOk: true,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Section: About
               const Text(
                 'ABOUT',
@@ -430,6 +532,45 @@ class _IntervalChip extends StatelessWidget {
       ),
       side: BorderSide.none,
       onSelected: onToggle,
+    );
+  }
+}
+
+class _DiagnosticRow extends StatelessWidget {
+  const _DiagnosticRow({
+    required this.label,
+    required this.value,
+    required this.isOk,
+  });
+
+  final String label;
+  final String value;
+  final bool isOk;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: isOk ? AppColors.textPrimary : AppColors.pastDue,
+          ),
+        ),
+      ],
     );
   }
 }

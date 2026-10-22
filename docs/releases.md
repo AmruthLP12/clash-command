@@ -195,3 +195,31 @@ When creating a release (e.g. GitHub Release, internal distribution email, or te
 - **SHA-256 Checksum**: `[computed sha256 checksum]`
 ```
 
+---
+
+## 8. Android Home-Screen Widgets Guide
+
+Clash Command includes two native Android App Widgets:
+
+### Widget A: Upgrade Overview (`UpgradeOverviewWidgetProvider`)
+- **Display**: Clash Command crest, village name, active upgrades badge count, nearest upcoming upgrade (name, category, remaining duration), and visual progress bar.
+- **Sizes**: 3x2 default, resizable down to 2x1 and up to 4x3.
+- **Tap Action**: Opens Clash Command directly to inspect upgrades.
+
+### Widget B: Builder Status (`BuilderStatusWidgetProvider`)
+- **Display**: Village name, free builder count (green badge), busy builder count (gold badge), total builders, and compact builder occupancy summary (e.g. `🔨 Cannon Lv 14 (3h 12m)`).
+- **Sizes**: 3x2 default, resizable down to 2x1 and up to 4x3.
+- **Tap Action**: Opens Clash Command directly to manage builders and upgrades.
+
+### How to Add Widgets to Android Home Screen:
+1. Long-press on an empty space on your Android home screen.
+2. Tap **Widgets** in the launcher popup menu.
+3. Scroll down or search for **Clash Command**.
+4. Touch and hold **Upgrade Overview** or **Builder Status**, then drag it to your desired location.
+5. Resize the widget using the corner handles as desired.
+
+### Widget Synchronization:
+- Widgets do not run battery-draining continuous background timers.
+- Instead, data snapshots are synchronized automatically via `HomeWidgetSyncService` on every app launch, village switch, upgrade creation, timer edit, completion, and cancellation.
+
+

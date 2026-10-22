@@ -27,6 +27,21 @@ class UpgradesDao extends DatabaseAccessor<AppDatabase>
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
+  /// Gets active upgrades for a given village, ordered by soonest first.
+  Future<List<Upgrade>> getActiveForVillage(String villageId) async {
+    final rows = await (select(upgrades)
+          ..where(
+            (u) =>
+                u.villageId.equals(villageId) &
+                u.status.equals(UpgradeStatus.active.name),
+          )
+          ..orderBy([
+            (u) => OrderingTerm.asc(u.expectedCompletionAtUtc),
+          ]))
+        .get();
+    return rows.map((r) => r.toDomain()).toList();
+  }
+
   /// Watches all active upgrades across all villages.
   Stream<List<Upgrade>> watchAllActive() {
     return (select(upgrades)

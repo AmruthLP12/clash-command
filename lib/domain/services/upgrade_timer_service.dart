@@ -1,3 +1,4 @@
+import '../../core/formatting/duration_format.dart' as formatting;
 import '../models/upgrade.dart';
 import '../models/upgrade_status.dart';
 
@@ -60,5 +61,17 @@ class UpgradeTimerService {
   Duration elapsedTime(DateTime now, Upgrade upgrade) {
     final elapsed = now.difference(upgrade.startedAtUtc);
     return elapsed.isNegative ? Duration.zero : elapsed;
+  }
+
+  /// Formats the remaining time for display.
+  /// When < 300s, shows 'MM:SS'. When <= 0, returns [completedLabel].
+  String formatRemaining(
+    Duration remaining, {
+    String completedLabel = 'Completed',
+  }) {
+    return formatting.formatRemaining(
+      remaining,
+      completedLabel: completedLabel,
+    );
   }
 }

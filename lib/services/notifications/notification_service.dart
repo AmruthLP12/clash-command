@@ -18,7 +18,7 @@ abstract class NotificationService {
   Future<void> schedulePlans(List<NotificationPlan> plans);
 
   /// Cancels all notifications for a given upgrade ID.
-  Future<void> cancelForUpgrade(String upgradeId, {int maxPreAlerts = 4});
+  Future<void> cancelForUpgrade(String upgradeId, {int maxPreAlerts = 10});
 
   /// Reconcile the scheduled notifications against the [activeUpgradeIds] list.
   /// Cancels stale entries and schedules any missing ones.
@@ -29,4 +29,13 @@ abstract class NotificationService {
 
   /// Shows an immediate test notification to verify delivery on device.
   Future<void> showTestNotification();
+
+  /// Returns true if exact alarm scheduling is allowed by Android.
+  Future<bool> canScheduleExactAlarms();
+
+  /// Prompts the user or navigates to Android system settings to grant exact alarm scheduling permission.
+  Future<bool> requestExactAlarmsPermission();
+
+  /// Returns the current number of scheduled notification requests in the system.
+  Future<int> getScheduledCount();
 }

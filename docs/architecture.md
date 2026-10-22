@@ -338,6 +338,13 @@ not include unnecessary personal data.
 -   Avoid destructive migration strategies unless explicitly approved
     for a disposable development database.
 
+## 11. Android home-screen widget architecture
+
+Native Android home-screen widgets are implemented using `home_widget` (AppWidgetProvider):
+- **Upgrade Overview Widget (`UpgradeOverviewWidgetProvider`)**: Shows selected village name, active upgrades badge count, nearest upcoming upgrade name/category, remaining duration/countdown, and visual progress bar.
+- **Builder Status Widget (`BuilderStatusWidgetProvider`)**: Shows selected village, total/available/busy builder stats, and active builder occupancy summary.
+- **Data Synchronization (`HomeWidgetSyncService`)**: Maintains a lightweight read-only snapshot in SharedPreferences updated on upgrade state changes, village switches, and app startup. Does not execute battery-draining continuous background loops.
+
 ## 12. Testing strategy
 
 ### Unit tests

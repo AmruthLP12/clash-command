@@ -19,6 +19,34 @@ String formatDuration(Duration duration) {
   return parts.join(' ');
 }
 
+/// Formats remaining duration until completion.
+///
+/// Behavior:
+/// - If duration <= Duration.zero, returns [completedLabel] (defaults to 'Completed').
+/// - If strictly less than 300 seconds (5 minutes), returns 'MM:SS' live countdown format (e.g. '04:59', '02:37', '00:45', '00:09').
+/// - If 300 seconds (5 minutes) or greater, delegates to standard [formatDuration] (e.g. '5m', '2h 15m').
+String formatRemaining(
+  Duration duration, {
+  String completedLabel = 'Completed',
+}) {
+  if (duration <= Duration.zero) {
+    return completedLabel;
+  }
+
+  final totalSeconds = duration.inSeconds;
+
+  // Strictly less than 5 minutes (300 seconds)
+  if (totalSeconds < 300) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    final mm = minutes.toString().padLeft(2, '0');
+    final ss = seconds.toString().padLeft(2, '0');
+    return '$mm:$ss';
+  }
+
+  return formatDuration(duration);
+}
+
 /// Formats a [Duration] using days/hours/minutes with no shortening.
 String formatDurationVerbose(Duration duration) {
   if (duration <= Duration.zero) return '0 minutes';
