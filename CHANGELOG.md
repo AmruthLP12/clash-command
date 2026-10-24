@@ -4,29 +4,6 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.3] - 2026-10-24
-
-### Changed & Improved
-- **Dashboard Screen UI/UX Hierarchy**:
-  - Replaced cluttered card layout with a clean hierarchy: Top-level Village Realm Switcher (`Home Village` vs `Builder Base`), icon-based Category Selector, and category-filtered upgrade list.
-  - Eliminated dropdown for primary category selection in favor of dedicated, high-contrast icon buttons with active upgrade counts.
-  - Upgrades are strictly filtered to the selected category, eliminating screen clutter and visual density.
-  - Converted the village profile switcher to a compact AppBar dropdown when multiple villages exist.
-  - Replaced heavy summary cards with a sleek, lightweight capacity banner and expandable accordion for village notes.
-- **Add Upgrade Form & Zero-Lag Search Optimization**:
-  - Pre-indexed the local 1,000+ item catalogue into an $O(1)$ category cache, eliminating search latency and memory allocations on keystrokes.
-  - Resolved `FocusNode` rebuild bug that caused focus loss, IME composing glitches, and keyboard stutter.
-  - Replaced category dropdown in the form with clear icon-based controls matching the dashboard's village and facility selectors.
-- **Simplified Single Destination Level Input**:
-  - Replaced the confusing two-field From Level / To Level input with a single optional field labelled **Upgrade to level** (e.g. `68`).
-  - Fixed the multi-digit text input issue, ensuring values like `67`, `68`, and `100` are completely preserved without truncation or digit loss.
-  - Validates positive integers with catalogue-verified limits while preserving freedom for custom upgrade levels.
-  - Standardized compact display across cards, details, and activity logs as `Archer Tower → Lv. 68`.
-- **RenderFlex Overflow & Small Screen Responsiveness**:
-  - Bound bottom sheets with `SafeArea`, max-height constraints, and keyboard `viewInsets` padding so the form scrolls smoothly on small screens.
-  - Constrained autocomplete options menu height (`maxHeight: 180`) to prevent keyboard collision and layout overflow.
-  - Made upgrade card text and timer columns responsive with text truncation and wrapping to eliminate horizontal overflows on narrow screens.
-
 ## [1.0.2] - 2026-10-23
 
 ### Added

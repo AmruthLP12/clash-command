@@ -67,7 +67,7 @@ void main() {
       expect(loaded!.name, 'Archer Tower');
       expect(loaded.fromLevel, 18);
       expect(loaded.toLevel, 19);
-      expect(loaded.displayNameWithLevel, 'Archer Tower → Lv. 19');
+      expect(loaded.displayNameWithLevel, 'Archer Tower · Lv. 18 → 19');
     });
 
     test('persists upgrade with omitted level fields', () async {
@@ -118,7 +118,7 @@ void main() {
       final loaded = await upgradesDao.findById('up-3');
       expect(loaded!.fromLevel, 15);
       expect(loaded.toLevel, 16);
-      expect(loaded.displayNameWithLevel, 'Cannon → Lv. 16');
+      expect(loaded.displayNameWithLevel, 'Cannon · Lv. 15 → 16');
     });
   });
 

@@ -948,34 +948,13 @@ class UpgradeCatalog {
   static UpgradeCatalogItem? find(String name, UpgradeCategory category) {
     final clean = name.trim().toLowerCase();
     final prim = category.primaryCategory;
-    final items = _categoryCache[prim] ?? const [];
-    for (final item in items) {
-      if (item.name.toLowerCase() == clean) {
+    for (final item in builtInItems) {
+      if (item.category == prim && item.name.toLowerCase() == clean) {
         return item;
       }
     }
     return null;
   }
-
-  /// Pre-indexed category cache to eliminate search latency and repeated full-list scans.
-  static final Map<UpgradeCategory, List<UpgradeCatalogItem>> _categoryCache = () {
-    final map = <UpgradeCategory, List<UpgradeCatalogItem>>{};
-    for (final cat in UpgradeCategory.primaryCategories) {
-      map[cat] = builtInItems
-          .where((item) => item.category == cat)
-          .toList(growable: false);
-    }
-    return map;
-  }();
-
-  static final Map<UpgradeCategory, Set<String>> _categoryLowerNamesCache = () {
-    final map = <UpgradeCategory, Set<String>>{};
-    for (final entry in _categoryCache.entries) {
-      map[entry.key] =
-          entry.value.map((e) => e.name.toLowerCase()).toSet();
-    }
-    return map;
-  }();
 
   /// Searches and prioritizes suggestions for the given query, category, and village context.
   ///
@@ -993,10 +972,14 @@ class UpgradeCatalog {
     final cleanQuery = query.trim().toLowerCase();
     final targetCategory = category.primaryCategory;
 
-    // 1. Retrieve pre-indexed items for this specific primary category (O(1))
-    final categoryItems = _categoryCache[targetCategory] ?? const [];
+    // 1. Filter built-in items for this specific primary category
+    final categoryItems = builtInItems
+        .where((item) => item.category == targetCategory)
+        .toList();
+
+    // 2. Append custom user suggestions
     final builtInLowerNames =
-        _categoryLowerNamesCache[targetCategory] ?? const {};
+        categoryItems.map((e) => e.name.toLowerCase()).toSet();
     final customItems = <UpgradeCatalogItem>[];
 
     for (final customName in customNames) {
