@@ -21,17 +21,17 @@ Clash Command follows [Semantic Versioning 2.0.0](https://semver.org/) combined 
 MAJOR.MINOR.PATCH+BUILD
 ```
 
-Example: `1.0.2+3`
+Example: `1.0.4+5`
 - **`MAJOR` (`1`)**: Incremented when incompatible changes are introduced (e.g., breaking database schema migrations that cannot be auto-migrated).
 - **`MINOR` (`0` -> `1`)**: Incremented when new user-facing functionality or screens are added backwards-compatibly (e.g., dedicated Settings screen, Activity History log, full village editing).
-- **`PATCH` (`2`)**: Incremented for backwards-compatible bug fixes, UI polish, branding refinements, or performance optimizations.
-- **`BUILD` (`3`)**: A strictly monotonically increasing integer (`versionCode` on Android). Every single distributed APK or App Bundle build must have a strictly higher build number than the previous build.
+- **`PATCH` (`4`)**: Incremented for backwards-compatible bug fixes, UI polish, branding refinements, or performance optimizations.
+- **`BUILD` (`5`)**: A strictly monotonically increasing integer (`versionCode` on Android). Every single distributed APK or App Bundle build must have a strictly higher build number than the previous build.
 
 ### Where Versioning is Managed
 
 1. **`pubspec.yaml`**: Primary source of truth.
    ```yaml
-   version: 1.0.2+3
+   version: 1.0.4+5
    ```
 2. **`android/app/build.gradle.kts`**: Automatically reads `versionCode` and `versionName` from Flutter tooling based on `pubspec.yaml`.
 3. **`lib/features/settings/presentation/settings_screen.dart`**: In-app About section exposes the current version string (`Version 1.0.2 (Build 3)`) alongside the app logo.

@@ -462,7 +462,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  'Version 1.0.3 (Build 4) • Offline-first Clash of Clans tracker',
+                                  'Version 1.0.4 (Build 5) • Offline-first Clash of Clans tracker',
                                   style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                                 ),
                               ],

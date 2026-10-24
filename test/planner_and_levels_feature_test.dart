@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:clash_command/app/providers.dart';
-import 'package:clash_command/core/ids/id_generator.dart';
 import 'package:clash_command/database/app_database.dart';
 import 'package:clash_command/database/daos/planner_dao.dart';
 import 'package:clash_command/database/daos/village_item_levels_dao.dart';
@@ -17,8 +15,6 @@ import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/upgrade_status.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/models/village_item_level.dart';
-import 'package:clash_command/features/levels/presentation/levels_screen.dart';
-import 'package:clash_command/features/planner/presentation/planner_screen.dart';
 import 'package:clash_command/features/upgrades/presentation/upgrade_card.dart';
 
 void main() {

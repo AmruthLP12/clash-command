@@ -4,6 +4,58 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-10-24
+
+### Added
+- **Dedicated Upgrade Planner (`PlannerScreen`)**:
+  - Added full Upgrade Planner accessible directly from the bottom navigation bar (`NavigationBar` index 1).
+  - Users can record planned future upgrades (village, category, name with autocomplete, target level, priority, notes) without starting timers or alerts.
+  - Interactive drag-and-drop reordering with persistent order updates.
+  - Priority management (High, Medium, Low) and "Mark as Next" highlighting.
+  - One-tap "Start Upgrade" button that prefills the active upgrade sheet and marks the planned item as started to prevent duplicate timers.
+- **Village Progress / Current Levels Tracker (`LevelsScreen`)**:
+  - Added dedicated Levels Tracker accessible from the bottom navigation bar (`NavigationBar` index 2).
+  - Strictly scoped to individual village accounts, storing current levels of buildings, troops, and heroes independently without cross-village collisions.
+  - Searchable list with category filtering, quick inline `+` / `-` level increment/decrement controls, and edit/delete actions.
+  - Idempotent integration with active upgrade completion: completing an upgrade automatically updates or creates the current level record without duplicate increments on repeat visits.
+- **Builder Hall Level Support (`builderHallLevel`)**:
+  - Added `builderHallLevel` column to `Villages` table and `Village` domain model.
+  - Selection dropdown (`BH 1` to `BH 10` backed by `BuilderHallConstants`) in `AddVillageSheet`.
+  - Contextual display in the AppBar and village selection badges (`TH18 · BH10`).
+  - Catalogue autocomplete suggestions prioritize items unlockable at or below the village's Builder Hall level.
+- **Drift Database Schema v4 Migration**:
+  - Upgraded schema version to 4 with non-destructive migration adding `builder_hall_level` column to `villages`, `planner_items` table, and `village_item_levels` table with uniqueness constraint on `(village_id, category, item_name)`.
+
+### Changed & Improved
+- **Cleaner Upgrade Cards**:
+  - Suppressed redundant village and category labels (`Home Village — Builder`, `Laboratory`, etc.) from dashboard cards since context is already clear from the top Realm and Category tabs.
+  - Preserved slot keys (`Builder 1`), target level badges, countdown timers, and visible action menus.
+- **Five-Destination Navigation Bar**:
+  - Updated main navigation bar to seamlessly host Dashboard, Planner, Levels, History, and Settings.
+
+## [1.0.3] - 2026-10-24
+
+### Changed & Improved
+- **Dashboard Screen UI/UX Hierarchy**:
+  - Replaced cluttered card layout with a clean hierarchy: Top-level Village Realm Switcher (`Home Village` vs `Builder Base`), icon-based Category Selector, and category-filtered upgrade list.
+  - Eliminated dropdown for primary category selection in favor of dedicated, high-contrast icon buttons with active upgrade counts.
+  - Upgrades are strictly filtered to the selected category, eliminating screen clutter and visual density.
+  - Converted the village profile switcher to a compact AppBar dropdown when multiple villages exist.
+  - Replaced heavy summary cards with a sleek, lightweight capacity banner and expandable accordion for village notes.
+- **Add Upgrade Form & Zero-Lag Search Optimization**:
+  - Pre-indexed the local 1,000+ item catalogue into an $O(1)$ category cache, eliminating search latency and memory allocations on keystrokes.
+  - Resolved `FocusNode` rebuild bug that caused focus loss, IME composing glitches, and keyboard stutter.
+  - Replaced category dropdown in the form with clear icon-based controls matching the dashboard's village and facility selectors.
+- **Simplified Single Destination Level Input**:
+  - Replaced the confusing two-field From Level / To Level input with a single optional field labelled **Upgrade to level** (e.g. `68`).
+  - Fixed the multi-digit text input issue, ensuring values like `67`, `68`, and `100` are completely preserved without truncation or digit loss.
+  - Validates positive integers with catalogue-verified limits while preserving freedom for custom upgrade levels.
+  - Standardized compact display across cards, details, and activity logs as `Archer Tower · Lv. 68`.
+- **RenderFlex Overflow & Small Screen Responsiveness**:
+  - Bound bottom sheets with `SafeArea`, max-height constraints, and keyboard `viewInsets` padding so the form scrolls smoothly on small screens.
+  - Constrained autocomplete options menu height (`maxHeight: 180`) to prevent keyboard collision and layout overflow.
+  - Made upgrade card text and timer columns responsive with text truncation and wrapping to eliminate horizontal overflows on narrow screens.
+
 ## [1.0.2] - 2026-10-23
 
 ### Added

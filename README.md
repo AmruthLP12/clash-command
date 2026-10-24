@@ -61,7 +61,7 @@ Clash Command is an Android-first, offline-first Flutter application designed to
 ├── test/                    # Unit, DAO, service, and widget test suite
 ├── CHANGELOG.md             # Version history adhering to Keep a Changelog
 ├── Makefile                 # Convenient build and run targets
-└── pubspec.yaml             # Dependencies and app metadata (v1.0.2+3)
+└── pubspec.yaml             # Dependencies and app metadata (v1.0.4+5)
 ```
 
 ---
