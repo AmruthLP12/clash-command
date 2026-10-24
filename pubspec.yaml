@@ -2,7 +2,7 @@ name: clash_command
 description: "A personal offline-first Clash of Clans builder tracker."
 publish_to: "none"
 
-version: 1.0.2+3
+version: 1.0.3+4
 
 environment:
   sdk: ^3.13.5

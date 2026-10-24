@@ -13,6 +13,7 @@ import 'package:clash_command/domain/services/upgrade_lifecycle_service.dart';
 import 'package:clash_command/domain/services/upgrade_timer_service.dart';
 import 'package:clash_command/domain/services/village_service.dart';
 import 'package:clash_command/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:clash_command/features/upgrades/presentation/upgrade_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -117,7 +118,8 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('Laboratory'), findsNWidgets(2));
+    expect(find.byType(UpgradeCard), findsOneWidget);
+    expect(find.text('Laboratory'), findsWidgets);
   });
 
   testWidgets('shows Track upgrade FAB when villages exist', (tester) async {

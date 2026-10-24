@@ -188,7 +188,7 @@ void main() {
       expect(upgrade.displayNameWithLevel, 'Army Camp');
     });
 
-    test('formats compact title when both fromLevel and toLevel are supplied', () {
+    test('formats compact title when destination toLevel is supplied', () {
       final upgrade = Upgrade(
         id: 'u2',
         villageId: 'v1',
@@ -202,7 +202,7 @@ void main() {
         createdAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
         updatedAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
       );
-      expect(upgrade.displayNameWithLevel, 'Archer Tower · Lv. 18 → 19');
+      expect(upgrade.displayNameWithLevel, 'Archer Tower → Lv. 19');
     });
 
     test('formats title appropriately when only toLevel is supplied', () {
@@ -218,10 +218,10 @@ void main() {
         createdAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
         updatedAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
       );
-      expect(upgrade.displayNameWithLevel, 'Town Hall · Lv. 18');
+      expect(upgrade.displayNameWithLevel, 'Town Hall → Lv. 18');
     });
 
-    test('formats title appropriately when only fromLevel is supplied', () {
+    test('formats title appropriately when legacy fromLevel is supplied', () {
       final upgrade = Upgrade(
         id: 'u4',
         villageId: 'v1',
@@ -234,7 +234,7 @@ void main() {
         createdAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
         updatedAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
       );
-      expect(upgrade.displayNameWithLevel, 'Cannon · From Lv. 14');
+      expect(upgrade.displayNameWithLevel, 'Cannon → Lv. 14');
     });
 
     test('suggests next valid To Level from From Level', () {

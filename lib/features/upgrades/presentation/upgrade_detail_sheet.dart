@@ -179,11 +179,7 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  upgrade.fromLevel != null && upgrade.toLevel != null
-                                      ? 'Lv. ${upgrade.fromLevel} → ${upgrade.toLevel}'
-                                      : (upgrade.toLevel != null
-                                          ? 'Lv. ${upgrade.toLevel}'
-                                          : 'From Lv. ${upgrade.fromLevel}'),
+                                  'Lv. ${upgrade.toLevel ?? upgrade.fromLevel}',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: AppColors.accent,

@@ -45,17 +45,12 @@ class Upgrade {
   final DateTime createdAtUtc;
   final DateTime updatedAtUtc;
 
-  /// Returns a compact representation of the upgrade name with its levels
-  /// when available (e.g. "Archer Tower · Lv. 18 → 19").
+  /// Returns a compact representation of the upgrade name with its destination level
+  /// when available (e.g. "Archer Tower → Lv. 68").
   String get displayNameWithLevel {
-    if (fromLevel != null && toLevel != null) {
-      return '$name · Lv. $fromLevel → $toLevel';
-    }
-    if (toLevel != null) {
-      return '$name · Lv. $toLevel';
-    }
-    if (fromLevel != null) {
-      return '$name · From Lv. $fromLevel';
+    final dest = toLevel ?? fromLevel;
+    if (dest != null) {
+      return '$name → Lv. $dest';
     }
     return name;
   }
