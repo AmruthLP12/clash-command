@@ -7,6 +7,8 @@ import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/services/village_service.dart';
 import 'package:clash_command/features/history/presentation/history_screen.dart';
+import 'package:clash_command/features/levels/presentation/levels_screen.dart';
+import 'package:clash_command/features/planner/presentation/planner_screen.dart';
 import 'package:clash_command/features/settings/presentation/settings_screen.dart';
 import 'package:clash_command/features/upgrades/application/upgrades_notifier.dart';
 import 'package:clash_command/features/upgrades/presentation/add_upgrade_sheet.dart';
@@ -32,12 +34,26 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     if (_navIndex == 1) {
       return Scaffold(
-        body: HistoryScreen(initialVillageId: _selectedVillageId),
+        body: PlannerScreen(initialVillageId: _selectedVillageId),
         bottomNavigationBar: _buildBottomNav(),
       );
     }
 
     if (_navIndex == 2) {
+      return Scaffold(
+        body: LevelsScreen(initialVillageId: _selectedVillageId),
+        bottomNavigationBar: _buildBottomNav(),
+      );
+    }
+
+    if (_navIndex == 3) {
+      return Scaffold(
+        body: HistoryScreen(initialVillageId: _selectedVillageId),
+        bottomNavigationBar: _buildBottomNav(),
+      );
+    }
+
+    if (_navIndex == 4) {
       return Scaffold(
         body: const SettingsScreen(),
         bottomNavigationBar: _buildBottomNav(),
@@ -106,7 +122,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(selectedVillage.name),
-                          if (selectedVillage.townHallLevel != null)
+                          if (_selectedRealm == VillageRealm.homeVillage && selectedVillage.townHallLevel != null)
+                            Text(
+                              'Town Hall ${selectedVillage.townHallLevel}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            )
+                          else if (_selectedRealm == VillageRealm.builderBase && selectedVillage.builderHallLevel != null)
+                            Text(
+                              'Builder Hall ${selectedVillage.builderHallLevel}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            )
+                          else if (selectedVillage.townHallLevel != null)
                             Text(
                               'Town Hall ${selectedVillage.townHallLevel}',
                               style: const TextStyle(
@@ -222,6 +254,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           icon: Icon(Icons.dashboard_outlined),
           selectedIcon: Icon(Icons.dashboard, color: Colors.black),
           label: 'Dashboard',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.event_note_outlined),
+          selectedIcon: Icon(Icons.event_note, color: Colors.black),
+          label: 'Planner',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.format_list_numbered_outlined),
+          selectedIcon: Icon(Icons.format_list_numbered, color: Colors.black),
+          label: 'Levels',
         ),
         NavigationDestination(
           icon: Icon(Icons.history_outlined),
@@ -350,11 +392,19 @@ class _VillageDropdownTitle extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
-                if (selectedVillage.townHallLevel != null)
-                  Text(
-                    'Town Hall ${selectedVillage.townHallLevel}',
-                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                  ),
+                Builder(
+                  builder: (context) {
+                    final levels = [
+                      if (selectedVillage.townHallLevel != null) 'TH ${selectedVillage.townHallLevel}',
+                      if (selectedVillage.builderHallLevel != null) 'BH ${selectedVillage.builderHallLevel}',
+                    ];
+                    if (levels.isEmpty) return const SizedBox.shrink();
+                    return Text(
+                      levels.join(' · '),
+                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -365,6 +415,11 @@ class _VillageDropdownTitle extends StatelessWidget {
       itemBuilder: (context) {
         return villages.map((v) {
           final isCurrent = v.id == selectedId;
+          final badge = [
+            if (v.townHallLevel != null) 'TH${v.townHallLevel}',
+            if (v.builderHallLevel != null) 'BH${v.builderHallLevel}',
+          ].join(' ');
+
           return PopupMenuItem<String>(
             value: v.id,
             child: Row(
@@ -384,9 +439,9 @@ class _VillageDropdownTitle extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (v.townHallLevel != null)
+                if (badge.isNotEmpty)
                   Text(
-                    'TH${v.townHallLevel}',
+                    badge,
                     style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
                   ),
               ],

@@ -4,9 +4,13 @@ import '../database/app_database.dart';
 import '../database/daos/custom_upgrade_suggestions_dao.dart';
 import '../database/daos/history_events_dao.dart';
 import '../database/daos/notification_preferences_dao.dart';
+import '../database/daos/planner_dao.dart';
 import '../database/daos/upgrades_dao.dart';
+import '../database/daos/village_item_levels_dao.dart';
 import '../database/daos/villages_dao.dart';
+import '../domain/models/planner_item.dart';
 import '../domain/models/upgrade_category.dart';
+import '../domain/models/village_item_level.dart';
 import '../domain/services/notification_plan_service.dart';
 import '../domain/services/upgrade_lifecycle_service.dart';
 import '../domain/services/upgrade_timer_service.dart';
@@ -46,6 +50,28 @@ final notificationPreferencesDaoProvider =
 final customUpgradeSuggestionsDaoProvider =
     Provider<CustomUpgradeSuggestionsDao>((ref) {
   return CustomUpgradeSuggestionsDao(ref.watch(appDatabaseProvider));
+});
+
+final plannerDaoProvider = Provider<PlannerDao>((ref) {
+  return PlannerDao(ref.watch(appDatabaseProvider));
+});
+
+final villageItemLevelsDaoProvider = Provider<VillageItemLevelsDao>((ref) {
+  return VillageItemLevelsDao(ref.watch(appDatabaseProvider));
+});
+
+final plannerItemsForVillageProvider =
+    StreamProvider.family<List<PlannerItem>, String>((ref, villageId) {
+  return ref.watch(plannerDaoProvider).watchForVillage(villageId);
+});
+
+final allPlannerItemsProvider = StreamProvider<List<PlannerItem>>((ref) {
+  return ref.watch(plannerDaoProvider).watchAll();
+});
+
+final villageItemLevelsStreamProvider =
+    StreamProvider.family<List<VillageItemLevel>, String>((ref, villageId) {
+  return ref.watch(villageItemLevelsDaoProvider).watchForVillage(villageId);
 });
 
 final customUpgradeSuggestionsStreamProvider =

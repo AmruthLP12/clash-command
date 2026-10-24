@@ -20,6 +20,7 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
   Future<void> createVillage({
     required String name,
     int? townHallLevel,
+    int? builderHallLevel,
     int builderCapacity = 1,
     String? notes,
   }) async {
@@ -29,6 +30,7 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
       id: id,
       name: name.trim(),
       townHallLevel: townHallLevel,
+      builderHallLevel: builderHallLevel,
       builderCapacity: builderCapacity,
       notes: notes?.trim().isEmpty ?? true ? null : notes?.trim(),
       createdAtUtc: now,

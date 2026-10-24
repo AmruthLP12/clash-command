@@ -28,11 +28,17 @@ class AddUpgradeSheet extends ConsumerStatefulWidget {
     required this.village,
     this.upgrade,
     this.initialCategory,
+    this.initialName,
+    this.initialTargetLevel,
+    this.plannerItemId,
   });
 
   final Village village;
   final Upgrade? upgrade;
   final UpgradeCategory? initialCategory;
+  final String? initialName;
+  final int? initialTargetLevel;
+  final String? plannerItemId;
 
   bool get isEditing => upgrade != null;
 
@@ -61,10 +67,12 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
   void initState() {
     super.initState();
     final up = widget.upgrade;
-    _nameController = TextEditingController(text: up?.name ?? '');
+    _nameController = TextEditingController(
+      text: up?.name ?? widget.initialName ?? '',
+    );
     _nameFocusNode = FocusNode();
 
-    final destLevel = up?.toLevel ?? up?.fromLevel;
+    final destLevel = up?.toLevel ?? up?.fromLevel ?? widget.initialTargetLevel;
     _levelController = TextEditingController(
       text: destLevel != null ? '$destLevel' : '',
     );
@@ -201,6 +209,11 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
               notes: notes,
               toLevel: toLevel,
             );
+        if (widget.plannerItemId != null) {
+          await ref
+              .read(plannerDaoProvider)
+              .updateStatus(widget.plannerItemId!, 'started');
+        }
       }
       if (mounted) Navigator.pop(context);
     } finally {
@@ -298,6 +311,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                         query: textEditingValue.text,
                         category: _category,
                         townHallLevel: widget.village.townHallLevel,
+                        builderHallLevel: widget.village.builderHallLevel,
                         customNames: customNames,
                       );
                     },

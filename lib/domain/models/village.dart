@@ -8,6 +8,7 @@ class Village {
     required this.createdAtUtc,
     required this.updatedAtUtc,
     this.townHallLevel,
+    this.builderHallLevel,
     this.builderCapacity = 1,
     this.sortOrder,
     this.isArchived = false,
@@ -17,6 +18,7 @@ class Village {
   final String id;
   final String name;
   final int? townHallLevel;
+  final int? builderHallLevel;
 
   /// Number of active builder/upgrade slots this village can use simultaneously.
   final int builderCapacity;
@@ -31,6 +33,8 @@ class Village {
     String? name,
     int? townHallLevel,
     bool clearTownHallLevel = false,
+    int? builderHallLevel,
+    bool clearBuilderHallLevel = false,
     int? builderCapacity,
     int? sortOrder,
     bool clearSortOrder = false,
@@ -45,6 +49,9 @@ class Village {
       name: name ?? this.name,
       townHallLevel:
           clearTownHallLevel ? null : (townHallLevel ?? this.townHallLevel),
+      builderHallLevel: clearBuilderHallLevel
+          ? null
+          : (builderHallLevel ?? this.builderHallLevel),
       builderCapacity: builderCapacity ?? this.builderCapacity,
       sortOrder: clearSortOrder ? null : (sortOrder ?? this.sortOrder),
       isArchived: isArchived ?? this.isArchived,

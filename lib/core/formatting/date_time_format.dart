@@ -12,6 +12,12 @@ class DateTimeFormat {
         '${local.hour}:${local.minute.toString().padLeft(2, '0')}';
   }
 
+  /// "19/10" style — day/month
+  static String shortDate(DateTime utc) {
+    final local = utc.toLocal();
+    return '${local.day}/${local.month}';
+  }
+
   /// "Oct 19, 14:30" style
   static String mediumDateTime(DateTime utc) {
     final local = utc.toLocal();

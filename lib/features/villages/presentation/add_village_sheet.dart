@@ -24,6 +24,7 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
   late final TextEditingController _notesController;
   late int _builderCapacity;
   late int? _townHallLevel;
+  late int? _builderHallLevel;
   bool _saving = false;
 
   @override
@@ -33,6 +34,7 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
     _notesController = TextEditingController(text: widget.village?.notes ?? '');
     _builderCapacity = widget.village?.builderCapacity ?? 2;
     _townHallLevel = widget.village?.townHallLevel;
+    _builderHallLevel = widget.village?.builderHallLevel;
   }
 
   @override
@@ -56,6 +58,8 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
           name: name,
           townHallLevel: _townHallLevel,
           clearTownHallLevel: _townHallLevel == null,
+          builderHallLevel: _builderHallLevel,
+          clearBuilderHallLevel: _builderHallLevel == null,
           builderCapacity: _builderCapacity,
           notes: notes,
           clearNotes: notes == null,
@@ -65,6 +69,7 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
         await ref.read(villagesNotifierProvider.notifier).createVillage(
               name: name,
               townHallLevel: _townHallLevel,
+              builderHallLevel: _builderHallLevel,
               builderCapacity: _builderCapacity,
               notes: notes,
             );
@@ -118,7 +123,7 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
               DropdownButtonFormField<int?>(
                 initialValue: _townHallLevel,
                 decoration: const InputDecoration(
-                  labelText: 'Town Hall level (optional)',
+                  labelText: 'Town Hall level (Home Village)',
                 ),
                 dropdownColor: AppColors.surfaceVariant,
                 items: [
@@ -131,6 +136,26 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
                   ),
                 ],
                 onChanged: (v) => setState(() => _townHallLevel = v),
+              ),
+              const SizedBox(height: 12),
+
+              // Builder Hall level
+              DropdownButtonFormField<int?>(
+                initialValue: _builderHallLevel,
+                decoration: const InputDecoration(
+                  labelText: 'Builder Hall level (Builder Base)',
+                ),
+                dropdownColor: AppColors.surfaceVariant,
+                items: [
+                  const DropdownMenuItem(value: null, child: Text('Unknown / None')),
+                  ...BuilderHallConstants.availableLevels.map(
+                    (level) => DropdownMenuItem(
+                      value: level,
+                      child: Text('BH $level'),
+                    ),
+                  ),
+                ],
+                onChanged: (v) => setState(() => _builderHallLevel = v),
               ),
               const SizedBox(height: 12),
 

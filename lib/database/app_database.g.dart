@@ -42,6 +42,17 @@ class $VillagesTable extends Villages
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _builderHallLevelMeta = const VerificationMeta(
+    'builderHallLevel',
+  );
+  @override
+  late final GeneratedColumn<int> builderHallLevel = GeneratedColumn<int>(
+    'builder_hall_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _builderCapacityMeta = const VerificationMeta(
     'builderCapacity',
   );
@@ -116,6 +127,7 @@ class $VillagesTable extends Villages
     id,
     name,
     townHallLevel,
+    builderHallLevel,
     builderCapacity,
     sortOrder,
     isArchived,
@@ -154,6 +166,15 @@ class $VillagesTable extends Villages
         townHallLevel.isAcceptableOrUnknown(
           data['town_hall_level']!,
           _townHallLevelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('builder_hall_level')) {
+      context.handle(
+        _builderHallLevelMeta,
+        builderHallLevel.isAcceptableOrUnknown(
+          data['builder_hall_level']!,
+          _builderHallLevelMeta,
         ),
       );
     }
@@ -227,6 +248,10 @@ class $VillagesTable extends Villages
         DriftSqlType.int,
         data['${effectivePrefix}town_hall_level'],
       ),
+      builderHallLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}builder_hall_level'],
+      ),
       builderCapacity: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}builder_capacity'],
@@ -264,6 +289,7 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
   final String id;
   final String name;
   final int? townHallLevel;
+  final int? builderHallLevel;
   final int builderCapacity;
   final int? sortOrder;
   final bool isArchived;
@@ -274,6 +300,7 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
     required this.id,
     required this.name,
     this.townHallLevel,
+    this.builderHallLevel,
     required this.builderCapacity,
     this.sortOrder,
     required this.isArchived,
@@ -288,6 +315,9 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || townHallLevel != null) {
       map['town_hall_level'] = Variable<int>(townHallLevel);
+    }
+    if (!nullToAbsent || builderHallLevel != null) {
+      map['builder_hall_level'] = Variable<int>(builderHallLevel);
     }
     map['builder_capacity'] = Variable<int>(builderCapacity);
     if (!nullToAbsent || sortOrder != null) {
@@ -309,6 +339,9 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
       townHallLevel: townHallLevel == null && nullToAbsent
           ? const Value.absent()
           : Value(townHallLevel),
+      builderHallLevel: builderHallLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(builderHallLevel),
       builderCapacity: Value(builderCapacity),
       sortOrder: sortOrder == null && nullToAbsent
           ? const Value.absent()
@@ -331,6 +364,7 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       townHallLevel: serializer.fromJson<int?>(json['townHallLevel']),
+      builderHallLevel: serializer.fromJson<int?>(json['builderHallLevel']),
       builderCapacity: serializer.fromJson<int>(json['builderCapacity']),
       sortOrder: serializer.fromJson<int?>(json['sortOrder']),
       isArchived: serializer.fromJson<bool>(json['isArchived']),
@@ -346,6 +380,7 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'townHallLevel': serializer.toJson<int?>(townHallLevel),
+      'builderHallLevel': serializer.toJson<int?>(builderHallLevel),
       'builderCapacity': serializer.toJson<int>(builderCapacity),
       'sortOrder': serializer.toJson<int?>(sortOrder),
       'isArchived': serializer.toJson<bool>(isArchived),
@@ -359,6 +394,7 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
     String? id,
     String? name,
     Value<int?> townHallLevel = const Value.absent(),
+    Value<int?> builderHallLevel = const Value.absent(),
     int? builderCapacity,
     Value<int?> sortOrder = const Value.absent(),
     bool? isArchived,
@@ -371,6 +407,9 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
     townHallLevel: townHallLevel.present
         ? townHallLevel.value
         : this.townHallLevel,
+    builderHallLevel: builderHallLevel.present
+        ? builderHallLevel.value
+        : this.builderHallLevel,
     builderCapacity: builderCapacity ?? this.builderCapacity,
     sortOrder: sortOrder.present ? sortOrder.value : this.sortOrder,
     isArchived: isArchived ?? this.isArchived,
@@ -385,6 +424,9 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
       townHallLevel: data.townHallLevel.present
           ? data.townHallLevel.value
           : this.townHallLevel,
+      builderHallLevel: data.builderHallLevel.present
+          ? data.builderHallLevel.value
+          : this.builderHallLevel,
       builderCapacity: data.builderCapacity.present
           ? data.builderCapacity.value
           : this.builderCapacity,
@@ -408,6 +450,7 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('townHallLevel: $townHallLevel, ')
+          ..write('builderHallLevel: $builderHallLevel, ')
           ..write('builderCapacity: $builderCapacity, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('isArchived: $isArchived, ')
@@ -423,6 +466,7 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
     id,
     name,
     townHallLevel,
+    builderHallLevel,
     builderCapacity,
     sortOrder,
     isArchived,
@@ -437,6 +481,7 @@ class VillageRow extends DataClass implements Insertable<VillageRow> {
           other.id == this.id &&
           other.name == this.name &&
           other.townHallLevel == this.townHallLevel &&
+          other.builderHallLevel == this.builderHallLevel &&
           other.builderCapacity == this.builderCapacity &&
           other.sortOrder == this.sortOrder &&
           other.isArchived == this.isArchived &&
@@ -449,6 +494,7 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
   final Value<String> id;
   final Value<String> name;
   final Value<int?> townHallLevel;
+  final Value<int?> builderHallLevel;
   final Value<int> builderCapacity;
   final Value<int?> sortOrder;
   final Value<bool> isArchived;
@@ -460,6 +506,7 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.townHallLevel = const Value.absent(),
+    this.builderHallLevel = const Value.absent(),
     this.builderCapacity = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.isArchived = const Value.absent(),
@@ -472,6 +519,7 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
     required String id,
     required String name,
     this.townHallLevel = const Value.absent(),
+    this.builderHallLevel = const Value.absent(),
     this.builderCapacity = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.isArchived = const Value.absent(),
@@ -487,6 +535,7 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
     Expression<String>? id,
     Expression<String>? name,
     Expression<int>? townHallLevel,
+    Expression<int>? builderHallLevel,
     Expression<int>? builderCapacity,
     Expression<int>? sortOrder,
     Expression<bool>? isArchived,
@@ -499,6 +548,7 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (townHallLevel != null) 'town_hall_level': townHallLevel,
+      if (builderHallLevel != null) 'builder_hall_level': builderHallLevel,
       if (builderCapacity != null) 'builder_capacity': builderCapacity,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (isArchived != null) 'is_archived': isArchived,
@@ -513,6 +563,7 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
     Value<String>? id,
     Value<String>? name,
     Value<int?>? townHallLevel,
+    Value<int?>? builderHallLevel,
     Value<int>? builderCapacity,
     Value<int?>? sortOrder,
     Value<bool>? isArchived,
@@ -525,6 +576,7 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
       id: id ?? this.id,
       name: name ?? this.name,
       townHallLevel: townHallLevel ?? this.townHallLevel,
+      builderHallLevel: builderHallLevel ?? this.builderHallLevel,
       builderCapacity: builderCapacity ?? this.builderCapacity,
       sortOrder: sortOrder ?? this.sortOrder,
       isArchived: isArchived ?? this.isArchived,
@@ -546,6 +598,9 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
     }
     if (townHallLevel.present) {
       map['town_hall_level'] = Variable<int>(townHallLevel.value);
+    }
+    if (builderHallLevel.present) {
+      map['builder_hall_level'] = Variable<int>(builderHallLevel.value);
     }
     if (builderCapacity.present) {
       map['builder_capacity'] = Variable<int>(builderCapacity.value);
@@ -577,6 +632,7 @@ class VillagesCompanion extends UpdateCompanion<VillageRow> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('townHallLevel: $townHallLevel, ')
+          ..write('builderHallLevel: $builderHallLevel, ')
           ..write('builderCapacity: $builderCapacity, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('isArchived: $isArchived, ')
@@ -2912,6 +2968,1159 @@ class CustomUpgradeSuggestionsCompanion
   }
 }
 
+class $PlannerItemsTable extends PlannerItems
+    with TableInfo<$PlannerItemsTable, PlannerItemRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlannerItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _villageIdMeta = const VerificationMeta(
+    'villageId',
+  );
+  @override
+  late final GeneratedColumn<String> villageId = GeneratedColumn<String>(
+    'village_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES villages (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetLevelMeta = const VerificationMeta(
+    'targetLevel',
+  );
+  @override
+  late final GeneratedColumn<int> targetLevel = GeneratedColumn<int>(
+    'target_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<String> priority = GeneratedColumn<String>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Medium'),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('planned'),
+  );
+  static const VerificationMeta _isNextMeta = const VerificationMeta('isNext');
+  @override
+  late final GeneratedColumn<bool> isNext = GeneratedColumn<bool>(
+    'is_next',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_next" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtUtcMeta = const VerificationMeta(
+    'createdAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAtUtc = GeneratedColumn<DateTime>(
+    'created_at_utc',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtUtcMeta = const VerificationMeta(
+    'updatedAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+    'updated_at_utc',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    villageId,
+    category,
+    name,
+    targetLevel,
+    priority,
+    notes,
+    sortOrder,
+    status,
+    isNext,
+    createdAtUtc,
+    updatedAtUtc,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'planner_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlannerItemRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('village_id')) {
+      context.handle(
+        _villageIdMeta,
+        villageId.isAcceptableOrUnknown(data['village_id']!, _villageIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_villageIdMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('target_level')) {
+      context.handle(
+        _targetLevelMeta,
+        targetLevel.isAcceptableOrUnknown(
+          data['target_level']!,
+          _targetLevelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('is_next')) {
+      context.handle(
+        _isNextMeta,
+        isNext.isAcceptableOrUnknown(data['is_next']!, _isNextMeta),
+      );
+    }
+    if (data.containsKey('created_at_utc')) {
+      context.handle(
+        _createdAtUtcMeta,
+        createdAtUtc.isAcceptableOrUnknown(
+          data['created_at_utc']!,
+          _createdAtUtcMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtUtcMeta);
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+        _updatedAtUtcMeta,
+        updatedAtUtc.isAcceptableOrUnknown(
+          data['updated_at_utc']!,
+          _updatedAtUtcMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PlannerItemRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlannerItemRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      villageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}village_id'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      targetLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}target_level'],
+      ),
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}priority'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      isNext: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_next'],
+      )!,
+      createdAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at_utc'],
+      )!,
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at_utc'],
+      )!,
+    );
+  }
+
+  @override
+  $PlannerItemsTable createAlias(String alias) {
+    return $PlannerItemsTable(attachedDatabase, alias);
+  }
+}
+
+class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
+  final String id;
+  final String villageId;
+  final String category;
+  final String name;
+  final int? targetLevel;
+  final String priority;
+  final String? notes;
+  final int sortOrder;
+  final String status;
+  final bool isNext;
+  final DateTime createdAtUtc;
+  final DateTime updatedAtUtc;
+  const PlannerItemRow({
+    required this.id,
+    required this.villageId,
+    required this.category,
+    required this.name,
+    this.targetLevel,
+    required this.priority,
+    this.notes,
+    required this.sortOrder,
+    required this.status,
+    required this.isNext,
+    required this.createdAtUtc,
+    required this.updatedAtUtc,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['village_id'] = Variable<String>(villageId);
+    map['category'] = Variable<String>(category);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || targetLevel != null) {
+      map['target_level'] = Variable<int>(targetLevel);
+    }
+    map['priority'] = Variable<String>(priority);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['sort_order'] = Variable<int>(sortOrder);
+    map['status'] = Variable<String>(status);
+    map['is_next'] = Variable<bool>(isNext);
+    map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    return map;
+  }
+
+  PlannerItemsCompanion toCompanion(bool nullToAbsent) {
+    return PlannerItemsCompanion(
+      id: Value(id),
+      villageId: Value(villageId),
+      category: Value(category),
+      name: Value(name),
+      targetLevel: targetLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetLevel),
+      priority: Value(priority),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      sortOrder: Value(sortOrder),
+      status: Value(status),
+      isNext: Value(isNext),
+      createdAtUtc: Value(createdAtUtc),
+      updatedAtUtc: Value(updatedAtUtc),
+    );
+  }
+
+  factory PlannerItemRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlannerItemRow(
+      id: serializer.fromJson<String>(json['id']),
+      villageId: serializer.fromJson<String>(json['villageId']),
+      category: serializer.fromJson<String>(json['category']),
+      name: serializer.fromJson<String>(json['name']),
+      targetLevel: serializer.fromJson<int?>(json['targetLevel']),
+      priority: serializer.fromJson<String>(json['priority']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      status: serializer.fromJson<String>(json['status']),
+      isNext: serializer.fromJson<bool>(json['isNext']),
+      createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'villageId': serializer.toJson<String>(villageId),
+      'category': serializer.toJson<String>(category),
+      'name': serializer.toJson<String>(name),
+      'targetLevel': serializer.toJson<int?>(targetLevel),
+      'priority': serializer.toJson<String>(priority),
+      'notes': serializer.toJson<String?>(notes),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+      'status': serializer.toJson<String>(status),
+      'isNext': serializer.toJson<bool>(isNext),
+      'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+    };
+  }
+
+  PlannerItemRow copyWith({
+    String? id,
+    String? villageId,
+    String? category,
+    String? name,
+    Value<int?> targetLevel = const Value.absent(),
+    String? priority,
+    Value<String?> notes = const Value.absent(),
+    int? sortOrder,
+    String? status,
+    bool? isNext,
+    DateTime? createdAtUtc,
+    DateTime? updatedAtUtc,
+  }) => PlannerItemRow(
+    id: id ?? this.id,
+    villageId: villageId ?? this.villageId,
+    category: category ?? this.category,
+    name: name ?? this.name,
+    targetLevel: targetLevel.present ? targetLevel.value : this.targetLevel,
+    priority: priority ?? this.priority,
+    notes: notes.present ? notes.value : this.notes,
+    sortOrder: sortOrder ?? this.sortOrder,
+    status: status ?? this.status,
+    isNext: isNext ?? this.isNext,
+    createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+    updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+  );
+  PlannerItemRow copyWithCompanion(PlannerItemsCompanion data) {
+    return PlannerItemRow(
+      id: data.id.present ? data.id.value : this.id,
+      villageId: data.villageId.present ? data.villageId.value : this.villageId,
+      category: data.category.present ? data.category.value : this.category,
+      name: data.name.present ? data.name.value : this.name,
+      targetLevel: data.targetLevel.present
+          ? data.targetLevel.value
+          : this.targetLevel,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      status: data.status.present ? data.status.value : this.status,
+      isNext: data.isNext.present ? data.isNext.value : this.isNext,
+      createdAtUtc: data.createdAtUtc.present
+          ? data.createdAtUtc.value
+          : this.createdAtUtc,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlannerItemRow(')
+          ..write('id: $id, ')
+          ..write('villageId: $villageId, ')
+          ..write('category: $category, ')
+          ..write('name: $name, ')
+          ..write('targetLevel: $targetLevel, ')
+          ..write('priority: $priority, ')
+          ..write('notes: $notes, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('status: $status, ')
+          ..write('isNext: $isNext, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    villageId,
+    category,
+    name,
+    targetLevel,
+    priority,
+    notes,
+    sortOrder,
+    status,
+    isNext,
+    createdAtUtc,
+    updatedAtUtc,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlannerItemRow &&
+          other.id == this.id &&
+          other.villageId == this.villageId &&
+          other.category == this.category &&
+          other.name == this.name &&
+          other.targetLevel == this.targetLevel &&
+          other.priority == this.priority &&
+          other.notes == this.notes &&
+          other.sortOrder == this.sortOrder &&
+          other.status == this.status &&
+          other.isNext == this.isNext &&
+          other.createdAtUtc == this.createdAtUtc &&
+          other.updatedAtUtc == this.updatedAtUtc);
+}
+
+class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
+  final Value<String> id;
+  final Value<String> villageId;
+  final Value<String> category;
+  final Value<String> name;
+  final Value<int?> targetLevel;
+  final Value<String> priority;
+  final Value<String?> notes;
+  final Value<int> sortOrder;
+  final Value<String> status;
+  final Value<bool> isNext;
+  final Value<DateTime> createdAtUtc;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> rowid;
+  const PlannerItemsCompanion({
+    this.id = const Value.absent(),
+    this.villageId = const Value.absent(),
+    this.category = const Value.absent(),
+    this.name = const Value.absent(),
+    this.targetLevel = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.status = const Value.absent(),
+    this.isNext = const Value.absent(),
+    this.createdAtUtc = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlannerItemsCompanion.insert({
+    required String id,
+    required String villageId,
+    required String category,
+    required String name,
+    this.targetLevel = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.status = const Value.absent(),
+    this.isNext = const Value.absent(),
+    required DateTime createdAtUtc,
+    required DateTime updatedAtUtc,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       villageId = Value(villageId),
+       category = Value(category),
+       name = Value(name),
+       createdAtUtc = Value(createdAtUtc),
+       updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<PlannerItemRow> custom({
+    Expression<String>? id,
+    Expression<String>? villageId,
+    Expression<String>? category,
+    Expression<String>? name,
+    Expression<int>? targetLevel,
+    Expression<String>? priority,
+    Expression<String>? notes,
+    Expression<int>? sortOrder,
+    Expression<String>? status,
+    Expression<bool>? isNext,
+    Expression<DateTime>? createdAtUtc,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (villageId != null) 'village_id': villageId,
+      if (category != null) 'category': category,
+      if (name != null) 'name': name,
+      if (targetLevel != null) 'target_level': targetLevel,
+      if (priority != null) 'priority': priority,
+      if (notes != null) 'notes': notes,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (status != null) 'status': status,
+      if (isNext != null) 'is_next': isNext,
+      if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlannerItemsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? villageId,
+    Value<String>? category,
+    Value<String>? name,
+    Value<int?>? targetLevel,
+    Value<String>? priority,
+    Value<String?>? notes,
+    Value<int>? sortOrder,
+    Value<String>? status,
+    Value<bool>? isNext,
+    Value<DateTime>? createdAtUtc,
+    Value<DateTime>? updatedAtUtc,
+    Value<int>? rowid,
+  }) {
+    return PlannerItemsCompanion(
+      id: id ?? this.id,
+      villageId: villageId ?? this.villageId,
+      category: category ?? this.category,
+      name: name ?? this.name,
+      targetLevel: targetLevel ?? this.targetLevel,
+      priority: priority ?? this.priority,
+      notes: notes ?? this.notes,
+      sortOrder: sortOrder ?? this.sortOrder,
+      status: status ?? this.status,
+      isNext: isNext ?? this.isNext,
+      createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (villageId.present) {
+      map['village_id'] = Variable<String>(villageId.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (targetLevel.present) {
+      map['target_level'] = Variable<int>(targetLevel.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<String>(priority.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (isNext.present) {
+      map['is_next'] = Variable<bool>(isNext.value);
+    }
+    if (createdAtUtc.present) {
+      map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlannerItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('villageId: $villageId, ')
+          ..write('category: $category, ')
+          ..write('name: $name, ')
+          ..write('targetLevel: $targetLevel, ')
+          ..write('priority: $priority, ')
+          ..write('notes: $notes, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('status: $status, ')
+          ..write('isNext: $isNext, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $VillageItemLevelsTable extends VillageItemLevels
+    with TableInfo<$VillageItemLevelsTable, VillageItemLevelRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VillageItemLevelsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _villageIdMeta = const VerificationMeta(
+    'villageId',
+  );
+  @override
+  late final GeneratedColumn<String> villageId = GeneratedColumn<String>(
+    'village_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES villages (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _itemNameMeta = const VerificationMeta(
+    'itemName',
+  );
+  @override
+  late final GeneratedColumn<String> itemName = GeneratedColumn<String>(
+    'item_name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _currentLevelMeta = const VerificationMeta(
+    'currentLevel',
+  );
+  @override
+  late final GeneratedColumn<int> currentLevel = GeneratedColumn<int>(
+    'current_level',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtUtcMeta = const VerificationMeta(
+    'updatedAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+    'updated_at_utc',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    villageId,
+    category,
+    itemName,
+    currentLevel,
+    updatedAtUtc,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'village_item_levels';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VillageItemLevelRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('village_id')) {
+      context.handle(
+        _villageIdMeta,
+        villageId.isAcceptableOrUnknown(data['village_id']!, _villageIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_villageIdMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('item_name')) {
+      context.handle(
+        _itemNameMeta,
+        itemName.isAcceptableOrUnknown(data['item_name']!, _itemNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemNameMeta);
+    }
+    if (data.containsKey('current_level')) {
+      context.handle(
+        _currentLevelMeta,
+        currentLevel.isAcceptableOrUnknown(
+          data['current_level']!,
+          _currentLevelMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_currentLevelMeta);
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+        _updatedAtUtcMeta,
+        updatedAtUtc.isAcceptableOrUnknown(
+          data['updated_at_utc']!,
+          _updatedAtUtcMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {villageId, category, itemName},
+  ];
+  @override
+  VillageItemLevelRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VillageItemLevelRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      villageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}village_id'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      itemName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_name'],
+      )!,
+      currentLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_level'],
+      )!,
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at_utc'],
+      )!,
+    );
+  }
+
+  @override
+  $VillageItemLevelsTable createAlias(String alias) {
+    return $VillageItemLevelsTable(attachedDatabase, alias);
+  }
+}
+
+class VillageItemLevelRow extends DataClass
+    implements Insertable<VillageItemLevelRow> {
+  final String id;
+  final String villageId;
+  final String category;
+  final String itemName;
+  final int currentLevel;
+  final DateTime updatedAtUtc;
+  const VillageItemLevelRow({
+    required this.id,
+    required this.villageId,
+    required this.category,
+    required this.itemName,
+    required this.currentLevel,
+    required this.updatedAtUtc,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['village_id'] = Variable<String>(villageId);
+    map['category'] = Variable<String>(category);
+    map['item_name'] = Variable<String>(itemName);
+    map['current_level'] = Variable<int>(currentLevel);
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    return map;
+  }
+
+  VillageItemLevelsCompanion toCompanion(bool nullToAbsent) {
+    return VillageItemLevelsCompanion(
+      id: Value(id),
+      villageId: Value(villageId),
+      category: Value(category),
+      itemName: Value(itemName),
+      currentLevel: Value(currentLevel),
+      updatedAtUtc: Value(updatedAtUtc),
+    );
+  }
+
+  factory VillageItemLevelRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VillageItemLevelRow(
+      id: serializer.fromJson<String>(json['id']),
+      villageId: serializer.fromJson<String>(json['villageId']),
+      category: serializer.fromJson<String>(json['category']),
+      itemName: serializer.fromJson<String>(json['itemName']),
+      currentLevel: serializer.fromJson<int>(json['currentLevel']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'villageId': serializer.toJson<String>(villageId),
+      'category': serializer.toJson<String>(category),
+      'itemName': serializer.toJson<String>(itemName),
+      'currentLevel': serializer.toJson<int>(currentLevel),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+    };
+  }
+
+  VillageItemLevelRow copyWith({
+    String? id,
+    String? villageId,
+    String? category,
+    String? itemName,
+    int? currentLevel,
+    DateTime? updatedAtUtc,
+  }) => VillageItemLevelRow(
+    id: id ?? this.id,
+    villageId: villageId ?? this.villageId,
+    category: category ?? this.category,
+    itemName: itemName ?? this.itemName,
+    currentLevel: currentLevel ?? this.currentLevel,
+    updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+  );
+  VillageItemLevelRow copyWithCompanion(VillageItemLevelsCompanion data) {
+    return VillageItemLevelRow(
+      id: data.id.present ? data.id.value : this.id,
+      villageId: data.villageId.present ? data.villageId.value : this.villageId,
+      category: data.category.present ? data.category.value : this.category,
+      itemName: data.itemName.present ? data.itemName.value : this.itemName,
+      currentLevel: data.currentLevel.present
+          ? data.currentLevel.value
+          : this.currentLevel,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VillageItemLevelRow(')
+          ..write('id: $id, ')
+          ..write('villageId: $villageId, ')
+          ..write('category: $category, ')
+          ..write('itemName: $itemName, ')
+          ..write('currentLevel: $currentLevel, ')
+          ..write('updatedAtUtc: $updatedAtUtc')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    villageId,
+    category,
+    itemName,
+    currentLevel,
+    updatedAtUtc,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VillageItemLevelRow &&
+          other.id == this.id &&
+          other.villageId == this.villageId &&
+          other.category == this.category &&
+          other.itemName == this.itemName &&
+          other.currentLevel == this.currentLevel &&
+          other.updatedAtUtc == this.updatedAtUtc);
+}
+
+class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
+  final Value<String> id;
+  final Value<String> villageId;
+  final Value<String> category;
+  final Value<String> itemName;
+  final Value<int> currentLevel;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> rowid;
+  const VillageItemLevelsCompanion({
+    this.id = const Value.absent(),
+    this.villageId = const Value.absent(),
+    this.category = const Value.absent(),
+    this.itemName = const Value.absent(),
+    this.currentLevel = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  VillageItemLevelsCompanion.insert({
+    required String id,
+    required String villageId,
+    required String category,
+    required String itemName,
+    required int currentLevel,
+    required DateTime updatedAtUtc,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       villageId = Value(villageId),
+       category = Value(category),
+       itemName = Value(itemName),
+       currentLevel = Value(currentLevel),
+       updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<VillageItemLevelRow> custom({
+    Expression<String>? id,
+    Expression<String>? villageId,
+    Expression<String>? category,
+    Expression<String>? itemName,
+    Expression<int>? currentLevel,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (villageId != null) 'village_id': villageId,
+      if (category != null) 'category': category,
+      if (itemName != null) 'item_name': itemName,
+      if (currentLevel != null) 'current_level': currentLevel,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  VillageItemLevelsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? villageId,
+    Value<String>? category,
+    Value<String>? itemName,
+    Value<int>? currentLevel,
+    Value<DateTime>? updatedAtUtc,
+    Value<int>? rowid,
+  }) {
+    return VillageItemLevelsCompanion(
+      id: id ?? this.id,
+      villageId: villageId ?? this.villageId,
+      category: category ?? this.category,
+      itemName: itemName ?? this.itemName,
+      currentLevel: currentLevel ?? this.currentLevel,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (villageId.present) {
+      map['village_id'] = Variable<String>(villageId.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (itemName.present) {
+      map['item_name'] = Variable<String>(itemName.value);
+    }
+    if (currentLevel.present) {
+      map['current_level'] = Variable<int>(currentLevel.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VillageItemLevelsCompanion(')
+          ..write('id: $id, ')
+          ..write('villageId: $villageId, ')
+          ..write('category: $category, ')
+          ..write('itemName: $itemName, ')
+          ..write('currentLevel: $currentLevel, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2922,6 +4131,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HistoryEventsTable historyEvents = $HistoryEventsTable(this);
   late final $CustomUpgradeSuggestionsTable customUpgradeSuggestions =
       $CustomUpgradeSuggestionsTable(this);
+  late final $PlannerItemsTable plannerItems = $PlannerItemsTable(this);
+  late final $VillageItemLevelsTable villageItemLevels =
+      $VillageItemLevelsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2932,6 +4144,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     notificationPreferences,
     historyEvents,
     customUpgradeSuggestions,
+    plannerItems,
+    villageItemLevels,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2942,6 +4156,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('upgrades', kind: UpdateKind.delete)],
     ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'villages',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('planner_items', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'villages',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('village_item_levels', kind: UpdateKind.delete)],
+    ),
   ]);
 }
 
@@ -2949,6 +4177,7 @@ typedef $$VillagesTableCreateCompanionBuilder = VillagesCompanion Function({
   required String id,
   required String name,
   Value<int?> townHallLevel,
+  Value<int?> builderHallLevel,
   Value<int> builderCapacity,
   Value<int?> sortOrder,
   Value<bool> isArchived,
@@ -2961,6 +4190,7 @@ typedef $$VillagesTableUpdateCompanionBuilder = VillagesCompanion Function({
   Value<String> id,
   Value<String> name,
   Value<int?> townHallLevel,
+  Value<int?> builderHallLevel,
   Value<int> builderCapacity,
   Value<int?> sortOrder,
   Value<bool> isArchived,
@@ -2991,6 +4221,45 @@ final class $$VillagesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$PlannerItemsTable, List<PlannerItemRow>>
+  _plannerItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.plannerItems,
+    aliasName: 'villages__id__planner_items__village_id',
+  );
+
+  $$PlannerItemsTableProcessedTableManager get plannerItemsRefs {
+    final manager = $$PlannerItemsTableTableManager(
+      $_db,
+      $_db.plannerItems,
+    ).filter((f) => f.villageId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_plannerItemsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$VillageItemLevelsTable, List<VillageItemLevelRow>>
+  _villageItemLevelsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.villageItemLevels,
+        aliasName: 'villages__id__village_item_levels__village_id',
+      );
+
+  $$VillageItemLevelsTableProcessedTableManager get villageItemLevelsRefs {
+    final manager = $$VillageItemLevelsTableTableManager(
+      $_db,
+      $_db.villageItemLevels,
+    ).filter((f) => f.villageId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _villageItemLevelsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$VillagesTableFilterComposer
@@ -3014,6 +4283,11 @@ class $$VillagesTableFilterComposer
 
   ColumnFilters<int> get townHallLevel => $composableBuilder(
     column: $table.townHallLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get builderHallLevel => $composableBuilder(
+    column: $table.builderHallLevel,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3071,6 +4345,56 @@ class $$VillagesTableFilterComposer
     );
     return f(composer);
   }
+
+  Expression<bool> plannerItemsRefs(
+    Expression<bool> Function($$PlannerItemsTableFilterComposer f) f,
+  ) {
+    final $$PlannerItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.plannerItems,
+      getReferencedColumn: (t) => t.villageId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlannerItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.plannerItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> villageItemLevelsRefs(
+    Expression<bool> Function($$VillageItemLevelsTableFilterComposer f) f,
+  ) {
+    final $$VillageItemLevelsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.villageItemLevels,
+      getReferencedColumn: (t) => t.villageId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillageItemLevelsTableFilterComposer(
+            $db: $db,
+            $table: $db.villageItemLevels,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$VillagesTableOrderingComposer
@@ -3094,6 +4418,11 @@ class $$VillagesTableOrderingComposer
 
   ColumnOrderings<int> get townHallLevel => $composableBuilder(
     column: $table.townHallLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get builderHallLevel => $composableBuilder(
+    column: $table.builderHallLevel,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3148,6 +4477,11 @@ class $$VillagesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get builderHallLevel => $composableBuilder(
+    column: $table.builderHallLevel,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get builderCapacity => $composableBuilder(
     column: $table.builderCapacity,
     builder: (column) => column,
@@ -3198,6 +4532,57 @@ class $$VillagesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> plannerItemsRefs<T extends Object>(
+    Expression<T> Function($$PlannerItemsTableAnnotationComposer a) f,
+  ) {
+    final $$PlannerItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.plannerItems,
+      getReferencedColumn: (t) => t.villageId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlannerItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.plannerItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> villageItemLevelsRefs<T extends Object>(
+    Expression<T> Function($$VillageItemLevelsTableAnnotationComposer a) f,
+  ) {
+    final $$VillageItemLevelsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.villageItemLevels,
+          getReferencedColumn: (t) => t.villageId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$VillageItemLevelsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.villageItemLevels,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$VillagesTableTableManager
@@ -3213,7 +4598,11 @@ class $$VillagesTableTableManager
           $$VillagesTableUpdateCompanionBuilder,
           (VillageRow, $$VillagesTableReferences),
           VillageRow,
-          PrefetchHooks Function({bool upgradesRefs})
+          PrefetchHooks Function({
+            bool upgradesRefs,
+            bool plannerItemsRefs,
+            bool villageItemLevelsRefs,
+          })
         > {
   $$VillagesTableTableManager(_$AppDatabase db, $VillagesTable table)
     : super(
@@ -3231,6 +4620,7 @@ class $$VillagesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int?> townHallLevel = const Value.absent(),
+                Value<int?> builderHallLevel = const Value.absent(),
                 Value<int> builderCapacity = const Value.absent(),
                 Value<int?> sortOrder = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
@@ -3242,6 +4632,7 @@ class $$VillagesTableTableManager
                 id: id,
                 name: name,
                 townHallLevel: townHallLevel,
+                builderHallLevel: builderHallLevel,
                 builderCapacity: builderCapacity,
                 sortOrder: sortOrder,
                 isArchived: isArchived,
@@ -3255,6 +4646,7 @@ class $$VillagesTableTableManager
                 required String id,
                 required String name,
                 Value<int?> townHallLevel = const Value.absent(),
+                Value<int?> builderHallLevel = const Value.absent(),
                 Value<int> builderCapacity = const Value.absent(),
                 Value<int?> sortOrder = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
@@ -3266,6 +4658,7 @@ class $$VillagesTableTableManager
                 id: id,
                 name: name,
                 townHallLevel: townHallLevel,
+                builderHallLevel: builderHallLevel,
                 builderCapacity: builderCapacity,
                 sortOrder: sortOrder,
                 isArchived: isArchived,
@@ -3282,32 +4675,89 @@ class $$VillagesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({upgradesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (upgradesRefs) db.upgrades],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (upgradesRefs)
-                    await $_getPrefetchedData<
-                      VillageRow,
-                      $VillagesTable,
-                      UpgradeRow
-                    >(
-                      currentTable: table,
-                      referencedTable: $$VillagesTableReferences
-                          ._upgradesRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$VillagesTableReferences(db, table, p0).upgradesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.villageId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({
+                upgradesRefs = false,
+                plannerItemsRefs = false,
+                villageItemLevelsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (upgradesRefs) db.upgrades,
+                    if (plannerItemsRefs) db.plannerItems,
+                    if (villageItemLevelsRefs) db.villageItemLevels,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (upgradesRefs)
+                        await $_getPrefetchedData<
+                          VillageRow,
+                          $VillagesTable,
+                          UpgradeRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$VillagesTableReferences
+                              ._upgradesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$VillagesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).upgradesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.villageId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (plannerItemsRefs)
+                        await $_getPrefetchedData<
+                          VillageRow,
+                          $VillagesTable,
+                          PlannerItemRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$VillagesTableReferences
+                              ._plannerItemsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$VillagesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).plannerItemsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.villageId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (villageItemLevelsRefs)
+                        await $_getPrefetchedData<
+                          VillageRow,
+                          $VillagesTable,
+                          VillageItemLevelRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$VillagesTableReferences
+                              ._villageItemLevelsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$VillagesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).villageItemLevelsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.villageId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -3324,7 +4774,11 @@ typedef $$VillagesTableProcessedTableManager =
       $$VillagesTableUpdateCompanionBuilder,
       (VillageRow, $$VillagesTableReferences),
       VillageRow,
-      PrefetchHooks Function({bool upgradesRefs})
+      PrefetchHooks Function({
+        bool upgradesRefs,
+        bool plannerItemsRefs,
+        bool villageItemLevelsRefs,
+      })
     >;
 typedef $$UpgradesTableCreateCompanionBuilder = UpgradesCompanion Function({
   required String id,
@@ -4625,6 +6079,814 @@ typedef $$CustomUpgradeSuggestionsTableProcessedTableManager =
       CustomUpgradeSuggestionRow,
       PrefetchHooks Function()
     >;
+typedef $$PlannerItemsTableCreateCompanionBuilder =
+    PlannerItemsCompanion Function({
+      required String id,
+      required String villageId,
+      required String category,
+      required String name,
+      Value<int?> targetLevel,
+      Value<String> priority,
+      Value<String?> notes,
+      Value<int> sortOrder,
+      Value<String> status,
+      Value<bool> isNext,
+      required DateTime createdAtUtc,
+      required DateTime updatedAtUtc,
+      Value<int> rowid,
+    });
+typedef $$PlannerItemsTableUpdateCompanionBuilder =
+    PlannerItemsCompanion Function({
+      Value<String> id,
+      Value<String> villageId,
+      Value<String> category,
+      Value<String> name,
+      Value<int?> targetLevel,
+      Value<String> priority,
+      Value<String?> notes,
+      Value<int> sortOrder,
+      Value<String> status,
+      Value<bool> isNext,
+      Value<DateTime> createdAtUtc,
+      Value<DateTime> updatedAtUtc,
+      Value<int> rowid,
+    });
+
+final class $$PlannerItemsTableReferences
+    extends BaseReferences<_$AppDatabase, $PlannerItemsTable, PlannerItemRow> {
+  $$PlannerItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $VillagesTable _villageIdTable(_$AppDatabase db) =>
+      db.villages.createAlias('planner_items__village_id__villages__id');
+
+  $$VillagesTableProcessedTableManager get villageId {
+    final $_column = $_itemColumn<String>('village_id')!;
+
+    final manager = $$VillagesTableTableManager(
+      $_db,
+      $_db.villages,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_villageIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PlannerItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $PlannerItemsTable> {
+  $$PlannerItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get targetLevel => $composableBuilder(
+    column: $table.targetLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isNext => $composableBuilder(
+    column: $table.isNext,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$VillagesTableFilterComposer get villageId {
+    final $$VillagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableFilterComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlannerItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PlannerItemsTable> {
+  $$PlannerItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get targetLevel => $composableBuilder(
+    column: $table.targetLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isNext => $composableBuilder(
+    column: $table.isNext,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$VillagesTableOrderingComposer get villageId {
+    final $$VillagesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableOrderingComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlannerItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PlannerItemsTable> {
+  $$PlannerItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get targetLevel => $composableBuilder(
+    column: $table.targetLevel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<bool> get isNext =>
+      $composableBuilder(column: $table.isNext, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => column,
+  );
+
+  $$VillagesTableAnnotationComposer get villageId {
+    final $$VillagesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlannerItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PlannerItemsTable,
+          PlannerItemRow,
+          $$PlannerItemsTableFilterComposer,
+          $$PlannerItemsTableOrderingComposer,
+          $$PlannerItemsTableAnnotationComposer,
+          $$PlannerItemsTableCreateCompanionBuilder,
+          $$PlannerItemsTableUpdateCompanionBuilder,
+          (PlannerItemRow, $$PlannerItemsTableReferences),
+          PlannerItemRow,
+          PrefetchHooks Function({bool villageId})
+        > {
+  $$PlannerItemsTableTableManager(_$AppDatabase db, $PlannerItemsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlannerItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlannerItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlannerItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> villageId = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int?> targetLevel = const Value.absent(),
+                Value<String> priority = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<bool> isNext = const Value.absent(),
+                Value<DateTime> createdAtUtc = const Value.absent(),
+                Value<DateTime> updatedAtUtc = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlannerItemsCompanion(
+                id: id,
+                villageId: villageId,
+                category: category,
+                name: name,
+                targetLevel: targetLevel,
+                priority: priority,
+                notes: notes,
+                sortOrder: sortOrder,
+                status: status,
+                isNext: isNext,
+                createdAtUtc: createdAtUtc,
+                updatedAtUtc: updatedAtUtc,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String villageId,
+                required String category,
+                required String name,
+                Value<int?> targetLevel = const Value.absent(),
+                Value<String> priority = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<bool> isNext = const Value.absent(),
+                required DateTime createdAtUtc,
+                required DateTime updatedAtUtc,
+                Value<int> rowid = const Value.absent(),
+              }) => PlannerItemsCompanion.insert(
+                id: id,
+                villageId: villageId,
+                category: category,
+                name: name,
+                targetLevel: targetLevel,
+                priority: priority,
+                notes: notes,
+                sortOrder: sortOrder,
+                status: status,
+                isNext: isNext,
+                createdAtUtc: createdAtUtc,
+                updatedAtUtc: updatedAtUtc,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PlannerItemsTable, PlannerItemRow>(table),
+                  $$PlannerItemsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({villageId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (villageId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.villageId,
+                        referencedTable: $$PlannerItemsTableReferences
+                            ._villageIdTable(db),
+                        referencedColumn: $$PlannerItemsTableReferences
+                            ._villageIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PlannerItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PlannerItemsTable,
+      PlannerItemRow,
+      $$PlannerItemsTableFilterComposer,
+      $$PlannerItemsTableOrderingComposer,
+      $$PlannerItemsTableAnnotationComposer,
+      $$PlannerItemsTableCreateCompanionBuilder,
+      $$PlannerItemsTableUpdateCompanionBuilder,
+      (PlannerItemRow, $$PlannerItemsTableReferences),
+      PlannerItemRow,
+      PrefetchHooks Function({bool villageId})
+    >;
+typedef $$VillageItemLevelsTableCreateCompanionBuilder =
+    VillageItemLevelsCompanion Function({
+      required String id,
+      required String villageId,
+      required String category,
+      required String itemName,
+      required int currentLevel,
+      required DateTime updatedAtUtc,
+      Value<int> rowid,
+    });
+typedef $$VillageItemLevelsTableUpdateCompanionBuilder =
+    VillageItemLevelsCompanion Function({
+      Value<String> id,
+      Value<String> villageId,
+      Value<String> category,
+      Value<String> itemName,
+      Value<int> currentLevel,
+      Value<DateTime> updatedAtUtc,
+      Value<int> rowid,
+    });
+
+final class $$VillageItemLevelsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $VillageItemLevelsTable,
+          VillageItemLevelRow
+        > {
+  $$VillageItemLevelsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $VillagesTable _villageIdTable(_$AppDatabase db) =>
+      db.villages.createAlias('village_item_levels__village_id__villages__id');
+
+  $$VillagesTableProcessedTableManager get villageId {
+    final $_column = $_itemColumn<String>('village_id')!;
+
+    final manager = $$VillagesTableTableManager(
+      $_db,
+      $_db.villages,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_villageIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$VillageItemLevelsTableFilterComposer
+    extends Composer<_$AppDatabase, $VillageItemLevelsTable> {
+  $$VillageItemLevelsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemName => $composableBuilder(
+    column: $table.itemName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentLevel => $composableBuilder(
+    column: $table.currentLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$VillagesTableFilterComposer get villageId {
+    final $$VillagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableFilterComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VillageItemLevelsTableOrderingComposer
+    extends Composer<_$AppDatabase, $VillageItemLevelsTable> {
+  $$VillageItemLevelsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemName => $composableBuilder(
+    column: $table.itemName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentLevel => $composableBuilder(
+    column: $table.currentLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$VillagesTableOrderingComposer get villageId {
+    final $$VillagesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableOrderingComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VillageItemLevelsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VillageItemLevelsTable> {
+  $$VillageItemLevelsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get itemName =>
+      $composableBuilder(column: $table.itemName, builder: (column) => column);
+
+  GeneratedColumn<int> get currentLevel => $composableBuilder(
+    column: $table.currentLevel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => column,
+  );
+
+  $$VillagesTableAnnotationComposer get villageId {
+    final $$VillagesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VillageItemLevelsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $VillageItemLevelsTable,
+          VillageItemLevelRow,
+          $$VillageItemLevelsTableFilterComposer,
+          $$VillageItemLevelsTableOrderingComposer,
+          $$VillageItemLevelsTableAnnotationComposer,
+          $$VillageItemLevelsTableCreateCompanionBuilder,
+          $$VillageItemLevelsTableUpdateCompanionBuilder,
+          (VillageItemLevelRow, $$VillageItemLevelsTableReferences),
+          VillageItemLevelRow,
+          PrefetchHooks Function({bool villageId})
+        > {
+  $$VillageItemLevelsTableTableManager(
+    _$AppDatabase db,
+    $VillageItemLevelsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$VillageItemLevelsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$VillageItemLevelsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$VillageItemLevelsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> villageId = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String> itemName = const Value.absent(),
+                Value<int> currentLevel = const Value.absent(),
+                Value<DateTime> updatedAtUtc = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VillageItemLevelsCompanion(
+                id: id,
+                villageId: villageId,
+                category: category,
+                itemName: itemName,
+                currentLevel: currentLevel,
+                updatedAtUtc: updatedAtUtc,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String villageId,
+                required String category,
+                required String itemName,
+                required int currentLevel,
+                required DateTime updatedAtUtc,
+                Value<int> rowid = const Value.absent(),
+              }) => VillageItemLevelsCompanion.insert(
+                id: id,
+                villageId: villageId,
+                category: category,
+                itemName: itemName,
+                currentLevel: currentLevel,
+                updatedAtUtc: updatedAtUtc,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$VillageItemLevelsTable, VillageItemLevelRow>(
+                    table,
+                  ),
+                  $$VillageItemLevelsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({villageId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (villageId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.villageId,
+                        referencedTable: $$VillageItemLevelsTableReferences
+                            ._villageIdTable(db),
+                        referencedColumn: $$VillageItemLevelsTableReferences
+                            ._villageIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$VillageItemLevelsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $VillageItemLevelsTable,
+      VillageItemLevelRow,
+      $$VillageItemLevelsTableFilterComposer,
+      $$VillageItemLevelsTableOrderingComposer,
+      $$VillageItemLevelsTableAnnotationComposer,
+      $$VillageItemLevelsTableCreateCompanionBuilder,
+      $$VillageItemLevelsTableUpdateCompanionBuilder,
+      (VillageItemLevelRow, $$VillageItemLevelsTableReferences),
+      VillageItemLevelRow,
+      PrefetchHooks Function({bool villageId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4645,4 +6907,8 @@ class $AppDatabaseManager {
         _db,
         _db.customUpgradeSuggestions,
       );
+  $$PlannerItemsTableTableManager get plannerItems =>
+      $$PlannerItemsTableTableManager(_db, _db.plannerItems);
+  $$VillageItemLevelsTableTableManager get villageItemLevels =>
+      $$VillageItemLevelsTableTableManager(_db, _db.villageItemLevels);
 }

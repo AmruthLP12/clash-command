@@ -22,10 +22,14 @@ class UpgradeCard extends ConsumerStatefulWidget {
     super.key,
     required this.upgrade,
     this.village,
+    this.showCategory = false,
+    this.showVillage = false,
   });
 
   final Upgrade upgrade;
   final Village? village;
+  final bool showCategory;
+  final bool showVillage;
 
   @override
   ConsumerState<UpgradeCard> createState() => _UpgradeCardState();
@@ -157,10 +161,11 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
               ),
               const SizedBox(width: 12),
 
-              // Name + category + slot
+              // Name + optional slot / category
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       upgrade.displayNameWithLevel,
@@ -172,40 +177,64 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            upgrade.category.displayName,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        if (upgrade.slotKey != null) ...[
-                          const Text(
-                            ' • ',
-                            style: TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 12,
-                            ),
-                          ),
-                          Flexible(
-                            child: Text(
-                              upgrade.slotKey!,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.accentLight,
-                                fontSize: 12,
+                    if (widget.showCategory || upgrade.slotKey != null || widget.showVillage) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          if (widget.showVillage) ...[
+                            Flexible(
+                              child: Text(
+                                village.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
-                          ),
+                            if (widget.showCategory || upgrade.slotKey != null)
+                              const Text(
+                                ' • ',
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                          if (widget.showCategory) ...[
+                            Flexible(
+                              child: Text(
+                                upgrade.category.displayName,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            if (upgrade.slotKey != null)
+                              const Text(
+                                ' • ',
+                                style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                          if (upgrade.slotKey != null)
+                            Flexible(
+                              child: Text(
+                                upgrade.slotKey!,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.accentLight,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
                         ],
-                      ],
-                    ),
+                      ),
+                    ],
                   ],
                 ),
               ),

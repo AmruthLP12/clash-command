@@ -6,6 +6,7 @@ class Villages extends Table {
   TextColumn get id => text()();
   TextColumn get name => text().withLength(min: 1, max: 100)();
   IntColumn get townHallLevel => integer().nullable()();
+  IntColumn get builderHallLevel => integer().nullable()();
   IntColumn get builderCapacity => integer().withDefault(const Constant(1))();
   IntColumn get sortOrder => integer().nullable()();
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();

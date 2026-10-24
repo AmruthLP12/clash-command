@@ -167,32 +167,32 @@ void main() {
       await tester.pumpAndSettle();
 
       // Initially in Home Village -> Builder: only Archer Tower visible
-      expect(find.text('Archer Tower → Lv. 68'), findsOneWidget);
-      expect(find.text('P.E.K.K.A → Lv. 11'), findsNothing);
-      expect(find.text('Double Cannon → Lv. 10'), findsNothing);
-      expect(find.text('Raged Barbarian → Lv. 20'), findsNothing);
+      expect(find.text('Archer Tower · Lv. 68'), findsOneWidget);
+      expect(find.text('P.E.K.K.A · Lv. 11'), findsNothing);
+      expect(find.text('Double Cannon · Lv. 10'), findsNothing);
+      expect(find.text('Raged Barbarian · Lv. 20'), findsNothing);
 
       // Switch to Laboratory
       await tester.tap(find.text('Laboratory'));
       await tester.pumpAndSettle();
 
-      expect(find.text('P.E.K.K.A → Lv. 11'), findsOneWidget);
-      expect(find.text('Archer Tower → Lv. 68'), findsNothing);
+      expect(find.text('P.E.K.K.A · Lv. 11'), findsOneWidget);
+      expect(find.text('Archer Tower · Lv. 68'), findsNothing);
 
       // Switch to Builder Base
       await tester.tap(find.text('Builder Base'));
       await tester.pumpAndSettle();
 
       // In Builder Base -> Builder: Double Cannon visible
-      expect(find.text('Double Cannon → Lv. 10'), findsOneWidget);
-      expect(find.text('Raged Barbarian → Lv. 20'), findsNothing);
+      expect(find.text('Double Cannon · Lv. 10'), findsOneWidget);
+      expect(find.text('Raged Barbarian · Lv. 20'), findsNothing);
 
       // Switch to Star Laboratory
       await tester.tap(find.text('Star Laboratory'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Raged Barbarian → Lv. 20'), findsOneWidget);
-      expect(find.text('Double Cannon → Lv. 10'), findsNothing);
+      expect(find.text('Raged Barbarian · Lv. 20'), findsOneWidget);
+      expect(find.text('Double Cannon · Lv. 10'), findsNothing);
     });
   });
 
@@ -311,7 +311,7 @@ void main() {
         createdAtUtc: now,
         updatedAtUtc: now,
       );
-      expect(up.displayNameWithLevel, 'Archer Tower → Lv. 68');
+      expect(up.displayNameWithLevel, 'Archer Tower · Lv. 68');
     });
 
     test('retains plain name when level is omitted', () {

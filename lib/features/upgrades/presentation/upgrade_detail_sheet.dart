@@ -3,13 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/formatting/date_time_format.dart';
 import 'package:clash_command/core/formatting/duration_format.dart';
+import 'package:clash_command/core/ids/id_generator.dart';
 import 'package:clash_command/domain/models/history_event.dart';
 import 'package:clash_command/domain/models/upgrade.dart';
 import 'package:clash_command/domain/models/upgrade_status.dart';
 import 'package:clash_command/domain/models/village.dart';
+import 'package:clash_command/domain/models/village_item_level.dart';
 import 'package:clash_command/domain/services/upgrade_timer_service.dart';
 import 'package:clash_command/features/upgrades/application/upgrades_notifier.dart';
 import 'package:clash_command/features/upgrades/presentation/add_upgrade_sheet.dart';
@@ -335,6 +338,15 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                   ),
                 ),
               ],
+
+              // Current Level Tracker Integration
+              if ((upgrade.toLevel ?? upgrade.fromLevel) != null) ...[
+                const SizedBox(height: 16),
+                _VillageLevelCard(
+                  upgrade: upgrade,
+                  village: village,
+                ),
+              ],
               const SizedBox(height: 20),
 
               // Visible Action Controls
@@ -363,6 +375,37 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                         await ref
                             .read(upgradesNotifierProvider.notifier)
                             .completeUpgrade(upgrade);
+
+                        // If upgrade had a target level, update or record in village levels idempotently
+                        final destLevel = upgrade.toLevel ?? upgrade.fromLevel;
+                        if (destLevel != null) {
+                          final existing = await ref
+                              .read(villageItemLevelsDaoProvider)
+                              .findByItem(
+                                upgrade.villageId,
+                                upgrade.category,
+                                upgrade.name,
+                              );
+                          if (existing == null) {
+                            await ref.read(villageItemLevelsDaoProvider).upsert(
+                                  VillageItemLevel(
+                                    id: const IdGenerator().newId(),
+                                    villageId: upgrade.villageId,
+                                    category: upgrade.category,
+                                    itemName: upgrade.name,
+                                    currentLevel: destLevel,
+                                    updatedAtUtc: DateTime.now().toUtc(),
+                                  ),
+                                );
+                          } else if (existing.currentLevel < destLevel) {
+                            await ref.read(villageItemLevelsDaoProvider).upsert(
+                                  existing.copyWith(
+                                    currentLevel: destLevel,
+                                    updatedAtUtc: DateTime.now().toUtc(),
+                                  ),
+                                );
+                          }
+                        }
                       },
                       icon: const Icon(Icons.check, size: 18),
                       label: const Text('Complete now'),
@@ -638,6 +681,173 @@ class _HistoryEventTile extends StatelessWidget {
       default:
         return AppColors.textSecondary;
     }
+  }
+}
+
+class _VillageLevelCard extends ConsumerStatefulWidget {
+  const _VillageLevelCard({
+    required this.upgrade,
+    required this.village,
+  });
+
+  final Upgrade upgrade;
+  final Village village;
+
+  @override
+  ConsumerState<_VillageLevelCard> createState() => _VillageLevelCardState();
+}
+
+class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
+  bool _updating = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final destLevel = widget.upgrade.toLevel ?? widget.upgrade.fromLevel;
+    if (destLevel == null) return const SizedBox.shrink();
+
+    return FutureBuilder<VillageItemLevel?>(
+      future: ref.read(villageItemLevelsDaoProvider).findByItem(
+            widget.upgrade.villageId,
+            widget.upgrade.category,
+            widget.upgrade.name,
+          ),
+      builder: (context, snapshot) {
+        final record = snapshot.data;
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.format_list_numbered, size: 18, color: AppColors.accent),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Village Progress Tracker',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (record != null)
+                    Text(
+                      'Current: Lv. ${record.currentLevel}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.accent,
+                      ),
+                    )
+                  else
+                    const Text(
+                      'Not recorded',
+                      style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (record == null) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Track ${widget.upgrade.name} at Lv. $destLevel in ${widget.village.name} levels?',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      onPressed: _updating
+                          ? null
+                          : () async {
+                              setState(() => _updating = true);
+                              try {
+                                await ref.read(villageItemLevelsDaoProvider).upsert(
+                                      VillageItemLevel(
+                                        id: const IdGenerator().newId(),
+                                        villageId: widget.upgrade.villageId,
+                                        category: widget.upgrade.category,
+                                        itemName: widget.upgrade.name,
+                                        currentLevel: destLevel,
+                                        updatedAtUtc: DateTime.now().toUtc(),
+                                      ),
+                                    );
+                                setState(() {});
+                              } finally {
+                                if (mounted) setState(() => _updating = false);
+                              }
+                            },
+                      child: const Text('Record Lv.', style: TextStyle(fontSize: 11)),
+                    ),
+                  ],
+                ),
+              ] else if (record.currentLevel < destLevel) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Update tracker from Lv. ${record.currentLevel} → Lv. $destLevel?',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                      onPressed: _updating
+                          ? null
+                          : () async {
+                              setState(() => _updating = true);
+                              try {
+                                await ref.read(villageItemLevelsDaoProvider).upsert(
+                                      record.copyWith(
+                                        currentLevel: destLevel,
+                                        updatedAtUtc: DateTime.now().toUtc(),
+                                      ),
+                                    );
+                                setState(() {});
+                              } finally {
+                                if (mounted) setState(() => _updating = false);
+                              }
+                            },
+                      child: Text('Update to Lv. $destLevel', style: const TextStyle(fontSize: 11)),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle, size: 16, color: AppColors.active),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Recorded in levels (Lv. ${record.currentLevel})',
+                      style: const TextStyle(fontSize: 12, color: AppColors.active),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

@@ -8,7 +8,9 @@ import 'openers.dart';
 import 'tables/custom_upgrade_suggestions_table.dart';
 import 'tables/history_events_table.dart';
 import 'tables/notification_preferences_table.dart';
+import 'tables/planner_items_table.dart';
 import 'tables/upgrades_table.dart';
+import 'tables/village_item_levels_table.dart';
 import 'tables/villages_table.dart';
 
 part 'app_database.g.dart';
@@ -24,6 +26,8 @@ part 'app_database.g.dart';
     NotificationPreferences,
     HistoryEvents,
     CustomUpgradeSuggestions,
+    PlannerItems,
+    VillageItemLevels,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -33,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -57,6 +61,11 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(upgrades, upgrades.toLevel);
           await m.createTable(customUpgradeSuggestions);
         }
+        if (from < 4) {
+          await m.addColumn(villages, villages.builderHallLevel);
+          await m.createTable(plannerItems);
+          await m.createTable(villageItemLevels);
+        }
       },
     );
   }
@@ -70,6 +79,7 @@ extension VillageRowMapper on VillageRow {
       id: id,
       name: name,
       townHallLevel: townHallLevel,
+      builderHallLevel: builderHallLevel,
       builderCapacity: builderCapacity,
       sortOrder: sortOrder,
       isArchived: isArchived,
@@ -86,6 +96,7 @@ extension VillageDomainMapper on Village {
       id: Value(id),
       name: Value(name),
       townHallLevel: Value(townHallLevel),
+      builderHallLevel: Value(builderHallLevel),
       builderCapacity: Value(builderCapacity),
       sortOrder: Value(sortOrder),
       isArchived: Value(isArchived),

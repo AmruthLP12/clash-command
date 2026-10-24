@@ -967,10 +967,13 @@ class UpgradeCatalog {
     required String query,
     required UpgradeCategory category,
     int? townHallLevel,
+    int? builderHallLevel,
     List<String> customNames = const [],
   }) {
     final cleanQuery = query.trim().toLowerCase();
     final targetCategory = category.primaryCategory;
+    final isBuilderBase = targetCategory == UpgradeCategory.builderBaseBuilder ||
+        targetCategory == UpgradeCategory.builderBaseStarLab;
 
     // 1. Filter built-in items for this specific primary category
     final categoryItems = builtInItems
@@ -1000,16 +1003,28 @@ class UpgradeCatalog {
 
     final allItems = [...categoryItems, ...customItems];
 
-    if (cleanQuery.isEmpty) {
-      // Return top items prioritized by Town Hall if available
-      allItems.sort((a, b) {
-        if (townHallLevel != null) {
-          final aTh = a.minTownHall ?? 1;
-          final bTh = b.minTownHall ?? 1;
-          final aMatch = aTh <= townHallLevel ? 0 : 1;
-          final bMatch = bTh <= townHallLevel ? 0 : 1;
-          if (aMatch != bMatch) return aMatch.compareTo(bMatch);
+    bool isUnlocked(UpgradeCatalogItem item) {
+      if (isBuilderBase) {
+        if (builderHallLevel != null) {
+          final bh = item.minBuilderHall ?? 1;
+          return bh <= builderHallLevel;
         }
+        return true;
+      } else {
+        if (townHallLevel != null) {
+          final th = item.minTownHall ?? 1;
+          return th <= townHallLevel;
+        }
+        return true;
+      }
+    }
+
+    if (cleanQuery.isEmpty) {
+      // Return top items prioritized by Town Hall / Builder Hall if available
+      allItems.sort((a, b) {
+        final aUnlocked = isUnlocked(a) ? 0 : 1;
+        final bUnlocked = isUnlocked(b) ? 0 : 1;
+        if (aUnlocked != bUnlocked) return aUnlocked.compareTo(bUnlocked);
         return a.name.compareTo(b.name);
       });
       return allItems;
@@ -1023,7 +1038,7 @@ class UpgradeCatalog {
     // Sort with strategic ranking:
     // 1. Exact match
     // 2. Starts with query
-    // 3. Unlocked by current Town Hall
+    // 3. Unlocked by current Town Hall / Builder Hall
     // 4. Alphabetical
     matching.sort((a, b) {
       final aLower = a.name.toLowerCase();
@@ -1037,13 +1052,9 @@ class UpgradeCatalog {
       final bPrefix = bLower.startsWith(cleanQuery);
       if (aPrefix != bPrefix) return aPrefix ? -1 : 1;
 
-      if (townHallLevel != null) {
-        final aTh = a.minTownHall ?? 1;
-        final bTh = b.minTownHall ?? 1;
-        final aUnlocked = aTh <= townHallLevel;
-        final bUnlocked = bTh <= townHallLevel;
-        if (aUnlocked != bUnlocked) return aUnlocked ? -1 : 1;
-      }
+      final aUnlocked = isUnlocked(a);
+      final bUnlocked = isUnlocked(b);
+      if (aUnlocked != bUnlocked) return aUnlocked ? -1 : 1;
 
       return a.name.compareTo(b.name);
     });

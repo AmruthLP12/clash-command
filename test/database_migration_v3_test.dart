@@ -41,8 +41,8 @@ void main() {
   });
 
   group('Database Schema v3 & Upgrade Levels Persistence', () {
-    test('schemaVersion is 3', () {
-      expect(db.schemaVersion, 3);
+    test('schemaVersion is 4', () {
+      expect(db.schemaVersion, 4);
     });
 
     test('persists upgrade with fromLevel and toLevel', () async {
