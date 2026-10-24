@@ -3088,6 +3088,28 @@ class $PlannerItemsTable extends PlannerItems
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _durationSecondsMeta = const VerificationMeta(
+    'durationSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> durationSeconds = GeneratedColumn<int>(
+    'duration_seconds',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resourcesJsonMeta = const VerificationMeta(
+    'resourcesJson',
+  );
+  @override
+  late final GeneratedColumn<String> resourcesJson = GeneratedColumn<String>(
+    'resources_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtUtcMeta = const VerificationMeta(
     'createdAtUtc',
   );
@@ -3122,6 +3144,8 @@ class $PlannerItemsTable extends PlannerItems
     sortOrder,
     status,
     isNext,
+    durationSeconds,
+    resourcesJson,
     createdAtUtc,
     updatedAtUtc,
   ];
@@ -3205,6 +3229,24 @@ class $PlannerItemsTable extends PlannerItems
         isNext.isAcceptableOrUnknown(data['is_next']!, _isNextMeta),
       );
     }
+    if (data.containsKey('duration_seconds')) {
+      context.handle(
+        _durationSecondsMeta,
+        durationSeconds.isAcceptableOrUnknown(
+          data['duration_seconds']!,
+          _durationSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('resources_json')) {
+      context.handle(
+        _resourcesJsonMeta,
+        resourcesJson.isAcceptableOrUnknown(
+          data['resources_json']!,
+          _resourcesJsonMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at_utc')) {
       context.handle(
         _createdAtUtcMeta,
@@ -3276,6 +3318,14 @@ class $PlannerItemsTable extends PlannerItems
         DriftSqlType.bool,
         data['${effectivePrefix}is_next'],
       )!,
+      durationSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_seconds'],
+      ),
+      resourcesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resources_json'],
+      ),
       createdAtUtc: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at_utc'],
@@ -3304,6 +3354,8 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
   final int sortOrder;
   final String status;
   final bool isNext;
+  final int? durationSeconds;
+  final String? resourcesJson;
   final DateTime createdAtUtc;
   final DateTime updatedAtUtc;
   const PlannerItemRow({
@@ -3317,6 +3369,8 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
     required this.sortOrder,
     required this.status,
     required this.isNext,
+    this.durationSeconds,
+    this.resourcesJson,
     required this.createdAtUtc,
     required this.updatedAtUtc,
   });
@@ -3337,6 +3391,12 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
     map['sort_order'] = Variable<int>(sortOrder);
     map['status'] = Variable<String>(status);
     map['is_next'] = Variable<bool>(isNext);
+    if (!nullToAbsent || durationSeconds != null) {
+      map['duration_seconds'] = Variable<int>(durationSeconds);
+    }
+    if (!nullToAbsent || resourcesJson != null) {
+      map['resources_json'] = Variable<String>(resourcesJson);
+    }
     map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
     map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
     return map;
@@ -3358,6 +3418,12 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
       sortOrder: Value(sortOrder),
       status: Value(status),
       isNext: Value(isNext),
+      durationSeconds: durationSeconds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(durationSeconds),
+      resourcesJson: resourcesJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resourcesJson),
       createdAtUtc: Value(createdAtUtc),
       updatedAtUtc: Value(updatedAtUtc),
     );
@@ -3379,6 +3445,8 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
       status: serializer.fromJson<String>(json['status']),
       isNext: serializer.fromJson<bool>(json['isNext']),
+      durationSeconds: serializer.fromJson<int?>(json['durationSeconds']),
+      resourcesJson: serializer.fromJson<String?>(json['resourcesJson']),
       createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
       updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
     );
@@ -3397,6 +3465,8 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
       'sortOrder': serializer.toJson<int>(sortOrder),
       'status': serializer.toJson<String>(status),
       'isNext': serializer.toJson<bool>(isNext),
+      'durationSeconds': serializer.toJson<int?>(durationSeconds),
+      'resourcesJson': serializer.toJson<String?>(resourcesJson),
       'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
       'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
     };
@@ -3413,6 +3483,8 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
     int? sortOrder,
     String? status,
     bool? isNext,
+    Value<int?> durationSeconds = const Value.absent(),
+    Value<String?> resourcesJson = const Value.absent(),
     DateTime? createdAtUtc,
     DateTime? updatedAtUtc,
   }) => PlannerItemRow(
@@ -3426,6 +3498,12 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
     sortOrder: sortOrder ?? this.sortOrder,
     status: status ?? this.status,
     isNext: isNext ?? this.isNext,
+    durationSeconds: durationSeconds.present
+        ? durationSeconds.value
+        : this.durationSeconds,
+    resourcesJson: resourcesJson.present
+        ? resourcesJson.value
+        : this.resourcesJson,
     createdAtUtc: createdAtUtc ?? this.createdAtUtc,
     updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
   );
@@ -3443,6 +3521,12 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
       status: data.status.present ? data.status.value : this.status,
       isNext: data.isNext.present ? data.isNext.value : this.isNext,
+      durationSeconds: data.durationSeconds.present
+          ? data.durationSeconds.value
+          : this.durationSeconds,
+      resourcesJson: data.resourcesJson.present
+          ? data.resourcesJson.value
+          : this.resourcesJson,
       createdAtUtc: data.createdAtUtc.present
           ? data.createdAtUtc.value
           : this.createdAtUtc,
@@ -3465,6 +3549,8 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
           ..write('sortOrder: $sortOrder, ')
           ..write('status: $status, ')
           ..write('isNext: $isNext, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('resourcesJson: $resourcesJson, ')
           ..write('createdAtUtc: $createdAtUtc, ')
           ..write('updatedAtUtc: $updatedAtUtc')
           ..write(')'))
@@ -3483,6 +3569,8 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
     sortOrder,
     status,
     isNext,
+    durationSeconds,
+    resourcesJson,
     createdAtUtc,
     updatedAtUtc,
   );
@@ -3500,6 +3588,8 @@ class PlannerItemRow extends DataClass implements Insertable<PlannerItemRow> {
           other.sortOrder == this.sortOrder &&
           other.status == this.status &&
           other.isNext == this.isNext &&
+          other.durationSeconds == this.durationSeconds &&
+          other.resourcesJson == this.resourcesJson &&
           other.createdAtUtc == this.createdAtUtc &&
           other.updatedAtUtc == this.updatedAtUtc);
 }
@@ -3515,6 +3605,8 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
   final Value<int> sortOrder;
   final Value<String> status;
   final Value<bool> isNext;
+  final Value<int?> durationSeconds;
+  final Value<String?> resourcesJson;
   final Value<DateTime> createdAtUtc;
   final Value<DateTime> updatedAtUtc;
   final Value<int> rowid;
@@ -3529,6 +3621,8 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
     this.sortOrder = const Value.absent(),
     this.status = const Value.absent(),
     this.isNext = const Value.absent(),
+    this.durationSeconds = const Value.absent(),
+    this.resourcesJson = const Value.absent(),
     this.createdAtUtc = const Value.absent(),
     this.updatedAtUtc = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3544,6 +3638,8 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
     this.sortOrder = const Value.absent(),
     this.status = const Value.absent(),
     this.isNext = const Value.absent(),
+    this.durationSeconds = const Value.absent(),
+    this.resourcesJson = const Value.absent(),
     required DateTime createdAtUtc,
     required DateTime updatedAtUtc,
     this.rowid = const Value.absent(),
@@ -3564,6 +3660,8 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
     Expression<int>? sortOrder,
     Expression<String>? status,
     Expression<bool>? isNext,
+    Expression<int>? durationSeconds,
+    Expression<String>? resourcesJson,
     Expression<DateTime>? createdAtUtc,
     Expression<DateTime>? updatedAtUtc,
     Expression<int>? rowid,
@@ -3579,6 +3677,8 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
       if (sortOrder != null) 'sort_order': sortOrder,
       if (status != null) 'status': status,
       if (isNext != null) 'is_next': isNext,
+      if (durationSeconds != null) 'duration_seconds': durationSeconds,
+      if (resourcesJson != null) 'resources_json': resourcesJson,
       if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
       if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
       if (rowid != null) 'rowid': rowid,
@@ -3596,6 +3696,8 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
     Value<int>? sortOrder,
     Value<String>? status,
     Value<bool>? isNext,
+    Value<int?>? durationSeconds,
+    Value<String?>? resourcesJson,
     Value<DateTime>? createdAtUtc,
     Value<DateTime>? updatedAtUtc,
     Value<int>? rowid,
@@ -3611,6 +3713,8 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
       sortOrder: sortOrder ?? this.sortOrder,
       status: status ?? this.status,
       isNext: isNext ?? this.isNext,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      resourcesJson: resourcesJson ?? this.resourcesJson,
       createdAtUtc: createdAtUtc ?? this.createdAtUtc,
       updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
       rowid: rowid ?? this.rowid,
@@ -3650,6 +3754,12 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
     if (isNext.present) {
       map['is_next'] = Variable<bool>(isNext.value);
     }
+    if (durationSeconds.present) {
+      map['duration_seconds'] = Variable<int>(durationSeconds.value);
+    }
+    if (resourcesJson.present) {
+      map['resources_json'] = Variable<String>(resourcesJson.value);
+    }
     if (createdAtUtc.present) {
       map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
     }
@@ -3675,6 +3785,8 @@ class PlannerItemsCompanion extends UpdateCompanion<PlannerItemRow> {
           ..write('sortOrder: $sortOrder, ')
           ..write('status: $status, ')
           ..write('isNext: $isNext, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('resourcesJson: $resourcesJson, ')
           ..write('createdAtUtc: $createdAtUtc, ')
           ..write('updatedAtUtc: $updatedAtUtc, ')
           ..write('rowid: $rowid')
@@ -3723,6 +3835,17 @@ class $VillageItemLevelsTable extends VillageItemLevels
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _itemTypeMeta = const VerificationMeta(
+    'itemType',
+  );
+  @override
+  late final GeneratedColumn<String> itemType = GeneratedColumn<String>(
+    'item_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _itemNameMeta = const VerificationMeta(
     'itemName',
   );
@@ -3765,6 +3888,7 @@ class $VillageItemLevelsTable extends VillageItemLevels
     id,
     villageId,
     category,
+    itemType,
     itemName,
     currentLevel,
     updatedAtUtc,
@@ -3801,6 +3925,12 @@ class $VillageItemLevelsTable extends VillageItemLevels
       );
     } else if (isInserting) {
       context.missing(_categoryMeta);
+    }
+    if (data.containsKey('item_type')) {
+      context.handle(
+        _itemTypeMeta,
+        itemType.isAcceptableOrUnknown(data['item_type']!, _itemTypeMeta),
+      );
     }
     if (data.containsKey('item_name')) {
       context.handle(
@@ -3857,6 +3987,10 @@ class $VillageItemLevelsTable extends VillageItemLevels
         DriftSqlType.string,
         data['${effectivePrefix}category'],
       )!,
+      itemType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_type'],
+      ),
       itemName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}item_name'],
@@ -3883,6 +4017,7 @@ class VillageItemLevelRow extends DataClass
   final String id;
   final String villageId;
   final String category;
+  final String? itemType;
   final String itemName;
   final int currentLevel;
   final DateTime updatedAtUtc;
@@ -3890,6 +4025,7 @@ class VillageItemLevelRow extends DataClass
     required this.id,
     required this.villageId,
     required this.category,
+    this.itemType,
     required this.itemName,
     required this.currentLevel,
     required this.updatedAtUtc,
@@ -3900,6 +4036,9 @@ class VillageItemLevelRow extends DataClass
     map['id'] = Variable<String>(id);
     map['village_id'] = Variable<String>(villageId);
     map['category'] = Variable<String>(category);
+    if (!nullToAbsent || itemType != null) {
+      map['item_type'] = Variable<String>(itemType);
+    }
     map['item_name'] = Variable<String>(itemName);
     map['current_level'] = Variable<int>(currentLevel);
     map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
@@ -3911,6 +4050,9 @@ class VillageItemLevelRow extends DataClass
       id: Value(id),
       villageId: Value(villageId),
       category: Value(category),
+      itemType: itemType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemType),
       itemName: Value(itemName),
       currentLevel: Value(currentLevel),
       updatedAtUtc: Value(updatedAtUtc),
@@ -3926,6 +4068,7 @@ class VillageItemLevelRow extends DataClass
       id: serializer.fromJson<String>(json['id']),
       villageId: serializer.fromJson<String>(json['villageId']),
       category: serializer.fromJson<String>(json['category']),
+      itemType: serializer.fromJson<String?>(json['itemType']),
       itemName: serializer.fromJson<String>(json['itemName']),
       currentLevel: serializer.fromJson<int>(json['currentLevel']),
       updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
@@ -3938,6 +4081,7 @@ class VillageItemLevelRow extends DataClass
       'id': serializer.toJson<String>(id),
       'villageId': serializer.toJson<String>(villageId),
       'category': serializer.toJson<String>(category),
+      'itemType': serializer.toJson<String?>(itemType),
       'itemName': serializer.toJson<String>(itemName),
       'currentLevel': serializer.toJson<int>(currentLevel),
       'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
@@ -3948,6 +4092,7 @@ class VillageItemLevelRow extends DataClass
     String? id,
     String? villageId,
     String? category,
+    Value<String?> itemType = const Value.absent(),
     String? itemName,
     int? currentLevel,
     DateTime? updatedAtUtc,
@@ -3955,6 +4100,7 @@ class VillageItemLevelRow extends DataClass
     id: id ?? this.id,
     villageId: villageId ?? this.villageId,
     category: category ?? this.category,
+    itemType: itemType.present ? itemType.value : this.itemType,
     itemName: itemName ?? this.itemName,
     currentLevel: currentLevel ?? this.currentLevel,
     updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
@@ -3964,6 +4110,7 @@ class VillageItemLevelRow extends DataClass
       id: data.id.present ? data.id.value : this.id,
       villageId: data.villageId.present ? data.villageId.value : this.villageId,
       category: data.category.present ? data.category.value : this.category,
+      itemType: data.itemType.present ? data.itemType.value : this.itemType,
       itemName: data.itemName.present ? data.itemName.value : this.itemName,
       currentLevel: data.currentLevel.present
           ? data.currentLevel.value
@@ -3980,6 +4127,7 @@ class VillageItemLevelRow extends DataClass
           ..write('id: $id, ')
           ..write('villageId: $villageId, ')
           ..write('category: $category, ')
+          ..write('itemType: $itemType, ')
           ..write('itemName: $itemName, ')
           ..write('currentLevel: $currentLevel, ')
           ..write('updatedAtUtc: $updatedAtUtc')
@@ -3992,6 +4140,7 @@ class VillageItemLevelRow extends DataClass
     id,
     villageId,
     category,
+    itemType,
     itemName,
     currentLevel,
     updatedAtUtc,
@@ -4003,6 +4152,7 @@ class VillageItemLevelRow extends DataClass
           other.id == this.id &&
           other.villageId == this.villageId &&
           other.category == this.category &&
+          other.itemType == this.itemType &&
           other.itemName == this.itemName &&
           other.currentLevel == this.currentLevel &&
           other.updatedAtUtc == this.updatedAtUtc);
@@ -4012,6 +4162,7 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
   final Value<String> id;
   final Value<String> villageId;
   final Value<String> category;
+  final Value<String?> itemType;
   final Value<String> itemName;
   final Value<int> currentLevel;
   final Value<DateTime> updatedAtUtc;
@@ -4020,6 +4171,7 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     this.id = const Value.absent(),
     this.villageId = const Value.absent(),
     this.category = const Value.absent(),
+    this.itemType = const Value.absent(),
     this.itemName = const Value.absent(),
     this.currentLevel = const Value.absent(),
     this.updatedAtUtc = const Value.absent(),
@@ -4029,6 +4181,7 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     required String id,
     required String villageId,
     required String category,
+    this.itemType = const Value.absent(),
     required String itemName,
     required int currentLevel,
     required DateTime updatedAtUtc,
@@ -4043,6 +4196,7 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     Expression<String>? id,
     Expression<String>? villageId,
     Expression<String>? category,
+    Expression<String>? itemType,
     Expression<String>? itemName,
     Expression<int>? currentLevel,
     Expression<DateTime>? updatedAtUtc,
@@ -4052,6 +4206,7 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
       if (id != null) 'id': id,
       if (villageId != null) 'village_id': villageId,
       if (category != null) 'category': category,
+      if (itemType != null) 'item_type': itemType,
       if (itemName != null) 'item_name': itemName,
       if (currentLevel != null) 'current_level': currentLevel,
       if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
@@ -4063,6 +4218,7 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     Value<String>? id,
     Value<String>? villageId,
     Value<String>? category,
+    Value<String?>? itemType,
     Value<String>? itemName,
     Value<int>? currentLevel,
     Value<DateTime>? updatedAtUtc,
@@ -4072,6 +4228,7 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
       id: id ?? this.id,
       villageId: villageId ?? this.villageId,
       category: category ?? this.category,
+      itemType: itemType ?? this.itemType,
       itemName: itemName ?? this.itemName,
       currentLevel: currentLevel ?? this.currentLevel,
       updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
@@ -4090,6 +4247,9 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     }
     if (category.present) {
       map['category'] = Variable<String>(category.value);
+    }
+    if (itemType.present) {
+      map['item_type'] = Variable<String>(itemType.value);
     }
     if (itemName.present) {
       map['item_name'] = Variable<String>(itemName.value);
@@ -4112,6 +4272,7 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
           ..write('id: $id, ')
           ..write('villageId: $villageId, ')
           ..write('category: $category, ')
+          ..write('itemType: $itemType, ')
           ..write('itemName: $itemName, ')
           ..write('currentLevel: $currentLevel, ')
           ..write('updatedAtUtc: $updatedAtUtc, ')
@@ -6091,6 +6252,8 @@ typedef $$PlannerItemsTableCreateCompanionBuilder =
       Value<int> sortOrder,
       Value<String> status,
       Value<bool> isNext,
+      Value<int?> durationSeconds,
+      Value<String?> resourcesJson,
       required DateTime createdAtUtc,
       required DateTime updatedAtUtc,
       Value<int> rowid,
@@ -6107,6 +6270,8 @@ typedef $$PlannerItemsTableUpdateCompanionBuilder =
       Value<int> sortOrder,
       Value<String> status,
       Value<bool> isNext,
+      Value<int?> durationSeconds,
+      Value<String?> resourcesJson,
       Value<DateTime> createdAtUtc,
       Value<DateTime> updatedAtUtc,
       Value<int> rowid,
@@ -6185,6 +6350,16 @@ class $$PlannerItemsTableFilterComposer
 
   ColumnFilters<bool> get isNext => $composableBuilder(
     column: $table.isNext,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resourcesJson => $composableBuilder(
+    column: $table.resourcesJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6276,6 +6451,16 @@ class $$PlannerItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resourcesJson => $composableBuilder(
+    column: $table.resourcesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
     column: $table.createdAtUtc,
     builder: (column) => ColumnOrderings(column),
@@ -6347,6 +6532,16 @@ class $$PlannerItemsTableAnnotationComposer
 
   GeneratedColumn<bool> get isNext =>
       $composableBuilder(column: $table.isNext, builder: (column) => column);
+
+  GeneratedColumn<int> get durationSeconds => $composableBuilder(
+    column: $table.durationSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resourcesJson => $composableBuilder(
+    column: $table.resourcesJson,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
     column: $table.createdAtUtc,
@@ -6420,6 +6615,8 @@ class $$PlannerItemsTableTableManager
                 Value<int> sortOrder = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<bool> isNext = const Value.absent(),
+                Value<int?> durationSeconds = const Value.absent(),
+                Value<String?> resourcesJson = const Value.absent(),
                 Value<DateTime> createdAtUtc = const Value.absent(),
                 Value<DateTime> updatedAtUtc = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6434,6 +6631,8 @@ class $$PlannerItemsTableTableManager
                 sortOrder: sortOrder,
                 status: status,
                 isNext: isNext,
+                durationSeconds: durationSeconds,
+                resourcesJson: resourcesJson,
                 createdAtUtc: createdAtUtc,
                 updatedAtUtc: updatedAtUtc,
                 rowid: rowid,
@@ -6450,6 +6649,8 @@ class $$PlannerItemsTableTableManager
                 Value<int> sortOrder = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<bool> isNext = const Value.absent(),
+                Value<int?> durationSeconds = const Value.absent(),
+                Value<String?> resourcesJson = const Value.absent(),
                 required DateTime createdAtUtc,
                 required DateTime updatedAtUtc,
                 Value<int> rowid = const Value.absent(),
@@ -6464,6 +6665,8 @@ class $$PlannerItemsTableTableManager
                 sortOrder: sortOrder,
                 status: status,
                 isNext: isNext,
+                durationSeconds: durationSeconds,
+                resourcesJson: resourcesJson,
                 createdAtUtc: createdAtUtc,
                 updatedAtUtc: updatedAtUtc,
                 rowid: rowid,
@@ -6538,6 +6741,7 @@ typedef $$VillageItemLevelsTableCreateCompanionBuilder =
       required String id,
       required String villageId,
       required String category,
+      Value<String?> itemType,
       required String itemName,
       required int currentLevel,
       required DateTime updatedAtUtc,
@@ -6548,6 +6752,7 @@ typedef $$VillageItemLevelsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> villageId,
       Value<String> category,
+      Value<String?> itemType,
       Value<String> itemName,
       Value<int> currentLevel,
       Value<DateTime> updatedAtUtc,
@@ -6601,6 +6806,11 @@ class $$VillageItemLevelsTableFilterComposer
 
   ColumnFilters<String> get category => $composableBuilder(
     column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemType => $composableBuilder(
+    column: $table.itemType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6662,6 +6872,11 @@ class $$VillageItemLevelsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get itemType => $composableBuilder(
+    column: $table.itemType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get itemName => $composableBuilder(
     column: $table.itemName,
     builder: (column) => ColumnOrderings(column),
@@ -6715,6 +6930,9 @@ class $$VillageItemLevelsTableAnnotationComposer
 
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get itemType =>
+      $composableBuilder(column: $table.itemType, builder: (column) => column);
 
   GeneratedColumn<String> get itemName =>
       $composableBuilder(column: $table.itemName, builder: (column) => column);
@@ -6789,6 +7007,7 @@ class $$VillageItemLevelsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> villageId = const Value.absent(),
                 Value<String> category = const Value.absent(),
+                Value<String?> itemType = const Value.absent(),
                 Value<String> itemName = const Value.absent(),
                 Value<int> currentLevel = const Value.absent(),
                 Value<DateTime> updatedAtUtc = const Value.absent(),
@@ -6797,6 +7016,7 @@ class $$VillageItemLevelsTableTableManager
                 id: id,
                 villageId: villageId,
                 category: category,
+                itemType: itemType,
                 itemName: itemName,
                 currentLevel: currentLevel,
                 updatedAtUtc: updatedAtUtc,
@@ -6807,6 +7027,7 @@ class $$VillageItemLevelsTableTableManager
                 required String id,
                 required String villageId,
                 required String category,
+                Value<String?> itemType = const Value.absent(),
                 required String itemName,
                 required int currentLevel,
                 required DateTime updatedAtUtc,
@@ -6815,6 +7036,7 @@ class $$VillageItemLevelsTableTableManager
                 id: id,
                 villageId: villageId,
                 category: category,
+                itemType: itemType,
                 itemName: itemName,
                 currentLevel: currentLevel,
                 updatedAtUtc: updatedAtUtc,

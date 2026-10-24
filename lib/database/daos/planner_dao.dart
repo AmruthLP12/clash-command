@@ -112,6 +112,8 @@ class PlannerDao extends DatabaseAccessor<AppDatabase> with _$PlannerDaoMixin {
       sortOrder: row.sortOrder,
       status: row.status,
       isNext: row.isNext,
+      durationSeconds: row.durationSeconds,
+      resources: PlannerItem.parseResources(row.resourcesJson),
       createdAtUtc: row.createdAtUtc,
       updatedAtUtc: row.updatedAtUtc,
     );
@@ -129,6 +131,8 @@ class PlannerDao extends DatabaseAccessor<AppDatabase> with _$PlannerDaoMixin {
       sortOrder: Value(item.sortOrder),
       status: Value(item.status),
       isNext: Value(item.isNext),
+      durationSeconds: Value(item.durationSeconds),
+      resourcesJson: Value(PlannerItem.encodeResources(item.resources)),
       createdAtUtc: Value(item.createdAtUtc),
       updatedAtUtc: Value(item.updatedAtUtc),
     );

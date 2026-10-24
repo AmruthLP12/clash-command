@@ -15,6 +15,8 @@ class PlannerItems extends Table {
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   TextColumn get status => text().withDefault(const Constant('planned'))();
   BoolColumn get isNext => boolean().withDefault(const Constant(false))();
+  IntColumn get durationSeconds => integer().nullable()();
+  TextColumn get resourcesJson => text().nullable()();
   DateTimeColumn get createdAtUtc => dateTime()();
   DateTimeColumn get updatedAtUtc => dateTime()();
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/formatting/date_time_format.dart';
+import 'package:clash_command/domain/models/level_item_type.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/models/village_item_level.dart';
@@ -21,9 +22,10 @@ class LevelsScreen extends ConsumerStatefulWidget {
 
 class _LevelsScreenState extends ConsumerState<LevelsScreen> {
   String? _selectedVillageId;
-  String _searchQuery = '';
   UpgradeCategory? _selectedCategory;
-  final _searchController = TextEditingController();
+  String? _selectedItemType;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
       builder: (_) => AddLevelSheet(
         village: village,
         initialCategory: _selectedCategory,
+        initialItemType: _selectedItemType,
       ),
     );
   }
@@ -120,14 +123,17 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                     child: DropdownButton<String>(
                       value: _selectedVillageId,
                       dropdownColor: AppColors.surfaceVariant,
-                      icon: const Icon(Icons.arrow_drop_down, color: AppColors.accent),
+                      icon: const Icon(Icons.arrow_drop_down,
+                          color: AppColors.accent),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                       onChanged: (id) {
-                        if (id != null) setState(() => _selectedVillageId = id);
+                        if (id != null) {
+                          setState(() => _selectedVillageId = id);
+                        }
                       },
                       items: villages.map((v) {
                         return DropdownMenuItem(
@@ -146,7 +152,7 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Search items...',
+                    hintText: 'Search items or types...',
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
@@ -157,32 +163,49 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                             },
                           )
                         : null,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     isDense: true,
                   ),
-                  onChanged: (val) => setState(() => _searchQuery = val.trim().toLowerCase()),
+                  onChanged: (val) =>
+                      setState(() => _searchQuery = val.trim().toLowerCase()),
                 ),
               ),
 
               // Category filters
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: Row(
                   children: [
                     FilterChip(
                       selected: _selectedCategory == null,
                       label: const Text('All categories'),
-                      onSelected: (_) => setState(() => _selectedCategory = null),
+                      onSelected: (_) => setState(() {
+                        _selectedCategory = null;
+                        _selectedItemType = null;
+                      }),
                     ),
                     const SizedBox(width: 8),
-                    ...UpgradeCategory.values.map((cat) {
+                    ...UpgradeCategory.values
+                        .where((c) =>
+                            c == c.primaryCategory &&
+                            c != UpgradeCategory.other)
+                        .map((cat) {
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: FilterChip(
                           selected: _selectedCategory == cat,
                           label: Text(cat.displayName),
-                          onSelected: (_) => setState(() => _selectedCategory = cat),
+                          onSelected: (_) => setState(() {
+                            _selectedCategory = cat;
+                            // Reconcile item type if needed
+                            final valid = LevelItemType.typesForCategory(cat);
+                            if (_selectedItemType != null &&
+                                !valid.contains(_selectedItemType)) {
+                              _selectedItemType = null;
+                            }
+                          }),
                         ),
                       );
                     }),
@@ -190,10 +213,65 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                 ),
               ),
 
+              // Subcategory Item Type filters (when category or all is selected)
+              Builder(
+                builder: (context) {
+                  final types = _selectedCategory != null
+                      ? LevelItemType.typesForCategory(_selectedCategory!)
+                      : const [
+                          LevelItemType.buildings,
+                          LevelItemType.defences,
+                          LevelItemType.traps,
+                          LevelItemType.heroes,
+                          LevelItemType.heroPets,
+                          LevelItemType.troops,
+                          LevelItemType.spells,
+                          LevelItemType.siegeMachines,
+                        ];
+
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: Row(
+                      children: [
+                        FilterChip(
+                          selected: _selectedItemType == null,
+                          label: const Text('All types'),
+                          onSelected: (_) =>
+                              setState(() => _selectedItemType = null),
+                        ),
+                        const SizedBox(width: 8),
+                        ...types.map((type) {
+                          final isSelected = _selectedItemType == type;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              avatar: Icon(
+                                LevelItemType.iconForType(type),
+                                size: 14,
+                                color: isSelected
+                                    ? Colors.black
+                                    : AppColors.textSecondary,
+                              ),
+                              selected: isSelected,
+                              label: Text(type),
+                              onSelected: (_) => setState(() =>
+                                  _selectedItemType = isSelected ? null : type),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
               // Items list
               Expanded(
                 child: levelsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Center(child: Text('Error: $e')),
                   data: (items) {
                     var filtered = items;
@@ -202,11 +280,21 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                           .where((it) => it.category == _selectedCategory)
                           .toList();
                     }
-                    if (_searchQuery.isNotEmpty) {
+                    if (_selectedItemType != null) {
                       filtered = filtered
                           .where((it) =>
-                              it.itemName.toLowerCase().contains(_searchQuery))
+                              it.effectiveItemType == _selectedItemType)
                           .toList();
+                    }
+                    if (_searchQuery.isNotEmpty) {
+                      filtered = filtered.where((it) {
+                        final matchName =
+                            it.itemName.toLowerCase().contains(_searchQuery);
+                        final matchType = it.effectiveItemType
+                            .toLowerCase()
+                            .contains(_searchQuery);
+                        return matchName || matchType;
+                      }).toList();
                     }
 
                     if (filtered.isEmpty) {
@@ -222,30 +310,52 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                                 color: AppColors.textMuted,
                               ),
                               const SizedBox(height: 12),
-                              const Text(
-                                'No levels recorded yet',
-                                style: TextStyle(
+                              Text(
+                                _selectedItemType != null ||
+                                        _selectedCategory != null ||
+                                        _searchQuery.isNotEmpty
+                                    ? 'No matching tracked items'
+                                    : 'No levels recorded yet',
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                'Track your buildings, heroes, and troop research levels for this village.',
+                              Text(
+                                _selectedItemType != null ||
+                                        _selectedCategory != null ||
+                                        _searchQuery.isNotEmpty
+                                    ? 'Try adjusting your type filter or search query.'
+                                    : 'Track your buildings, heroes, and troop research levels for this village.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textMuted,
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              ElevatedButton.icon(
-                                onPressed: () =>
-                                    _showAddLevel(context, selectedVillage),
-                                icon: const Icon(Icons.add),
-                                label: const Text('Record first item level'),
-                              ),
+                              if (_selectedItemType != null ||
+                                  _selectedCategory != null ||
+                                  _searchQuery.isNotEmpty)
+                                TextButton.icon(
+                                  onPressed: () => setState(() {
+                                    _selectedCategory = null;
+                                    _selectedItemType = null;
+                                    _searchQuery = '';
+                                    _searchController.clear();
+                                  }),
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('Reset filters'),
+                                )
+                              else
+                                ElevatedButton.icon(
+                                  onPressed: () =>
+                                      _showAddLevel(context, selectedVillage),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Record first item level'),
+                                ),
                             ],
                           ),
                         ),
@@ -280,8 +390,8 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                                 updatedAtUtc: DateTime.now().toUtc(),
                               );
                               await ref
-                                    .read(villageItemLevelsDaoProvider)
-                                    .upsert(updated);
+                                  .read(villageItemLevelsDaoProvider)
+                                  .upsert(updated);
                             }
                           },
                         );
@@ -322,6 +432,10 @@ class _LevelItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveType = item.effectiveItemType;
+    final typeIcon = LevelItemType.iconForType(effectiveType);
+    final typeLabel = LevelItemType.conciseLabel(effectiveType);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
@@ -338,7 +452,8 @@ class _LevelItemCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.3)),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -367,23 +482,38 @@ class _LevelItemCard extends StatelessWidget {
                         color: AppColors.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
-                        Flexible(
-                          child: Text(
-                            item.category.displayName,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
+                        // Concise Type Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceVariant,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                typeIcon,
+                                size: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                typeLabel,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const Text(
-                          ' • ',
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-                        ),
+                        const SizedBox(width: 8),
                         Text(
                           DateTimeFormat.shortDate(item.updatedAtUtc),
                           style: const TextStyle(
@@ -412,9 +542,10 @@ class _LevelItemCard extends StatelessWidget {
                 onPressed: onIncrement,
               ),
 
-              // Options
+              // Context menu (edit / delete)
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, size: 20, color: AppColors.textSecondary),
+                icon: const Icon(Icons.more_vert,
+                    size: 18, color: AppColors.textSecondary),
                 color: AppColors.surfaceVariant,
                 onSelected: (val) {
                   if (val == 'edit') {
@@ -428,9 +559,10 @@ class _LevelItemCard extends StatelessWidget {
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit_outlined, size: 18, color: AppColors.accent),
+                        Icon(Icons.edit_outlined,
+                            size: 16, color: AppColors.accent),
                         SizedBox(width: 8),
-                        Text('Edit level'),
+                        Text('Edit item'),
                       ],
                     ),
                   ),
@@ -438,9 +570,11 @@ class _LevelItemCard extends StatelessWidget {
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                        Icon(Icons.delete_outline,
+                            size: 16, color: AppColors.error),
                         SizedBox(width: 8),
-                        Text('Remove record', style: TextStyle(color: AppColors.error)),
+                        Text('Delete record',
+                            style: TextStyle(color: AppColors.error)),
                       ],
                     ),
                   ),
@@ -453,4 +587,3 @@ class _LevelItemCard extends StatelessWidget {
     );
   }
 }
-

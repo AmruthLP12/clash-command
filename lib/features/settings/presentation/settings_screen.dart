@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
+import 'package:clash_command/core/constants/app_support_links.dart';
 
 /// Settings screen for managing notifications, permissions, and app preferences.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -418,6 +420,139 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              // Section: Developer & Support
+              const Text(
+                'DEVELOPER & SUPPORT',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.card,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.code,
+                            color: AppColors.accent),
+                        title: const Text(
+                          'GitHub Repository',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          AppSupportLinks.githubRepoUrl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchExternalUrl(
+                          context,
+                          AppSupportLinks.githubRepoUrl,
+                          'GitHub Repository',
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.person_outline,
+                            color: AppColors.accent),
+                        title: const Text(
+                          'Developer Profile (GitHub)',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          AppSupportLinks.githubProfileUrl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchExternalUrl(
+                          context,
+                          AppSupportLinks.githubProfileUrl,
+                          'Developer Profile',
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.language_outlined,
+                            color: AppColors.accent),
+                        title: const Text(
+                          'Portfolio',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          AppSupportLinks.portfolioUrl.isNotEmpty
+                              ? AppSupportLinks.portfolioUrl
+                              : 'Not configured yet',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchExternalUrl(
+                          context,
+                          AppSupportLinks.portfolioUrl,
+                          'Developer Portfolio',
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.coffee_outlined,
+                            color: AppColors.accent),
+                        title: const Text(
+                          'Support via PayPal',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          AppSupportLinks.paypalDonationUrl.isNotEmpty
+                              ? AppSupportLinks.paypalDonationUrl
+                              : 'Donation link not configured yet',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchExternalUrl(
+                          context,
+                          AppSupportLinks.paypalDonationUrl,
+                          'PayPal Donation',
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.qr_code_2,
+                            color: AppColors.accent),
+                        title: const Text(
+                          'Support QR Code',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          AppSupportLinks.qrAssetPath.isNotEmpty
+                              ? 'Tap to view and scan QR code'
+                              : 'QR asset not configured yet',
+                        ),
+                        trailing: const Icon(Icons.fullscreen, size: 20),
+                        onTap: () => _showQrCodeDialog(context),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Section: About
               const Text(
                 'ABOUT',
@@ -462,7 +597,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  'Version 1.0.4 (Build 5) • Offline-first Clash of Clans tracker',
+                                  'Version 1.0.5 (Build 6) • Offline-first Clash of Clans tracker',
                                   style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                                 ),
                               ],
@@ -503,6 +638,161 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         .read(notificationPreferencesDaoProvider)
         .updatePreferences(reminderOffsetMinutes: updated);
     await _reconcile();
+  }
+
+  Future<void> _launchExternalUrl(
+    BuildContext context,
+    String url,
+    String linkName,
+  ) async {
+    if (url.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$linkName is not configured yet. Configure it in AppSupportLinks.',
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+    final uri = Uri.tryParse(url.trim());
+    if (uri == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Invalid link URL: $url')),
+      );
+      return;
+    }
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open $linkName in browser.')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error launching $linkName: $e')),
+        );
+      }
+    }
+  }
+
+  void _showQrCodeDialog(BuildContext context) {
+    if (AppSupportLinks.qrAssetPath.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.qr_code_scanner, color: AppColors.accent),
+              SizedBox(width: 8),
+              Text('Support QR Code'),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'No QR code asset has been configured yet.',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'To display a donation or support QR code:\n'
+                '1. Place your QR code image in assets/branding/support_qr.png.\n'
+                '2. Set AppSupportLinks.qrAssetPath in lib/core/constants/app_support_links.dart.',
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Support & Donate',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  AppSupportLinks.qrAssetPath,
+                  width: 240,
+                  height: 240,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 240,
+                    height: 240,
+                    color: AppColors.surfaceVariant,
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'QR asset not found',
+                      style: TextStyle(color: AppColors.textMuted),
+                    ),
+                  ),
+                ),
+              ),
+              if (AppSupportLinks.qrPayload.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                SelectableText(
+                  AppSupportLinks.qrPayload,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

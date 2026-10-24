@@ -1,4 +1,58 @@
+import 'dart:convert';
+
 import 'upgrade_category.dart';
+
+/// Resource requirement for a planned upgrade.
+class PlannerResource {
+  const PlannerResource({
+    required this.type,
+    required this.amount,
+  });
+
+  /// Name of the resource (e.g. 'Gold', 'Elixir', 'Dark Elixir', 'Builder Gold', 'Builder Elixir').
+  final String type;
+
+  /// Required resource amount.
+  final int amount;
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'amount': amount,
+      };
+
+  factory PlannerResource.fromJson(Map<String, dynamic> json) =>
+      PlannerResource(
+        type: json['type'] as String? ?? 'Gold',
+        amount: (json['amount'] as num?)?.toInt() ?? 0,
+      );
+
+  /// Compact human-readable amount string, e.g. "12.5M Gold", "250k Dark Elixir".
+  String get formattedAmount {
+    if (amount >= 1000000) {
+      final m = amount / 1000000;
+      final formatted = m.toStringAsFixed(m.truncateToDouble() == m ? 0 : 1);
+      return '${formatted}M $type';
+    } else if (amount >= 1000) {
+      final k = amount / 1000;
+      final formatted = k.toStringAsFixed(k.truncateToDouble() == k ? 0 : 1);
+      return '${formatted}k $type';
+    }
+    return '$amount $type';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlannerResource &&
+          other.type == type &&
+          other.amount == amount);
+
+  @override
+  int get hashCode => Object.hash(type, amount);
+
+  @override
+  String toString() => 'PlannerResource($type: $amount)';
+}
 
 /// Domain model representing a planned future upgrade.
 class PlannerItem {
@@ -13,6 +67,8 @@ class PlannerItem {
     this.sortOrder = 0,
     this.status = 'planned',
     this.isNext = false,
+    this.durationSeconds,
+    this.resources = const [],
     required this.createdAtUtc,
     required this.updatedAtUtc,
   });
@@ -27,6 +83,8 @@ class PlannerItem {
   final int sortOrder;
   final String status; // 'planned', 'started', 'completed', 'cancelled'
   final bool isNext;
+  final int? durationSeconds;
+  final List<PlannerResource> resources;
   final DateTime createdAtUtc;
   final DateTime updatedAtUtc;
 
@@ -35,6 +93,25 @@ class PlannerItem {
       return '$name · Lv. $targetLevel';
     }
     return name;
+  }
+
+  static List<PlannerResource> parseResources(String? jsonStr) {
+    if (jsonStr == null || jsonStr.trim().isEmpty) return const [];
+    try {
+      final decoded = jsonDecode(jsonStr);
+      if (decoded is List) {
+        return decoded
+            .whereType<Map<String, dynamic>>()
+            .map(PlannerResource.fromJson)
+            .toList();
+      }
+    } catch (_) {}
+    return const [];
+  }
+
+  static String? encodeResources(List<PlannerResource> list) {
+    if (list.isEmpty) return null;
+    return jsonEncode(list.map((r) => r.toJson()).toList());
   }
 
   PlannerItem copyWith({
@@ -50,6 +127,9 @@ class PlannerItem {
     int? sortOrder,
     String? status,
     bool? isNext,
+    int? durationSeconds,
+    bool clearDurationSeconds = false,
+    List<PlannerResource>? resources,
     DateTime? createdAtUtc,
     DateTime? updatedAtUtc,
   }) {
@@ -65,6 +145,10 @@ class PlannerItem {
       sortOrder: sortOrder ?? this.sortOrder,
       status: status ?? this.status,
       isNext: isNext ?? this.isNext,
+      durationSeconds: clearDurationSeconds
+          ? null
+          : (durationSeconds ?? this.durationSeconds),
+      resources: resources ?? this.resources,
       createdAtUtc: createdAtUtc ?? this.createdAtUtc,
       updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
     );
@@ -78,6 +162,6 @@ class PlannerItem {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() => 'PlannerItem(id: $id, name: $name, targetLevel: $targetLevel)';
+  String toString() =>
+      'PlannerItem(id: $id, name: $name, targetLevel: $targetLevel, duration: $durationSeconds, resources: ${resources.length})';
 }
-

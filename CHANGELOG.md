@@ -4,6 +4,51 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-10-24
+
+### Added
+- **Levels Tab — Item Types & Subcategory Classification**:
+  - Implemented full 5-tier selection hierarchy: Village -> Category -> Item Type -> Item Name -> Current Level.
+  - Interactive, functional item type selectors with visible selection state:
+    - **Home Village — Builder**: `Buildings`, `Defences`, `Traps`, `Heroes`, `Hero Pets`, `Other`.
+    - **Home Village — Laboratory**: `Troops`, `Spells`, `Siege Machines`, `Other`.
+    - **Builder Base — Builder**: `Buildings`, `Defences`, `Traps`, `Heroes`, `Other`.
+    - **Builder Base — Star Laboratory**: `Troops`, `Other`.
+  - Autocomplete catalogue immediately updates to display only items matching the active item type.
+  - Added 10 verified Hero Pets (`L.A.S.S.I`, `Electro Owl`, `Mighty Yak`, `Unicorn`, `Frosty`, `Diggy`, `Poison Lizard`, `Phoenix`, `Spirit Fox`, `Angry Jelly`) with confirmed TH unlock levels (TH14–16) and max levels.
+  - Auto-inference: selecting a known catalogue item automatically suggests the correct item type while allowing manual override.
+  - Subcategory filtering on `LevelsScreen` and concise item type badge indicators on cards (`🛡️ Defence`, `👑 Hero`, `🐾 Pet`, `⚔️ Troop`, `✨ Spell`, `🏛️ Building`, `⚠️ Trap`) replacing redundant category labels.
+- **Levels Tab — Fully Editable Tracked Items**:
+  - Full editability of item name, realm, category, item type, village assignment, and current level in `AddLevelSheet`.
+  - Safe uniqueness conflict resolution: editing or renaming an item to match an existing record in the same village and category merges into the existing record cleanly without SQLite constraint failures.
+- **Advanced Upgrade Planner — Duration and Resource Planning**:
+  - Optional estimated duration entry with days, hours, and minutes fields, prefilled when editing.
+  - Optional required resources entry supporting tailored resource types by realm (Home Village: Gold, Elixir, Dark Elixir; Builder Base: Builder Gold, Builder Elixir) with numeric amounts and multi-resource support.
+  - Compact duration and color-coded resource badge indicators directly on planner cards.
+  - Comprehensive Planner Filter & Search panel:
+    - Text search by item name.
+    - Status filtering (Planned, In Progress / Started, Completed, All).
+    - Category filtering (Builder, Laboratory, Star Laboratory, All).
+    - Priority filtering (High, Medium, Low, All).
+    - Duration range filtering (< 1 day, 1–3 days, 3–7 days, > 7 days, or unset).
+    - Resource type filtering (Gold, Elixir, Dark Elixir, Builder Gold, Builder Elixir).
+    - Active filter counter badge with a one-tap "Clear all" reset action.
+- **Settings — Developer & Support Links**:
+  - Dedicated "Developer & Support" section in Settings.
+  - Direct links to the official GitHub repository and developer GitHub profile.
+  - Configurable portfolio and PayPal donation links with explicit, informative fallbacks when not yet configured.
+  - Support QR code viewer with tap-to-enlarge modal dialog for easy scanning.
+  - Centralized link and QR configuration in `AppSupportLinks` (`lib/core/constants/app_support_links.dart`).
+  - Safe URL opening using `url_launcher` with error handling and user-friendly notifications.
+- **Drift Database Schema v6 Migration**:
+  - Upgraded schema version to 6 with non-destructive migrations adding `duration_seconds` and `resources_json` columns to `planner_items`, and `item_type` column to `village_item_levels`.
+
+### Changed & Improved
+- **App Startup Performance & Lazy Loading**:
+  - Replaced eager screen construction with lazy tab initialization (`_loadedTabs` set with `IndexedStack`).
+  - Secondary tabs (Planner, Levels, History, Settings) are deferred and instantiated only upon first navigation, eliminating initial launch latency and premature database queries.
+  - Loaded tabs retain their widget trees, state, and scroll positions across tab switches without reloading or rebuilding.
+
 ## [1.0.4] - 2026-10-24
 
 ### Added

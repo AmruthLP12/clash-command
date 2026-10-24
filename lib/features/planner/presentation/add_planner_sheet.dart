@@ -38,6 +38,16 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
   late final FocusNode _levelFocusNode;
   late final TextEditingController _notesController;
 
+  // Duration controllers
+  late final TextEditingController _daysController;
+  late final TextEditingController _hoursController;
+  late final TextEditingController _minutesController;
+
+  // Resource controllers
+  late final TextEditingController _resourceAmountController;
+  late String _selectedResourceType;
+  late List<PlannerResource> _resources;
+
   late VillageRealm _realm;
   late UpgradeCategory _category;
   String _priority = 'Medium';
@@ -55,6 +65,26 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     _levelFocusNode = FocusNode();
     _notesController = TextEditingController(text: it?.notes ?? '');
 
+    // Initialize duration
+    final durSec = it?.durationSeconds;
+    if (durSec != null && durSec > 0) {
+      final dur = Duration(seconds: durSec);
+      _daysController = TextEditingController(
+          text: dur.inDays > 0 ? '${dur.inDays}' : '');
+      _hoursController = TextEditingController(
+          text: dur.inHours.remainder(24) > 0
+              ? '${dur.inHours.remainder(24)}'
+              : '');
+      _minutesController = TextEditingController(
+          text: dur.inMinutes.remainder(60) > 0
+              ? '${dur.inMinutes.remainder(60)}'
+              : '');
+    } else {
+      _daysController = TextEditingController();
+      _hoursController = TextEditingController();
+      _minutesController = TextEditingController();
+    }
+
     _category = it?.category.primaryCategory ??
         widget.initialCategory?.primaryCategory ??
         UpgradeCategory.homeBuilder;
@@ -65,6 +95,11 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
         : VillageRealm.homeVillage;
 
     _priority = it?.priority ?? 'Medium';
+
+    // Resources
+    _resources = List.from(it?.resources ?? []);
+    _resourceAmountController = TextEditingController();
+    _selectedResourceType = _defaultResourceTypeForRealm(_realm);
   }
 
   @override
@@ -74,7 +109,22 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     _levelController.dispose();
     _levelFocusNode.dispose();
     _notesController.dispose();
+    _daysController.dispose();
+    _hoursController.dispose();
+    _minutesController.dispose();
+    _resourceAmountController.dispose();
     super.dispose();
+  }
+
+  String _defaultResourceTypeForRealm(VillageRealm realm) {
+    return realm == VillageRealm.homeVillage ? 'Gold' : 'Builder Gold';
+  }
+
+  List<String> _resourceOptionsForRealm(VillageRealm realm) {
+    if (realm == VillageRealm.homeVillage) {
+      return const ['Gold', 'Elixir', 'Dark Elixir'];
+    }
+    return const ['Builder Gold', 'Builder Elixir'];
   }
 
   void _onRealmChanged(VillageRealm realm) {
@@ -84,8 +134,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
       _category = (realm == VillageRealm.homeVillage)
           ? UpgradeCategory.homeBuilder
           : UpgradeCategory.builderBaseBuilder;
-      _nameController.clear();
-      _levelController.clear();
+      _selectedResourceType = _defaultResourceTypeForRealm(realm);
     });
   }
 
@@ -93,8 +142,11 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     if (_category == cat) return;
     setState(() {
       _category = cat;
-      _nameController.clear();
-      _levelController.clear();
+      _realm = (cat == UpgradeCategory.builderBaseBuilder ||
+              cat == UpgradeCategory.builderBaseStarLab)
+          ? VillageRealm.builderBase
+          : VillageRealm.homeVillage;
+      _selectedResourceType = _defaultResourceTypeForRealm(_realm);
     });
   }
 
@@ -104,6 +156,41 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     if (suggested != null) {
       _levelController.text = '$suggested';
     }
+    // Auto-detect realm & category
+    final targetCat = item.category.primaryCategory;
+    final targetRealm =
+        (targetCat == UpgradeCategory.builderBaseBuilder ||
+                targetCat == UpgradeCategory.builderBaseStarLab)
+            ? VillageRealm.builderBase
+            : VillageRealm.homeVillage;
+    setState(() {
+      _category = targetCat;
+      _realm = targetRealm;
+      _selectedResourceType = _defaultResourceTypeForRealm(_realm);
+    });
+  }
+
+  void _addResource() {
+    final amtText = _resourceAmountController.text.trim();
+    if (amtText.isEmpty) return;
+    final amount = int.tryParse(amtText);
+    if (amount == null || amount <= 0) return;
+
+    setState(() {
+      // Remove any previous requirement with the same resource type to replace it
+      _resources.removeWhere((r) => r.type == _selectedResourceType);
+      _resources.add(PlannerResource(
+        type: _selectedResourceType,
+        amount: amount,
+      ));
+      _resourceAmountController.clear();
+    });
+  }
+
+  void _removeResource(int index) {
+    setState(() {
+      _resources.removeAt(index);
+    });
   }
 
   Future<void> _submit() async {
@@ -112,11 +199,19 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     try {
       final name = _nameController.text.trim();
       final levelText = _levelController.text.trim();
-      final targetLevel = levelText.isNotEmpty ? int.tryParse(levelText) : null;
+      final targetLevel =
+          levelText.isNotEmpty ? int.tryParse(levelText) : null;
       final notes = _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim();
       final now = DateTime.now().toUtc();
+
+      // Duration in seconds
+      final d = int.tryParse(_daysController.text.trim()) ?? 0;
+      final h = int.tryParse(_hoursController.text.trim()) ?? 0;
+      final m = int.tryParse(_minutesController.text.trim()) ?? 0;
+      final totalSec = d * 86400 + h * 3600 + m * 60;
+      final durationSeconds = totalSec > 0 ? totalSec : null;
 
       if (widget.isEditing) {
         final updated = widget.item!.copyWith(
@@ -127,6 +222,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
           priority: _priority,
           notes: notes,
           clearNotes: notes == null,
+          durationSeconds: durationSeconds,
+          clearDurationSeconds: durationSeconds == null,
+          resources: _resources,
           updatedAtUtc: now,
         );
         await ref.read(plannerDaoProvider).upsert(updated);
@@ -142,6 +240,8 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
           sortOrder: 9999, // Placed at the end by default
           status: 'planned',
           isNext: false,
+          durationSeconds: durationSeconds,
+          resources: _resources,
           createdAtUtc: now,
           updatedAtUtc: now,
         );
@@ -160,6 +260,11 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     final customNames = (customSuggestionsAsync.valueOrNull ?? [])
         .map((e) => e.name)
         .toList();
+
+    final resourceTypes = _resourceOptionsForRealm(_realm);
+    if (!resourceTypes.contains(_selectedResourceType)) {
+      _selectedResourceType = resourceTypes.first;
+    }
 
     return SafeArea(
       child: ConstrainedBox(
@@ -205,7 +310,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Realm switcher (Home Village vs Builder Base)
+                  // Realm switcher
                   SegmentedButton<VillageRealm>(
                     segments: [
                       ButtonSegment(
@@ -228,11 +333,11 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Category Selector
+                  // Category selector
                   _buildCategorySelector(),
                   const SizedBox(height: 12),
 
-                  // Name Autocomplete
+                  // Item Name with Autocomplete
                   RawAutocomplete<UpgradeCatalogItem>(
                     textEditingController: _nameController,
                     focusNode: _nameFocusNode,
@@ -254,9 +359,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                         focusNode: focusNode,
                         decoration: InputDecoration(
                           labelText: 'Upgrade name *',
-                          hintText: 'e.g. Archer Tower, P.E.K.K.A',
+                          hintText: 'e.g. Archer Tower, Town Hall, Barbarian',
                           prefixIcon:
-                              const Icon(Icons.arrow_upward_outlined, size: 20),
+                              const Icon(Icons.shield_outlined, size: 20),
                           suffixIcon: controller.text.isNotEmpty
                               ? IconButton(
                                   icon: const Icon(Icons.clear, size: 18),
@@ -320,7 +425,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Target Level & Priority
+                  // Target Level & Priority Row
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -330,46 +435,50 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                           controller: _levelController,
                           focusNode: _levelFocusNode,
                           decoration: const InputDecoration(
-                            labelText: 'Upgrade to level',
-                            hintText: 'e.g. 19',
-                            prefixIcon: Icon(Icons.numbers_outlined, size: 18),
+                            labelText: 'Target level (opt.)',
+                            hintText: 'e.g. 16',
+                            prefixIcon: Icon(Icons.star_outline, size: 20),
                           ),
                           keyboardType: TextInputType.number,
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) return null;
-                            final n = int.tryParse(v.trim());
-                            if (n == null || n < 1) return 'Positive integer';
+                            if (v != null && v.trim().isNotEmpty) {
+                              final n = int.tryParse(v.trim());
+                              if (n == null || n < 1) {
+                                return 'Invalid level';
+                              }
+                            }
                             return null;
                           },
                         ),
                       ),
                       const SizedBox(width: 12),
 
-                      // Priority
+                      // Priority Dropdown
                       Expanded(
                         child: DropdownButtonFormField<String>(
+                          key: ValueKey('priority_$_priority'),
                           initialValue: _priority,
                           decoration: const InputDecoration(
                             labelText: 'Priority',
-                            prefixIcon: Icon(Icons.flag_outlined, size: 18),
+                            prefixIcon:
+                                Icon(Icons.flag_outlined, size: 20),
                           ),
-                          dropdownColor: AppColors.surfaceVariant,
                           items: const [
                             DropdownMenuItem(
                               value: 'High',
-                              child: Text('High', style: TextStyle(color: AppColors.pastDue)),
+                              child: Text('High'),
                             ),
                             DropdownMenuItem(
                               value: 'Medium',
-                              child: Text('Medium', style: TextStyle(color: AppColors.accent)),
+                              child: Text('Medium'),
                             ),
                             DropdownMenuItem(
                               value: 'Low',
-                              child: Text('Low', style: TextStyle(color: AppColors.textSecondary)),
+                              child: Text('Low'),
                             ),
                           ],
-                          onChanged: (v) {
-                            if (v != null) setState(() => _priority = v);
+                          onChanged: (val) {
+                            if (val != null) setState(() => _priority = val);
                           },
                         ),
                       ),
@@ -377,18 +486,160 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                   ),
                   const SizedBox(height: 12),
 
+                  // Estimated Duration (Days, Hours, Minutes)
+                  const Text(
+                    'Estimated Duration (optional)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _daysController,
+                          decoration: const InputDecoration(
+                            labelText: 'Days',
+                            hintText: '0',
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _hoursController,
+                          decoration: const InputDecoration(
+                            labelText: 'Hours',
+                            hintText: '0',
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _minutesController,
+                          decoration: const InputDecoration(
+                            labelText: 'Minutes',
+                            hintText: '0',
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Required Resources (optional)
+                  const Text(
+                    'Required Resources (optional)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: DropdownButtonFormField<String>(
+                          key: ValueKey('res_$_selectedResourceType'),
+                          initialValue: _selectedResourceType,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Resource',
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 10),
+                          ),
+                          items: resourceTypes.map((type) {
+                            return DropdownMenuItem(
+                              value: type,
+                              child: Text(
+                                type,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() => _selectedResourceType = val);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 6,
+                        child: TextFormField(
+                          controller: _resourceAmountController,
+                          decoration: const InputDecoration(
+                            labelText: 'Amount',
+                            hintText: 'e.g. 5000000',
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 10),
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filledTonal(
+                        icon: const Icon(Icons.add, size: 20),
+                        tooltip: 'Add resource',
+                        onPressed: _addResource,
+                      ),
+                    ],
+                  ),
+                  if (_resources.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: List.generate(_resources.length, (index) {
+                        final res = _resources[index];
+                        return Chip(
+                          label: Text(res.formattedAmount),
+                          deleteIcon:
+                              const Icon(Icons.close, size: 16),
+                          onDeleted: () => _removeResource(index),
+                          backgroundColor:
+                              AppColors.surfaceVariant,
+                          labelStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+
                   // Notes
                   TextFormField(
                     controller: _notesController,
                     decoration: const InputDecoration(
                       labelText: 'Notes (optional)',
-                      hintText: 'e.g. Save 10M gold for this upgrade',
+                      hintText: 'e.g. Wait until Clan Games finish',
+                      prefixIcon: Icon(Icons.notes_outlined, size: 20),
                     ),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 20),
 
-                  // Submit
+                  // Submit button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -402,7 +653,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                                 color: Colors.black,
                               ),
                             )
-                          : Text(widget.isEditing ? 'Save plan' : 'Add to planner'),
+                          : Text(widget.isEditing
+                              ? 'Save plan'
+                              : 'Add to planner'),
                     ),
                   ),
                 ],
@@ -445,7 +698,8 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
               icon: Icons.build_outlined,
               label: 'Builder',
               isSelected: _category == UpgradeCategory.builderBaseBuilder,
-              onTap: () => _onCategoryChanged(UpgradeCategory.builderBaseBuilder),
+              onTap: () =>
+                  _onCategoryChanged(UpgradeCategory.builderBaseBuilder),
             ),
           ),
           const SizedBox(width: 8),
@@ -454,7 +708,8 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
               icon: Icons.biotech_outlined,
               label: 'Star Laboratory',
               isSelected: _category == UpgradeCategory.builderBaseStarLab,
-              onTap: () => _onCategoryChanged(UpgradeCategory.builderBaseStarLab),
+              onTap: () =>
+                  _onCategoryChanged(UpgradeCategory.builderBaseStarLab),
             ),
           ),
         ],
@@ -501,7 +756,8 @@ class _CategoryPill extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected ? Colors.black : AppColors.textPrimary,
                   ),
                 ),

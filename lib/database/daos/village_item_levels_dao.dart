@@ -73,6 +73,7 @@ class VillageItemLevelsDao extends DatabaseAccessor<AppDatabase>
       category: UpgradeCategory.fromString(row.category),
       itemName: row.itemName,
       currentLevel: row.currentLevel,
+      itemType: row.itemType,
       updatedAtUtc: row.updatedAtUtc,
     );
   }
@@ -82,6 +83,7 @@ class VillageItemLevelsDao extends DatabaseAccessor<AppDatabase>
       id: Value(item.id),
       villageId: Value(item.villageId),
       category: Value(item.category.name),
+      itemType: Value(item.itemType),
       itemName: Value(item.itemName),
       currentLevel: Value(item.currentLevel),
       updatedAtUtc: Value(item.updatedAtUtc),

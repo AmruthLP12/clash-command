@@ -30,46 +30,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   UpgradeCategory _selectedCategory = UpgradeCategory.homeBuilder;
   bool _userSelectedCategory = false;
 
+  final Set<int> _loadedTabs = {0};
+
   @override
   Widget build(BuildContext context) {
-    if (_navIndex == 1) {
-      return Scaffold(
-        body: PlannerScreen(initialVillageId: _selectedVillageId),
-        bottomNavigationBar: _buildBottomNav(),
-      );
-    }
+    return Scaffold(
+      body: IndexedStack(
+        index: _navIndex,
+        children: [
+          _buildDashboardTab(),
+          _loadedTabs.contains(1)
+              ? PlannerScreen(initialVillageId: _selectedVillageId)
+              : const SizedBox.shrink(),
+          _loadedTabs.contains(2)
+              ? LevelsScreen(initialVillageId: _selectedVillageId)
+              : const SizedBox.shrink(),
+          _loadedTabs.contains(3)
+              ? HistoryScreen(initialVillageId: _selectedVillageId)
+              : const SizedBox.shrink(),
+          _loadedTabs.contains(4)
+              ? const SettingsScreen()
+              : const SizedBox.shrink(),
+        ],
+      ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
 
-    if (_navIndex == 2) {
-      return Scaffold(
-        body: LevelsScreen(initialVillageId: _selectedVillageId),
-        bottomNavigationBar: _buildBottomNav(),
-      );
-    }
-
-    if (_navIndex == 3) {
-      return Scaffold(
-        body: HistoryScreen(initialVillageId: _selectedVillageId),
-        bottomNavigationBar: _buildBottomNav(),
-      );
-    }
-
-    if (_navIndex == 4) {
-      return Scaffold(
-        body: const SettingsScreen(),
-        bottomNavigationBar: _buildBottomNav(),
-      );
-    }
-
+  Widget _buildDashboardTab() {
     final villagesAsync = ref.watch(villagesStreamProvider);
 
     return villagesAsync.when(
-      loading: () => Scaffold(
-        body: const Center(child: CircularProgressIndicator()),
-        bottomNavigationBar: _buildBottomNav(),
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       ),
       error: (e, _) => Scaffold(
         body: Center(child: Text('Error: $e')),
-        bottomNavigationBar: _buildBottomNav(),
       ),
       data: (villages) {
         if (villages.isNotEmpty) {
@@ -237,7 +233,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.black,
                 ),
-          bottomNavigationBar: _buildBottomNav(),
         );
       },
     );
@@ -248,7 +243,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       selectedIndex: _navIndex,
       backgroundColor: AppColors.surface,
       indicatorColor: AppColors.accent,
-      onDestinationSelected: (index) => setState(() => _navIndex = index),
+      onDestinationSelected: (index) {
+        setState(() {
+          _navIndex = index;
+          _loadedTabs.add(index);
+        });
+      },
       destinations: const [
         NavigationDestination(
           icon: Icon(Icons.dashboard_outlined),

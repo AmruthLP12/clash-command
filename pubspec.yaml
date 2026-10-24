@@ -2,7 +2,7 @@ name: clash_command
 description: "A personal offline-first Clash of Clans builder tracker."
 publish_to: "none"
 
-version: 1.0.4+5
+version: 1.0.5+6
 
 environment:
   sdk: ^3.13.5
@@ -20,6 +20,7 @@ dependencies:
   timezone: ^0.9.4
   uuid: ^4.5.1
   cupertino_icons: ^1.0.8
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,4 @@
+import '../models/level_item_type.dart';
 import '../models/upgrade_category.dart';
 import 'upgrade_catalog_item.dart';
 
@@ -334,6 +335,78 @@ class UpgradeCatalog {
       type: 'Trap',
       minTownHall: 11,
       maxLevel: 3,
+    ),
+
+    // Hero Pets (unlocked via Pet House)
+    UpgradeCatalogItem(
+      name: 'L.A.S.S.I',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 14,
+      maxLevel: 15,
+    ),
+    UpgradeCatalogItem(
+      name: 'Electro Owl',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 14,
+      maxLevel: 15,
+    ),
+    UpgradeCatalogItem(
+      name: 'Mighty Yak',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 14,
+      maxLevel: 15,
+    ),
+    UpgradeCatalogItem(
+      name: 'Unicorn',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 14,
+      maxLevel: 15,
+    ),
+    UpgradeCatalogItem(
+      name: 'Frosty',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 15,
+      maxLevel: 10,
+    ),
+    UpgradeCatalogItem(
+      name: 'Diggy',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 15,
+      maxLevel: 10,
+    ),
+    UpgradeCatalogItem(
+      name: 'Poison Lizard',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 15,
+      maxLevel: 10,
+    ),
+    UpgradeCatalogItem(
+      name: 'Phoenix',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 15,
+      maxLevel: 10,
+    ),
+    UpgradeCatalogItem(
+      name: 'Spirit Fox',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 16,
+      maxLevel: 10,
+    ),
+    UpgradeCatalogItem(
+      name: 'Angry Jelly',
+      category: UpgradeCategory.homeBuilder,
+      type: 'Hero Pet',
+      minTownHall: 16,
+      maxLevel: 10,
     ),
 
     // -------------------------------------------------------------------------
@@ -966,6 +1039,7 @@ class UpgradeCatalog {
   static List<UpgradeCatalogItem> search({
     required String query,
     required UpgradeCategory category,
+    String? itemType,
     int? townHallLevel,
     int? builderHallLevel,
     List<String> customNames = const [],
@@ -976,9 +1050,18 @@ class UpgradeCatalog {
         targetCategory == UpgradeCategory.builderBaseStarLab;
 
     // 1. Filter built-in items for this specific primary category
-    final categoryItems = builtInItems
+    var categoryItems = builtInItems
         .where((item) => item.category == targetCategory)
         .toList();
+
+    // 1b. Filter by specific item type if specified (e.g. Defences, Heroes, Troops, etc.)
+    if (itemType != null &&
+        itemType.trim().isNotEmpty &&
+        itemType != LevelItemType.other) {
+      categoryItems = categoryItems
+          .where((item) => LevelItemType.matchesCatalogType(itemType, item.type))
+          .toList();
+    }
 
     // 2. Append custom user suggestions
     final builtInLowerNames =
@@ -994,7 +1077,7 @@ class UpgradeCatalog {
           UpgradeCatalogItem(
             name: trimmed,
             category: targetCategory,
-            type: 'Custom',
+            type: itemType ?? 'Custom',
             isCustom: true,
           ),
         );

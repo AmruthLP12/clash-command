@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -65,6 +65,13 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(villages, villages.builderHallLevel);
           await m.createTable(plannerItems);
           await m.createTable(villageItemLevels);
+        }
+        if (from < 5) {
+          await m.addColumn(plannerItems, plannerItems.durationSeconds);
+          await m.addColumn(plannerItems, plannerItems.resourcesJson);
+        }
+        if (from < 6) {
+          await m.addColumn(villageItemLevels, villageItemLevels.itemType);
         }
       },
     );

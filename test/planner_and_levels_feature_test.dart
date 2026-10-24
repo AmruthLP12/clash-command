@@ -9,6 +9,7 @@ import 'package:clash_command/database/daos/village_item_levels_dao.dart';
 import 'package:clash_command/database/daos/villages_dao.dart';
 import 'package:clash_command/domain/catalog/upgrade_catalog.dart';
 import 'package:clash_command/domain/models/game_constants.dart';
+import 'package:clash_command/domain/models/level_item_type.dart';
 import 'package:clash_command/domain/models/planner_item.dart';
 import 'package:clash_command/domain/models/upgrade.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
@@ -358,6 +359,300 @@ void main() {
 
       expect(find.text('Dragon'), findsOneWidget);
       expect(find.text(UpgradeCategory.homeLab.displayName), findsOneWidget);
+    });
+  });
+
+  group('5. Advanced Planner: Duration and Resource Planning', () {
+    test('formats planner resource amounts compactly', () {
+      const r1 = PlannerResource(type: 'Gold', amount: 12500000);
+      expect(r1.formattedAmount, '12.5M Gold');
+
+      const r2 = PlannerResource(type: 'Dark Elixir', amount: 250000);
+      expect(r2.formattedAmount, '250k Dark Elixir');
+
+      const r3 = PlannerResource(type: 'Builder Gold', amount: 4000000);
+      expect(r3.formattedAmount, '4M Builder Gold');
+
+      const r4 = PlannerResource(type: 'Elixir', amount: 500);
+      expect(r4.formattedAmount, '500 Elixir');
+    });
+
+    test('persists and retrieves durationSeconds and multiple resources in PlannerDao', () async {
+      const resources = [
+        PlannerResource(type: 'Gold', amount: 18000000),
+        PlannerResource(type: 'Dark Elixir', amount: 300000),
+      ];
+
+      final plan = PlannerItem(
+        id: 'plan-dur-res',
+        villageId: 'v-1',
+        category: UpgradeCategory.homeBuilder,
+        name: 'Town Hall',
+        targetLevel: 18,
+        priority: 'High',
+        durationSeconds: 14 * 86400, // 14 days
+        resources: resources,
+        createdAtUtc: now,
+        updatedAtUtc: now,
+      );
+
+      await plannerDao.upsert(plan);
+      final retrieved = await plannerDao.findById('plan-dur-res');
+
+      expect(retrieved, isNotNull);
+      expect(retrieved!.durationSeconds, 14 * 86400);
+      expect(retrieved.resources.length, 2);
+      expect(retrieved.resources[0].type, 'Gold');
+      expect(retrieved.resources[0].amount, 18000000);
+      expect(retrieved.resources[1].type, 'Dark Elixir');
+      expect(retrieved.resources[1].amount, 300000);
+    });
+  });
+
+  group('6. Levels Full Editing & Safe Uniqueness Conflict Resolution', () {
+    test('allows editing item name and category', () async {
+      final initial = VillageItemLevel(
+        id: 'lvl-edit-1',
+        villageId: 'v-1',
+        category: UpgradeCategory.homeBuilder,
+        itemName: 'Archers',
+        currentLevel: 5,
+        updatedAtUtc: now,
+      );
+      await levelsDao.upsert(initial);
+
+      // Edit to Lab category and correct name
+      final updated = initial.copyWith(
+        category: UpgradeCategory.homeLab,
+        itemName: 'Archer',
+        currentLevel: 6,
+        updatedAtUtc: now.add(const Duration(minutes: 5)),
+      );
+      await levelsDao.upsert(updated);
+
+      final fetchedOld = await levelsDao.findByItem(
+        'v-1',
+        UpgradeCategory.homeBuilder,
+        'Archers',
+      );
+      expect(fetchedOld, isNull);
+
+      final fetchedNew = await levelsDao.findByItem(
+        'v-1',
+        UpgradeCategory.homeLab,
+        'Archer',
+      );
+      expect(fetchedNew, isNotNull);
+      expect(fetchedNew!.currentLevel, 6);
+      expect(fetchedNew.category, UpgradeCategory.homeLab);
+    });
+
+    test('safely merges into existing record when editing causes uniqueness conflict', () async {
+      // Suppose user already has Cannon Lv. 10
+      final cannon = VillageItemLevel(
+        id: 'lvl-cannon',
+        villageId: 'v-1',
+        category: UpgradeCategory.homeBuilder,
+        itemName: 'Cannon',
+        currentLevel: 10,
+        updatedAtUtc: now,
+      );
+      await levelsDao.upsert(cannon);
+
+      // User also has a typo entry 'Canno' Lv. 12
+      final typo = VillageItemLevel(
+        id: 'lvl-typo',
+        villageId: 'v-1',
+        category: UpgradeCategory.homeBuilder,
+        itemName: 'Canno',
+        currentLevel: 12,
+        updatedAtUtc: now,
+      );
+      await levelsDao.upsert(typo);
+
+      // When user edits 'Canno' to 'Cannon', simulate the safe merge:
+      final existing = await levelsDao.findByItem(
+        'v-1',
+        UpgradeCategory.homeBuilder,
+        'Cannon',
+      );
+      expect(existing, isNotNull);
+      expect(existing!.id, isNot(typo.id));
+
+      // Merge: update existing with new level 12 and delete typo entry
+      final merged = existing.copyWith(
+        currentLevel: 12,
+        updatedAtUtc: now,
+      );
+      await levelsDao.upsert(merged);
+      await levelsDao.deleteItem(typo.id);
+
+      final allLevels = await levelsDao.watchForVillage('v-1').first;
+      expect(allLevels.length, 1);
+      expect(allLevels.first.itemName, 'Cannon');
+      expect(allLevels.first.currentLevel, 12);
+    });
+  });
+
+  group('7. Item Types, Subcategory Selection & Persistence', () {
+    test('defines strictly valid item types for each realm category', () {
+      final homeBuilderTypes =
+          LevelItemType.typesForCategory(UpgradeCategory.homeBuilder);
+      expect(homeBuilderTypes, containsAll([
+        LevelItemType.buildings,
+        LevelItemType.defences,
+        LevelItemType.traps,
+        LevelItemType.heroes,
+        LevelItemType.heroPets,
+        LevelItemType.other,
+      ]));
+      expect(homeBuilderTypes.contains(LevelItemType.troops), isFalse);
+      expect(homeBuilderTypes.contains(LevelItemType.spells), isFalse);
+
+      final homeLabTypes =
+          LevelItemType.typesForCategory(UpgradeCategory.homeLab);
+      expect(homeLabTypes, containsAll([
+        LevelItemType.troops,
+        LevelItemType.spells,
+        LevelItemType.siegeMachines,
+        LevelItemType.other,
+      ]));
+      expect(homeLabTypes.contains(LevelItemType.defences), isFalse);
+      expect(homeLabTypes.contains(LevelItemType.heroPets), isFalse);
+
+      final bbBuilderTypes =
+          LevelItemType.typesForCategory(UpgradeCategory.builderBaseBuilder);
+      expect(bbBuilderTypes, containsAll([
+        LevelItemType.buildings,
+        LevelItemType.defences,
+        LevelItemType.traps,
+        LevelItemType.heroes,
+        LevelItemType.other,
+      ]));
+      expect(bbBuilderTypes.contains(LevelItemType.heroPets), isFalse);
+      expect(bbBuilderTypes.contains(LevelItemType.spells), isFalse);
+
+      final bbStarLabTypes =
+          LevelItemType.typesForCategory(UpgradeCategory.builderBaseStarLab);
+      expect(bbStarLabTypes, containsAll([
+        LevelItemType.troops,
+        LevelItemType.other,
+      ]));
+      expect(bbStarLabTypes.contains(LevelItemType.buildings), isFalse);
+      expect(bbStarLabTypes.contains(LevelItemType.defences), isFalse);
+    });
+
+    test('UpgradeCatalog includes verified Hero Pets with max levels and unlocks', () {
+      final lassi = UpgradeCatalog.find('L.A.S.S.I', UpgradeCategory.homeBuilder);
+      expect(lassi, isNotNull);
+      expect(lassi!.type, 'Hero Pet');
+      expect(lassi.minTownHall, 14);
+      expect(lassi.maxLevel, 15);
+
+      final spiritFox =
+          UpgradeCatalog.find('Spirit Fox', UpgradeCategory.homeBuilder);
+      expect(spiritFox, isNotNull);
+      expect(spiritFox!.type, 'Hero Pet');
+      expect(spiritFox.minTownHall, 16);
+      expect(spiritFox.maxLevel, 10);
+    });
+
+    test('UpgradeCatalog.search filters results by selected itemType', () {
+      // Searching Defences returns only defences
+      final defences = UpgradeCatalog.search(
+        query: '',
+        category: UpgradeCategory.homeBuilder,
+        itemType: LevelItemType.defences,
+      );
+      expect(defences, isNotEmpty);
+      expect(
+        defences.every((item) =>
+            item.type.toLowerCase() == 'defense' ||
+            item.type.toLowerCase() == 'merged defense'),
+        isTrue,
+      );
+
+      // Searching Hero Pets returns only pets
+      final pets = UpgradeCatalog.search(
+        query: '',
+        category: UpgradeCategory.homeBuilder,
+        itemType: LevelItemType.heroPets,
+      );
+      expect(pets, isNotEmpty);
+      expect(pets.every((item) => item.type == 'Hero Pet'), isTrue);
+      expect(pets.any((item) => item.name == 'Unicorn'), isTrue);
+
+      // Searching Spells in Home Lab returns only spells
+      final spells = UpgradeCatalog.search(
+        query: '',
+        category: UpgradeCategory.homeLab,
+        itemType: LevelItemType.spells,
+      );
+      expect(spells, isNotEmpty);
+      expect(
+        spells.every((item) =>
+            item.type == 'Spell' || item.type == 'Dark Spell'),
+        isTrue,
+      );
+    });
+
+    test('persists itemType in database and reads back accurately', () async {
+      final item = VillageItemLevel(
+        id: 'lvl-typed-1',
+        villageId: 'v-1',
+        category: UpgradeCategory.homeBuilder,
+        itemType: LevelItemType.heroPets,
+        itemName: 'Unicorn',
+        currentLevel: 10,
+        updatedAtUtc: now,
+      );
+
+      await levelsDao.upsert(item);
+      final fetched = await levelsDao.findByItem(
+        'v-1',
+        UpgradeCategory.homeBuilder,
+        'Unicorn',
+      );
+
+      expect(fetched, isNotNull);
+      expect(fetched!.itemType, LevelItemType.heroPets);
+      expect(fetched.effectiveItemType, LevelItemType.heroPets);
+      expect(fetched.currentLevel, 10);
+    });
+
+    test('effectiveItemType infers classification if itemType is null', () {
+      final legacyHero = VillageItemLevel(
+        id: 'lvl-legacy',
+        villageId: 'v-1',
+        category: UpgradeCategory.homeBuilder,
+        itemType: null,
+        itemName: 'Barbarian King',
+        currentLevel: 75,
+        updatedAtUtc: now,
+      );
+      expect(legacyHero.effectiveItemType, LevelItemType.heroes);
+
+      final legacyDefence = VillageItemLevel(
+        id: 'lvl-legacy-2',
+        villageId: 'v-1',
+        category: UpgradeCategory.homeBuilder,
+        itemType: null,
+        itemName: 'Eagle Artillery',
+        currentLevel: 6,
+        updatedAtUtc: now,
+      );
+      expect(legacyDefence.effectiveItemType, LevelItemType.defences);
+
+      final legacySpell = VillageItemLevel(
+        id: 'lvl-legacy-3',
+        villageId: 'v-1',
+        category: UpgradeCategory.homeLab,
+        itemType: null,
+        itemName: 'Rage Spell',
+        currentLevel: 6,
+        updatedAtUtc: now,
+      );
+      expect(legacySpell.effectiveItemType, LevelItemType.spells);
     });
   });
 }
