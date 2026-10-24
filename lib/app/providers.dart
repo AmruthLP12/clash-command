@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
+import '../database/daos/custom_upgrade_suggestions_dao.dart';
 import '../database/daos/history_events_dao.dart';
 import '../database/daos/notification_preferences_dao.dart';
 import '../database/daos/upgrades_dao.dart';
 import '../database/daos/villages_dao.dart';
+import '../domain/models/upgrade_category.dart';
 import '../domain/services/notification_plan_service.dart';
 import '../domain/services/upgrade_lifecycle_service.dart';
 import '../domain/services/upgrade_timer_service.dart';
@@ -40,6 +42,20 @@ final notificationPreferencesDaoProvider =
     Provider<NotificationPreferencesDao>((ref) {
   return NotificationPreferencesDao(ref.watch(appDatabaseProvider));
 });
+
+final customUpgradeSuggestionsDaoProvider =
+    Provider<CustomUpgradeSuggestionsDao>((ref) {
+  return CustomUpgradeSuggestionsDao(ref.watch(appDatabaseProvider));
+});
+
+final customUpgradeSuggestionsStreamProvider =
+    StreamProvider.family<List<CustomUpgradeSuggestionRow>, UpgradeCategory>(
+  (ref, category) {
+    return ref
+        .watch(customUpgradeSuggestionsDaoProvider)
+        .watchForCategory(category);
+  },
+);
 
 final notificationPreferencesStreamProvider =
     StreamProvider<NotificationPreference>((ref) {

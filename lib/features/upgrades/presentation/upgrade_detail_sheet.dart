@@ -139,15 +139,17 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          upgrade.name,
+                          upgrade.displayNameWithLevel,
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -166,8 +168,30 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                                 ),
                               ),
                             ),
+                            if (upgrade.fromLevel != null || upgrade.toLevel != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.accent.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  upgrade.fromLevel != null && upgrade.toLevel != null
+                                      ? 'Lv. ${upgrade.fromLevel} → ${upgrade.toLevel}'
+                                      : (upgrade.toLevel != null
+                                          ? 'Lv. ${upgrade.toLevel}'
+                                          : 'From Lv. ${upgrade.fromLevel}'),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.accent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
                             if (upgrade.slotKey != null) ...[
-                              const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,

@@ -23,6 +23,8 @@ class Upgrade {
     this.completedAtUtc,
     this.notificationRevision = 0,
     this.notes,
+    this.fromLevel,
+    this.toLevel,
   });
 
   final String id;
@@ -38,8 +40,25 @@ class Upgrade {
   final DateTime? completedAtUtc;
   final int notificationRevision;
   final String? notes;
+  final int? fromLevel;
+  final int? toLevel;
   final DateTime createdAtUtc;
   final DateTime updatedAtUtc;
+
+  /// Returns a compact representation of the upgrade name with its levels
+  /// when available (e.g. "Archer Tower · Lv. 18 → 19").
+  String get displayNameWithLevel {
+    if (fromLevel != null && toLevel != null) {
+      return '$name · Lv. $fromLevel → $toLevel';
+    }
+    if (toLevel != null) {
+      return '$name · Lv. $toLevel';
+    }
+    if (fromLevel != null) {
+      return '$name · From Lv. $fromLevel';
+    }
+    return name;
+  }
 
   Upgrade copyWith({
     String? id,
@@ -60,6 +79,10 @@ class Upgrade {
     int? notificationRevision,
     String? notes,
     bool clearNotes = false,
+    int? fromLevel,
+    bool clearFromLevel = false,
+    int? toLevel,
+    bool clearToLevel = false,
     DateTime? createdAtUtc,
     DateTime? updatedAtUtc,
   }) {
@@ -81,6 +104,8 @@ class Upgrade {
           clearCompletedAt ? null : (completedAtUtc ?? this.completedAtUtc),
       notificationRevision: notificationRevision ?? this.notificationRevision,
       notes: clearNotes ? null : (notes ?? this.notes),
+      fromLevel: clearFromLevel ? null : (fromLevel ?? this.fromLevel),
+      toLevel: clearToLevel ? null : (toLevel ?? this.toLevel),
       createdAtUtc: createdAtUtc ?? this.createdAtUtc,
       updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
     );
@@ -94,5 +119,6 @@ class Upgrade {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() => 'Upgrade(id: $id, name: $name, status: $status)';
+  String toString() =>
+      'Upgrade(id: $id, name: $displayNameWithLevel, status: $status)';
 }

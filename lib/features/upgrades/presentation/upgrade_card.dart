@@ -7,6 +7,7 @@ import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/formatting/date_time_format.dart';
 import 'package:clash_command/core/formatting/duration_format.dart';
 import 'package:clash_command/domain/models/upgrade.dart';
+import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/services/upgrade_timer_service.dart';
 import 'package:clash_command/features/upgrades/application/upgrades_notifier.dart';
@@ -150,7 +151,7 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                 width: 4,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _categoryColor(upgrade.category.name),
+                  color: _categoryColor(upgrade.category),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -162,9 +163,11 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      upgrade.name,
+                      upgrade.displayNameWithLevel,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                       ),
@@ -172,11 +175,14 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Text(
-                          upgrade.category.displayName,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
+                        Flexible(
+                          child: Text(
+                            upgrade.category.displayName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                         if (upgrade.slotKey != null) ...[
@@ -187,11 +193,14 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                               fontSize: 12,
                             ),
                           ),
-                          Text(
-                            upgrade.slotKey!,
-                            style: const TextStyle(
-                              color: AppColors.accentLight,
-                              fontSize: 12,
+                          Flexible(
+                            child: Text(
+                              upgrade.slotKey!,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.accentLight,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],
@@ -200,30 +209,37 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
 
               // Countdown + completion time
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    isPastDue
-                        ? 'Ready to collect'
-                        : formatRemaining(remaining, completedLabel: 'Ready to collect'),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: isPastDue ? AppColors.pastDue : AppColors.active,
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 80, maxWidth: 130),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isPastDue
+                          ? 'Ready to collect'
+                          : formatRemaining(remaining, completedLabel: 'Ready to collect'),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: isPastDue ? AppColors.pastDue : AppColors.active,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Ends ${DateTimeFormat.shortDateTime(upgrade.expectedCompletionAtUtc)}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.textMuted,
+                    const SizedBox(height: 2),
+                    Text(
+                      'Ends ${DateTimeFormat.shortDateTime(upgrade.expectedCompletionAtUtc)}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(width: 4),
 
@@ -353,20 +369,16 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
     );
   }
 
-  Color _categoryColor(String category) {
-    switch (category) {
-      case 'hero':
-        return Colors.purpleAccent;
-      case 'laboratory':
-        return Colors.blueAccent;
-      case 'defense':
-        return Colors.redAccent;
-      case 'building':
+  Color _categoryColor(UpgradeCategory category) {
+    switch (category.primaryCategory) {
+      case UpgradeCategory.homeBuilder:
         return AppColors.accent;
-      case 'troop':
-        return Colors.teal;
-      case 'spell':
-        return Colors.deepPurple;
+      case UpgradeCategory.homeLab:
+        return Colors.blueAccent;
+      case UpgradeCategory.builderBaseBuilder:
+        return Colors.deepOrangeAccent;
+      case UpgradeCategory.builderBaseStarLab:
+        return Colors.tealAccent;
       default:
         return AppColors.textMuted;
     }

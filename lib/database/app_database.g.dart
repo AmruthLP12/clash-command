@@ -738,6 +738,28 @@ class $UpgradesTable extends Upgrades
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _fromLevelMeta = const VerificationMeta(
+    'fromLevel',
+  );
+  @override
+  late final GeneratedColumn<int> fromLevel = GeneratedColumn<int>(
+    'from_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _toLevelMeta = const VerificationMeta(
+    'toLevel',
+  );
+  @override
+  late final GeneratedColumn<int> toLevel = GeneratedColumn<int>(
+    'to_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtUtcMeta = const VerificationMeta(
     'createdAtUtc',
   );
@@ -775,6 +797,8 @@ class $UpgradesTable extends Upgrades
     completedAtUtc,
     notificationRevision,
     notes,
+    fromLevel,
+    toLevel,
     createdAtUtc,
     updatedAtUtc,
   ];
@@ -897,6 +921,18 @@ class $UpgradesTable extends Upgrades
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('from_level')) {
+      context.handle(
+        _fromLevelMeta,
+        fromLevel.isAcceptableOrUnknown(data['from_level']!, _fromLevelMeta),
+      );
+    }
+    if (data.containsKey('to_level')) {
+      context.handle(
+        _toLevelMeta,
+        toLevel.isAcceptableOrUnknown(data['to_level']!, _toLevelMeta),
+      );
+    }
     if (data.containsKey('created_at_utc')) {
       context.handle(
         _createdAtUtcMeta,
@@ -980,6 +1016,14 @@ class $UpgradesTable extends Upgrades
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      fromLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}from_level'],
+      ),
+      toLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}to_level'],
+      ),
       createdAtUtc: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at_utc'],
@@ -1015,6 +1059,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
   final DateTime? completedAtUtc;
   final int notificationRevision;
   final String? notes;
+  final int? fromLevel;
+  final int? toLevel;
   final DateTime createdAtUtc;
   final DateTime updatedAtUtc;
   const UpgradeRow({
@@ -1031,6 +1077,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
     this.completedAtUtc,
     required this.notificationRevision,
     this.notes,
+    this.fromLevel,
+    this.toLevel,
     required this.createdAtUtc,
     required this.updatedAtUtc,
   });
@@ -1062,6 +1110,12 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
+    if (!nullToAbsent || fromLevel != null) {
+      map['from_level'] = Variable<int>(fromLevel);
+    }
+    if (!nullToAbsent || toLevel != null) {
+      map['to_level'] = Variable<int>(toLevel);
+    }
     map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
     map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
     return map;
@@ -1092,6 +1146,12 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      fromLevel: fromLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fromLevel),
+      toLevel: toLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(toLevel),
       createdAtUtc: Value(createdAtUtc),
       updatedAtUtc: Value(updatedAtUtc),
     );
@@ -1120,6 +1180,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
         json['notificationRevision'],
       ),
       notes: serializer.fromJson<String?>(json['notes']),
+      fromLevel: serializer.fromJson<int?>(json['fromLevel']),
+      toLevel: serializer.fromJson<int?>(json['toLevel']),
       createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
       updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
     );
@@ -1143,6 +1205,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
       'completedAtUtc': serializer.toJson<DateTime?>(completedAtUtc),
       'notificationRevision': serializer.toJson<int>(notificationRevision),
       'notes': serializer.toJson<String?>(notes),
+      'fromLevel': serializer.toJson<int?>(fromLevel),
+      'toLevel': serializer.toJson<int?>(toLevel),
       'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
       'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
     };
@@ -1162,6 +1226,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
     Value<DateTime?> completedAtUtc = const Value.absent(),
     int? notificationRevision,
     Value<String?> notes = const Value.absent(),
+    Value<int?> fromLevel = const Value.absent(),
+    Value<int?> toLevel = const Value.absent(),
     DateTime? createdAtUtc,
     DateTime? updatedAtUtc,
   }) => UpgradeRow(
@@ -1185,6 +1251,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
         : this.completedAtUtc,
     notificationRevision: notificationRevision ?? this.notificationRevision,
     notes: notes.present ? notes.value : this.notes,
+    fromLevel: fromLevel.present ? fromLevel.value : this.fromLevel,
+    toLevel: toLevel.present ? toLevel.value : this.toLevel,
     createdAtUtc: createdAtUtc ?? this.createdAtUtc,
     updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
   );
@@ -1215,6 +1283,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
           ? data.notificationRevision.value
           : this.notificationRevision,
       notes: data.notes.present ? data.notes.value : this.notes,
+      fromLevel: data.fromLevel.present ? data.fromLevel.value : this.fromLevel,
+      toLevel: data.toLevel.present ? data.toLevel.value : this.toLevel,
       createdAtUtc: data.createdAtUtc.present
           ? data.createdAtUtc.value
           : this.createdAtUtc,
@@ -1240,6 +1310,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
           ..write('completedAtUtc: $completedAtUtc, ')
           ..write('notificationRevision: $notificationRevision, ')
           ..write('notes: $notes, ')
+          ..write('fromLevel: $fromLevel, ')
+          ..write('toLevel: $toLevel, ')
           ..write('createdAtUtc: $createdAtUtc, ')
           ..write('updatedAtUtc: $updatedAtUtc')
           ..write(')'))
@@ -1261,6 +1333,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
     completedAtUtc,
     notificationRevision,
     notes,
+    fromLevel,
+    toLevel,
     createdAtUtc,
     updatedAtUtc,
   );
@@ -1281,6 +1355,8 @@ class UpgradeRow extends DataClass implements Insertable<UpgradeRow> {
           other.completedAtUtc == this.completedAtUtc &&
           other.notificationRevision == this.notificationRevision &&
           other.notes == this.notes &&
+          other.fromLevel == this.fromLevel &&
+          other.toLevel == this.toLevel &&
           other.createdAtUtc == this.createdAtUtc &&
           other.updatedAtUtc == this.updatedAtUtc);
 }
@@ -1299,6 +1375,8 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
   final Value<DateTime?> completedAtUtc;
   final Value<int> notificationRevision;
   final Value<String?> notes;
+  final Value<int?> fromLevel;
+  final Value<int?> toLevel;
   final Value<DateTime> createdAtUtc;
   final Value<DateTime> updatedAtUtc;
   final Value<int> rowid;
@@ -1316,6 +1394,8 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
     this.completedAtUtc = const Value.absent(),
     this.notificationRevision = const Value.absent(),
     this.notes = const Value.absent(),
+    this.fromLevel = const Value.absent(),
+    this.toLevel = const Value.absent(),
     this.createdAtUtc = const Value.absent(),
     this.updatedAtUtc = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1334,6 +1414,8 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
     this.completedAtUtc = const Value.absent(),
     this.notificationRevision = const Value.absent(),
     this.notes = const Value.absent(),
+    this.fromLevel = const Value.absent(),
+    this.toLevel = const Value.absent(),
     required DateTime createdAtUtc,
     required DateTime updatedAtUtc,
     this.rowid = const Value.absent(),
@@ -1360,6 +1442,8 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
     Expression<DateTime>? completedAtUtc,
     Expression<int>? notificationRevision,
     Expression<String>? notes,
+    Expression<int>? fromLevel,
+    Expression<int>? toLevel,
     Expression<DateTime>? createdAtUtc,
     Expression<DateTime>? updatedAtUtc,
     Expression<int>? rowid,
@@ -1380,6 +1464,8 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
       if (notificationRevision != null)
         'notification_revision': notificationRevision,
       if (notes != null) 'notes': notes,
+      if (fromLevel != null) 'from_level': fromLevel,
+      if (toLevel != null) 'to_level': toLevel,
       if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
       if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
       if (rowid != null) 'rowid': rowid,
@@ -1400,6 +1486,8 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
     Value<DateTime?>? completedAtUtc,
     Value<int>? notificationRevision,
     Value<String?>? notes,
+    Value<int?>? fromLevel,
+    Value<int?>? toLevel,
     Value<DateTime>? createdAtUtc,
     Value<DateTime>? updatedAtUtc,
     Value<int>? rowid,
@@ -1419,6 +1507,8 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
       completedAtUtc: completedAtUtc ?? this.completedAtUtc,
       notificationRevision: notificationRevision ?? this.notificationRevision,
       notes: notes ?? this.notes,
+      fromLevel: fromLevel ?? this.fromLevel,
+      toLevel: toLevel ?? this.toLevel,
       createdAtUtc: createdAtUtc ?? this.createdAtUtc,
       updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
       rowid: rowid ?? this.rowid,
@@ -1469,6 +1559,12 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (fromLevel.present) {
+      map['from_level'] = Variable<int>(fromLevel.value);
+    }
+    if (toLevel.present) {
+      map['to_level'] = Variable<int>(toLevel.value);
+    }
     if (createdAtUtc.present) {
       map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
     }
@@ -1497,6 +1593,8 @@ class UpgradesCompanion extends UpdateCompanion<UpgradeRow> {
           ..write('completedAtUtc: $completedAtUtc, ')
           ..write('notificationRevision: $notificationRevision, ')
           ..write('notes: $notes, ')
+          ..write('fromLevel: $fromLevel, ')
+          ..write('toLevel: $toLevel, ')
           ..write('createdAtUtc: $createdAtUtc, ')
           ..write('updatedAtUtc: $updatedAtUtc, ')
           ..write('rowid: $rowid')
@@ -2432,6 +2530,388 @@ class HistoryEventsCompanion extends UpdateCompanion<HistoryEventRow> {
   }
 }
 
+class $CustomUpgradeSuggestionsTable extends CustomUpgradeSuggestions
+    with TableInfo<$CustomUpgradeSuggestionsTable, CustomUpgradeSuggestionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CustomUpgradeSuggestionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtUtcMeta = const VerificationMeta(
+    'createdAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAtUtc = GeneratedColumn<DateTime>(
+    'created_at_utc',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtUtcMeta = const VerificationMeta(
+    'updatedAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAtUtc = GeneratedColumn<DateTime>(
+    'updated_at_utc',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    category,
+    createdAtUtc,
+    updatedAtUtc,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'custom_upgrade_suggestions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CustomUpgradeSuggestionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('created_at_utc')) {
+      context.handle(
+        _createdAtUtcMeta,
+        createdAtUtc.isAcceptableOrUnknown(
+          data['created_at_utc']!,
+          _createdAtUtcMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtUtcMeta);
+    }
+    if (data.containsKey('updated_at_utc')) {
+      context.handle(
+        _updatedAtUtcMeta,
+        updatedAtUtc.isAcceptableOrUnknown(
+          data['updated_at_utc']!,
+          _updatedAtUtcMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtUtcMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CustomUpgradeSuggestionRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CustomUpgradeSuggestionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      createdAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at_utc'],
+      )!,
+      updatedAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at_utc'],
+      )!,
+    );
+  }
+
+  @override
+  $CustomUpgradeSuggestionsTable createAlias(String alias) {
+    return $CustomUpgradeSuggestionsTable(attachedDatabase, alias);
+  }
+}
+
+class CustomUpgradeSuggestionRow extends DataClass
+    implements Insertable<CustomUpgradeSuggestionRow> {
+  final String id;
+  final String name;
+  final String category;
+  final DateTime createdAtUtc;
+  final DateTime updatedAtUtc;
+  const CustomUpgradeSuggestionRow({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.createdAtUtc,
+    required this.updatedAtUtc,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['category'] = Variable<String>(category);
+    map['created_at_utc'] = Variable<DateTime>(createdAtUtc);
+    map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
+    return map;
+  }
+
+  CustomUpgradeSuggestionsCompanion toCompanion(bool nullToAbsent) {
+    return CustomUpgradeSuggestionsCompanion(
+      id: Value(id),
+      name: Value(name),
+      category: Value(category),
+      createdAtUtc: Value(createdAtUtc),
+      updatedAtUtc: Value(updatedAtUtc),
+    );
+  }
+
+  factory CustomUpgradeSuggestionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CustomUpgradeSuggestionRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      category: serializer.fromJson<String>(json['category']),
+      createdAtUtc: serializer.fromJson<DateTime>(json['createdAtUtc']),
+      updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'category': serializer.toJson<String>(category),
+      'createdAtUtc': serializer.toJson<DateTime>(createdAtUtc),
+      'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
+    };
+  }
+
+  CustomUpgradeSuggestionRow copyWith({
+    String? id,
+    String? name,
+    String? category,
+    DateTime? createdAtUtc,
+    DateTime? updatedAtUtc,
+  }) => CustomUpgradeSuggestionRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    category: category ?? this.category,
+    createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+    updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+  );
+  CustomUpgradeSuggestionRow copyWithCompanion(
+    CustomUpgradeSuggestionsCompanion data,
+  ) {
+    return CustomUpgradeSuggestionRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      category: data.category.present ? data.category.value : this.category,
+      createdAtUtc: data.createdAtUtc.present
+          ? data.createdAtUtc.value
+          : this.createdAtUtc,
+      updatedAtUtc: data.updatedAtUtc.present
+          ? data.updatedAtUtc.value
+          : this.updatedAtUtc,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomUpgradeSuggestionRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('category: $category, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, category, createdAtUtc, updatedAtUtc);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CustomUpgradeSuggestionRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.category == this.category &&
+          other.createdAtUtc == this.createdAtUtc &&
+          other.updatedAtUtc == this.updatedAtUtc);
+}
+
+class CustomUpgradeSuggestionsCompanion
+    extends UpdateCompanion<CustomUpgradeSuggestionRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> category;
+  final Value<DateTime> createdAtUtc;
+  final Value<DateTime> updatedAtUtc;
+  final Value<int> rowid;
+  const CustomUpgradeSuggestionsCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.category = const Value.absent(),
+    this.createdAtUtc = const Value.absent(),
+    this.updatedAtUtc = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CustomUpgradeSuggestionsCompanion.insert({
+    required String id,
+    required String name,
+    required String category,
+    required DateTime createdAtUtc,
+    required DateTime updatedAtUtc,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       category = Value(category),
+       createdAtUtc = Value(createdAtUtc),
+       updatedAtUtc = Value(updatedAtUtc);
+  static Insertable<CustomUpgradeSuggestionRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? category,
+    Expression<DateTime>? createdAtUtc,
+    Expression<DateTime>? updatedAtUtc,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (category != null) 'category': category,
+      if (createdAtUtc != null) 'created_at_utc': createdAtUtc,
+      if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CustomUpgradeSuggestionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? category,
+    Value<DateTime>? createdAtUtc,
+    Value<DateTime>? updatedAtUtc,
+    Value<int>? rowid,
+  }) {
+    return CustomUpgradeSuggestionsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      createdAtUtc: createdAtUtc ?? this.createdAtUtc,
+      updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (createdAtUtc.present) {
+      map['created_at_utc'] = Variable<DateTime>(createdAtUtc.value);
+    }
+    if (updatedAtUtc.present) {
+      map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomUpgradeSuggestionsCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('category: $category, ')
+          ..write('createdAtUtc: $createdAtUtc, ')
+          ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2440,6 +2920,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NotificationPreferencesTable notificationPreferences =
       $NotificationPreferencesTable(this);
   late final $HistoryEventsTable historyEvents = $HistoryEventsTable(this);
+  late final $CustomUpgradeSuggestionsTable customUpgradeSuggestions =
+      $CustomUpgradeSuggestionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2449,6 +2931,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     upgrades,
     notificationPreferences,
     historyEvents,
+    customUpgradeSuggestions,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2857,6 +3340,8 @@ typedef $$UpgradesTableCreateCompanionBuilder = UpgradesCompanion Function({
   Value<DateTime?> completedAtUtc,
   Value<int> notificationRevision,
   Value<String?> notes,
+  Value<int?> fromLevel,
+  Value<int?> toLevel,
   required DateTime createdAtUtc,
   required DateTime updatedAtUtc,
   Value<int> rowid,
@@ -2875,6 +3360,8 @@ typedef $$UpgradesTableUpdateCompanionBuilder = UpgradesCompanion Function({
   Value<DateTime?> completedAtUtc,
   Value<int> notificationRevision,
   Value<String?> notes,
+  Value<int?> fromLevel,
+  Value<int?> toLevel,
   Value<DateTime> createdAtUtc,
   Value<DateTime> updatedAtUtc,
   Value<int> rowid,
@@ -2968,6 +3455,16 @@ class $$UpgradesTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get fromLevel => $composableBuilder(
+    column: $table.fromLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get toLevel => $composableBuilder(
+    column: $table.toLevel,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3074,6 +3571,16 @@ class $$UpgradesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get fromLevel => $composableBuilder(
+    column: $table.fromLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get toLevel => $composableBuilder(
+    column: $table.toLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
     column: $table.createdAtUtc,
     builder: (column) => ColumnOrderings(column),
@@ -3165,6 +3672,12 @@ class $$UpgradesTableAnnotationComposer
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
+  GeneratedColumn<int> get fromLevel =>
+      $composableBuilder(column: $table.fromLevel, builder: (column) => column);
+
+  GeneratedColumn<int> get toLevel =>
+      $composableBuilder(column: $table.toLevel, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
     column: $table.createdAtUtc,
     builder: (column) => column,
@@ -3240,6 +3753,8 @@ class $$UpgradesTableTableManager
                 Value<DateTime?> completedAtUtc = const Value.absent(),
                 Value<int> notificationRevision = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<int?> fromLevel = const Value.absent(),
+                Value<int?> toLevel = const Value.absent(),
                 Value<DateTime> createdAtUtc = const Value.absent(),
                 Value<DateTime> updatedAtUtc = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3257,6 +3772,8 @@ class $$UpgradesTableTableManager
                 completedAtUtc: completedAtUtc,
                 notificationRevision: notificationRevision,
                 notes: notes,
+                fromLevel: fromLevel,
+                toLevel: toLevel,
                 createdAtUtc: createdAtUtc,
                 updatedAtUtc: updatedAtUtc,
                 rowid: rowid,
@@ -3276,6 +3793,8 @@ class $$UpgradesTableTableManager
                 Value<DateTime?> completedAtUtc = const Value.absent(),
                 Value<int> notificationRevision = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<int?> fromLevel = const Value.absent(),
+                Value<int?> toLevel = const Value.absent(),
                 required DateTime createdAtUtc,
                 required DateTime updatedAtUtc,
                 Value<int> rowid = const Value.absent(),
@@ -3293,6 +3812,8 @@ class $$UpgradesTableTableManager
                 completedAtUtc: completedAtUtc,
                 notificationRevision: notificationRevision,
                 notes: notes,
+                fromLevel: fromLevel,
+                toLevel: toLevel,
                 createdAtUtc: createdAtUtc,
                 updatedAtUtc: updatedAtUtc,
                 rowid: rowid,
@@ -3869,6 +4390,241 @@ typedef $$HistoryEventsTableProcessedTableManager =
       HistoryEventRow,
       PrefetchHooks Function()
     >;
+typedef $$CustomUpgradeSuggestionsTableCreateCompanionBuilder =
+    CustomUpgradeSuggestionsCompanion Function({
+      required String id,
+      required String name,
+      required String category,
+      required DateTime createdAtUtc,
+      required DateTime updatedAtUtc,
+      Value<int> rowid,
+    });
+typedef $$CustomUpgradeSuggestionsTableUpdateCompanionBuilder =
+    CustomUpgradeSuggestionsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String> category,
+      Value<DateTime> createdAtUtc,
+      Value<DateTime> updatedAtUtc,
+      Value<int> rowid,
+    });
+
+class $$CustomUpgradeSuggestionsTableFilterComposer
+    extends Composer<_$AppDatabase, $CustomUpgradeSuggestionsTable> {
+  $$CustomUpgradeSuggestionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CustomUpgradeSuggestionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CustomUpgradeSuggestionsTable> {
+  $$CustomUpgradeSuggestionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CustomUpgradeSuggestionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CustomUpgradeSuggestionsTable> {
+  $$CustomUpgradeSuggestionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAtUtc => $composableBuilder(
+    column: $table.createdAtUtc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
+    column: $table.updatedAtUtc,
+    builder: (column) => column,
+  );
+}
+
+class $$CustomUpgradeSuggestionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CustomUpgradeSuggestionsTable,
+          CustomUpgradeSuggestionRow,
+          $$CustomUpgradeSuggestionsTableFilterComposer,
+          $$CustomUpgradeSuggestionsTableOrderingComposer,
+          $$CustomUpgradeSuggestionsTableAnnotationComposer,
+          $$CustomUpgradeSuggestionsTableCreateCompanionBuilder,
+          $$CustomUpgradeSuggestionsTableUpdateCompanionBuilder,
+          (
+            CustomUpgradeSuggestionRow,
+            BaseReferences<
+              _$AppDatabase,
+              $CustomUpgradeSuggestionsTable,
+              CustomUpgradeSuggestionRow
+            >,
+          ),
+          CustomUpgradeSuggestionRow,
+          PrefetchHooks Function()
+        > {
+  $$CustomUpgradeSuggestionsTableTableManager(
+    _$AppDatabase db,
+    $CustomUpgradeSuggestionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CustomUpgradeSuggestionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$CustomUpgradeSuggestionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$CustomUpgradeSuggestionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<DateTime> createdAtUtc = const Value.absent(),
+                Value<DateTime> updatedAtUtc = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CustomUpgradeSuggestionsCompanion(
+                id: id,
+                name: name,
+                category: category,
+                createdAtUtc: createdAtUtc,
+                updatedAtUtc: updatedAtUtc,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                required String category,
+                required DateTime createdAtUtc,
+                required DateTime updatedAtUtc,
+                Value<int> rowid = const Value.absent(),
+              }) => CustomUpgradeSuggestionsCompanion.insert(
+                id: id,
+                name: name,
+                category: category,
+                createdAtUtc: createdAtUtc,
+                updatedAtUtc: updatedAtUtc,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $CustomUpgradeSuggestionsTable,
+                    CustomUpgradeSuggestionRow
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $CustomUpgradeSuggestionsTable,
+                    CustomUpgradeSuggestionRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CustomUpgradeSuggestionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CustomUpgradeSuggestionsTable,
+      CustomUpgradeSuggestionRow,
+      $$CustomUpgradeSuggestionsTableFilterComposer,
+      $$CustomUpgradeSuggestionsTableOrderingComposer,
+      $$CustomUpgradeSuggestionsTableAnnotationComposer,
+      $$CustomUpgradeSuggestionsTableCreateCompanionBuilder,
+      $$CustomUpgradeSuggestionsTableUpdateCompanionBuilder,
+      (
+        CustomUpgradeSuggestionRow,
+        BaseReferences<
+          _$AppDatabase,
+          $CustomUpgradeSuggestionsTable,
+          CustomUpgradeSuggestionRow
+        >,
+      ),
+      CustomUpgradeSuggestionRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3884,4 +4640,9 @@ class $AppDatabaseManager {
       );
   $$HistoryEventsTableTableManager get historyEvents =>
       $$HistoryEventsTableTableManager(_db, _db.historyEvents);
+  $$CustomUpgradeSuggestionsTableTableManager get customUpgradeSuggestions =>
+      $$CustomUpgradeSuggestionsTableTableManager(
+        _db,
+        _db.customUpgradeSuggestions,
+      );
 }

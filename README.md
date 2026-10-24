@@ -17,9 +17,12 @@ Clash Command is an Android-first, offline-first Flutter application designed to
 
 ## Features
 
-- **Multi-Village Management**: Create and switch between multiple villages, customize Town Hall levels, notes, and builder capacities (1–6 builders).
-- **Upgrade Tracking & Timing**: Accurate countdown timers computed from absolute UTC timestamps. Supports custom remaining durations, builder slot assignment, and upgrade categories.
-- **Inspect & Edit Upgrades**: Tap any active upgrade to view progress, start time, expected completion, notes, and quick actions (Complete, Edit, Cancel, Delete).
+- **Multi-Village Management**: Create and switch between multiple villages, customize Town Hall levels (supports up to Town Hall 18 with an extensible architecture for future releases), notes, and builder capacities (1–6 builders).
+- **Four Upgrade Categories & Facilities**: Dedicated tracking for **Home Village — Builder**, **Home Village — Laboratory**, **Builder Base — Builder**, and **Builder Base — Star Laboratory**.
+- **Upgrade Name Autocomplete & Local Catalogue**: Built-in, verified catalogue of buildings, troops, heroes, spells, and defenses with instant case-insensitive search and level suggestions. Fully customizable with local user suggestion persistence.
+- **Optional From Level & To Level Tracking**: Track upgrade progressions clearly (e.g. `Archer Tower · Lv. 18 → 19`) with intelligent auto-suggestion and level validation.
+- **Upgrade Tracking & Timing**: Accurate countdown timers computed from absolute UTC timestamps with live second-by-second countdown when under 5 minutes remain. Supports custom remaining durations and builder slot assignment.
+- **Inspect & Edit Upgrades**: Tap any active upgrade to view progress, start time, expected completion, levels, notes, and quick actions (Complete, Edit, Cancel, Delete).
 - **Activity History & Audit Trail**: Full event logging of village modifications and upgrade status transitions stored in local SQLite, filterable by village and event type.
 - **Native Android Home-Screen Widgets**: Glanceable **Upgrade Overview** and **Builder Status** widgets for your Android home screen displaying active countdowns, progress, and free builder availability.
 - **Local Completion Reminders**: Configurable local notifications for upgrade completion and upcoming warnings (60m, 30m, 10m, 5m, 1m) with in-app permission checks and diagnostic metrics.
@@ -58,7 +61,7 @@ Clash Command is an Android-first, offline-first Flutter application designed to
 ├── test/                    # Unit, DAO, service, and widget test suite
 ├── CHANGELOG.md             # Version history adhering to Keep a Changelog
 ├── Makefile                 # Convenient build and run targets
-└── pubspec.yaml             # Dependencies and app metadata (v1.0.1+2)
+└── pubspec.yaml             # Dependencies and app metadata (v1.0.2+3)
 ```
 
 ---

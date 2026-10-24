@@ -5,6 +5,7 @@ import '../domain/models/upgrade_category.dart';
 import '../domain/models/upgrade_status.dart';
 import '../domain/models/village.dart';
 import 'openers.dart';
+import 'tables/custom_upgrade_suggestions_table.dart';
 import 'tables/history_events_table.dart';
 import 'tables/notification_preferences_table.dart';
 import 'tables/upgrades_table.dart';
@@ -17,7 +18,13 @@ part 'app_database.g.dart';
 /// On native platforms this runs SQLite through the native `sqlite3` library;
 /// on the web it uses the WebAssembly build of SQLite via drift's `WasmDatabase`.
 @DriftDatabase(
-  tables: [Villages, Upgrades, NotificationPreferences, HistoryEvents],
+  tables: [
+    Villages,
+    Upgrades,
+    NotificationPreferences,
+    HistoryEvents,
+    CustomUpgradeSuggestions,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(openDatabase());
@@ -26,7 +33,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -44,6 +51,11 @@ class AppDatabase extends _$AppDatabase {
       onUpgrade: (m, from, to) async {
         if (from < 2) {
           await m.createTable(historyEvents);
+        }
+        if (from < 3) {
+          await m.addColumn(upgrades, upgrades.fromLevel);
+          await m.addColumn(upgrades, upgrades.toLevel);
+          await m.createTable(customUpgradeSuggestions);
         }
       },
     );
@@ -100,6 +112,8 @@ extension UpgradeRowMapper on UpgradeRow {
       completedAtUtc: completedAtUtc,
       notificationRevision: notificationRevision,
       notes: notes,
+      fromLevel: fromLevel,
+      toLevel: toLevel ?? fromLevel,
       createdAtUtc: createdAtUtc,
       updatedAtUtc: updatedAtUtc,
     );
@@ -122,6 +136,8 @@ extension UpgradeDomainMapper on Upgrade {
       completedAtUtc: Value(completedAtUtc),
       notificationRevision: Value(notificationRevision),
       notes: Value(notes),
+      fromLevel: Value(fromLevel),
+      toLevel: Value(toLevel),
       createdAtUtc: Value(createdAtUtc),
       updatedAtUtc: Value(updatedAtUtc),
     );

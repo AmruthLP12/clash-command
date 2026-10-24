@@ -4,6 +4,37 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-10-23
+
+### Added
+- **Town Hall 18 & Extensible Level Architecture (`TownHallConstants`)**:
+  - Added support for Town Hall 18 in village setup and upgrade catalogue.
+  - Replaced hardcoded limits with a centralized, data-driven `TownHallConstants` structure so future Town Hall levels (including TH19) can be added via configuration without rewriting form UI or core tracking logic.
+- **Four Distinct Upgrade Facilities & Categories**:
+  - **Home Village — Builder**: Buildings, defenses, heroes, traps, and walls.
+  - **Home Village — Laboratory**: Elixir troops, dark elixir troops, spells, and siege machines.
+  - **Builder Base — Builder**: Builder Base buildings, defenses, heroes, and traps.
+  - **Builder Base — Star Laboratory**: Builder Base troop research.
+  - Preserved backward compatibility for all legacy stored categories (`building`, `hero`, `defense`, `laboratory`, etc.).
+- **Upgrade Name Autocomplete & Local Suggestion Catalogue**:
+  - Interactive searchable autocomplete dropdown that filters matching suggestions case-insensitively with partial matching.
+  - Prioritizes exact matches, prefix matches, and items unlockable at the village's current Town Hall level.
+  - Contextual subtitles in suggestions displaying building/troop type and confirmed maximum level.
+  - Strict category partitioning so suggestions are never mixed across facilities (e.g. Home Lab troops never appear under Builder Base buildings).
+- **Custom Upgrade Suggestions Persistence**:
+  - Users can enter and save completely custom upgrade names without being blocked.
+  - Added Drift table `CustomUpgradeSuggestions` and DAO with case-insensitive and whitespace-trimmed deduplication.
+  - Saved custom names automatically appear in future autocomplete queries for the same category.
+- **Optional From Level & To Level Fields**:
+  - Optional `fromLevel` and `toLevel` integer fields on add and edit upgrade sheets.
+  - Smart suggestion: Selecting a catalogue item auto-fills suggested initial levels; entering From Level suggests `fromLevel + 1` for To Level.
+  - Form validation ensures positive integers and enforces `toLevel > fromLevel` when both fields are provided.
+  - Compact title representation on upgrade cards and detail views: `Archer Tower · Lv. 18 → 19`.
+  - Preserved level metadata across editing and activity-history timeline entries.
+- **Drift Database Schema v3 Migration**:
+  - Incremented schema version to 3 with non-destructive `onUpgrade` step adding `from_level` and `to_level` nullable columns to `upgrades` and creating `custom_upgrade_suggestions`.
+  - All existing village records, upgrade timers, and historical events remain fully intact.
+
 ## [1.0.1] - 2026-10-22
 
 ### Added

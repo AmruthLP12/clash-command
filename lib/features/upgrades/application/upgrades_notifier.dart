@@ -55,6 +55,8 @@ class UpgradesNotifier extends AsyncNotifier<void> {
     DateTime? startedAtUtc,
     String? slotKey,
     String? notes,
+    int? fromLevel,
+    int? toLevel,
   }) async {
     final id = const IdGenerator().newId();
     final now = DateTime.now().toUtc();
@@ -68,6 +70,8 @@ class UpgradesNotifier extends AsyncNotifier<void> {
       category: category,
       slotKey: slotKey,
       notes: notes?.trim().isEmpty ?? true ? null : notes?.trim(),
+      fromLevel: fromLevel,
+      toLevel: toLevel,
       startedAtUtc: start,
       expectedCompletionAtUtc: timerService.computeExpectedCompletion(
         startedAtUtc: start,
@@ -80,17 +84,23 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     await ref.read(upgradesDaoProvider).upsert(upgrade);
 
+    // Save custom suggestion if it is a new custom name
+    await ref
+        .read(customUpgradeSuggestionsDaoProvider)
+        .addSuggestion(upgrade.name, upgrade.category);
+
     // Record history event
     final village = await ref.read(villagesDaoProvider).findById(villageId);
+    final displayName = upgrade.displayNameWithLevel;
     await ref.read(historyEventsDaoProvider).insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: id,
             villageId: villageId,
-            upgradeName: upgrade.name,
+            upgradeName: displayName,
             villageName: village?.name,
             eventType: HistoryEventType.upgradeStarted,
-            description: 'Started upgrade "${upgrade.name}"',
+            description: 'Started upgrade "$displayName"',
             createdAtUtc: now,
           ),
         );
@@ -111,6 +121,8 @@ class UpgradesNotifier extends AsyncNotifier<void> {
     required Duration remaining,
     String? slotKey,
     String? notes,
+    int? fromLevel,
+    int? toLevel,
   }) async {
     final now = DateTime.now().toUtc();
     await startUpgrade(
@@ -121,6 +133,8 @@ class UpgradesNotifier extends AsyncNotifier<void> {
       startedAtUtc: now,
       slotKey: slotKey,
       notes: notes,
+      fromLevel: fromLevel,
+      toLevel: toLevel,
     );
   }
 
@@ -139,15 +153,16 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
+    final displayName = upgrade.displayNameWithLevel;
     await ref.read(historyEventsDaoProvider).insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
             villageId: upgrade.villageId,
-            upgradeName: upgrade.name,
+            upgradeName: displayName,
             villageName: village?.name,
             eventType: HistoryEventType.upgradeCompleted,
-            description: 'Completed upgrade "${upgrade.name}"',
+            description: 'Completed upgrade "$displayName"',
             createdAtUtc: now,
           ),
         );
@@ -168,15 +183,16 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
+    final displayName = upgrade.displayNameWithLevel;
     await ref.read(historyEventsDaoProvider).insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
             villageId: upgrade.villageId,
-            upgradeName: upgrade.name,
+            upgradeName: displayName,
             villageName: village?.name,
             eventType: HistoryEventType.upgradeCancelled,
-            description: 'Cancelled upgrade "${upgrade.name}"',
+            description: 'Cancelled upgrade "$displayName"',
             createdAtUtc: now,
           ),
         );
@@ -243,15 +259,16 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
+    final displayName = upgrade.displayNameWithLevel;
     await ref.read(historyEventsDaoProvider).insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
             villageId: upgrade.villageId,
-            upgradeName: upgrade.name,
+            upgradeName: displayName,
             villageName: village?.name,
             eventType: HistoryEventType.upgradeTimerEdited,
-            description: 'Adjusted timer for "${upgrade.name}"',
+            description: 'Adjusted timer for "$displayName"',
             createdAtUtc: now,
           ),
         );
@@ -267,6 +284,10 @@ class UpgradesNotifier extends AsyncNotifier<void> {
     bool clearSlotKey = false,
     String? notes,
     bool clearNotes = false,
+    int? fromLevel,
+    bool clearFromLevel = false,
+    int? toLevel,
+    bool clearToLevel = false,
     DateTime? newExpectedCompletionAtUtc,
   }) async {
     final now = DateTime.now().toUtc();
@@ -277,6 +298,8 @@ class UpgradesNotifier extends AsyncNotifier<void> {
       clearSlotKey: clearSlotKey,
       notes: notes,
       clearNotes: clearNotes,
+      fromLevel: clearFromLevel ? null : (fromLevel ?? upgrade.fromLevel),
+      toLevel: clearToLevel ? null : (toLevel ?? upgrade.toLevel),
       updatedAtUtc: now,
     );
 
@@ -297,6 +320,12 @@ class UpgradesNotifier extends AsyncNotifier<void> {
     }
 
     await ref.read(upgradesDaoProvider).upsert(updated);
+
+    // Save custom suggestion if it is a new custom name
+    await ref
+        .read(customUpgradeSuggestionsDaoProvider)
+        .addSuggestion(updated.name, updated.category);
+
     await ref.read(notificationReconcilerProvider).reconcile();
     await ref
         .read(homeWidgetSyncServiceProvider)
@@ -304,15 +333,16 @@ class UpgradesNotifier extends AsyncNotifier<void> {
 
     final village =
         await ref.read(villagesDaoProvider).findById(upgrade.villageId);
+    final displayName = updated.displayNameWithLevel;
     await ref.read(historyEventsDaoProvider).insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
             villageId: upgrade.villageId,
-            upgradeName: updated.name,
+            upgradeName: displayName,
             villageName: village?.name,
             eventType: HistoryEventType.upgradeEdited,
-            description: 'Updated details for "${updated.name}"',
+            description: 'Updated details for "$displayName"',
             createdAtUtc: now,
           ),
         );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:clash_command/app/theme/app_colors.dart';
+import 'package:clash_command/domain/models/game_constants.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/features/villages/application/villages_notifier.dart';
 
@@ -121,12 +122,11 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
                 ),
                 dropdownColor: AppColors.surfaceVariant,
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('Unknown')),
-                  ...List.generate(
-                    17,
-                    (i) => DropdownMenuItem(
-                      value: i + 1,
-                      child: Text('TH ${i + 1}'),
+                  const DropdownMenuItem(value: null, child: Text('Unknown / None')),
+                  ...TownHallConstants.availableLevels.map(
+                    (level) => DropdownMenuItem(
+                      value: level,
+                      child: Text('TH $level'),
                     ),
                   ),
                 ],

@@ -26,6 +26,8 @@ class Upgrades extends Table {
   IntColumn get notificationRevision =>
       integer().withDefault(const Constant(0))();
   TextColumn get notes => text().nullable()();
+  IntColumn get fromLevel => integer().nullable()();
+  IntColumn get toLevel => integer().nullable()();
   DateTimeColumn get createdAtUtc => dateTime()();
   DateTimeColumn get updatedAtUtc => dateTime()();
 

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
+import 'package:clash_command/domain/catalog/upgrade_catalog.dart';
+import 'package:clash_command/domain/catalog/upgrade_catalog_item.dart';
 import 'package:clash_command/domain/models/upgrade.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village.dart';
@@ -28,6 +31,8 @@ class AddUpgradeSheet extends ConsumerStatefulWidget {
 class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
+  late final TextEditingController _fromLevelController;
+  late final TextEditingController _toLevelController;
   late final TextEditingController _daysController;
   late final TextEditingController _hoursController;
   late final TextEditingController _minutesController;
@@ -42,7 +47,13 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
     super.initState();
     final up = widget.upgrade;
     _nameController = TextEditingController(text: up?.name ?? '');
-    _category = up?.category ?? UpgradeCategory.building;
+    _category = up?.category.primaryCategory ?? UpgradeCategory.homeBuilder;
+    _fromLevelController = TextEditingController(
+      text: up?.fromLevel != null ? '${up!.fromLevel}' : '',
+    );
+    _toLevelController = TextEditingController(
+      text: up?.toLevel != null ? '${up!.toLevel}' : '',
+    );
     _slotController = TextEditingController(text: up?.slotKey ?? '');
     _notesController = TextEditingController(text: up?.notes ?? '');
 
@@ -66,6 +77,8 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
   @override
   void dispose() {
     _nameController.dispose();
+    _fromLevelController.dispose();
+    _toLevelController.dispose();
     _daysController.dispose();
     _hoursController.dispose();
     _minutesController.dispose();
@@ -82,6 +95,22 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
   }
 
   bool get _durationValid => _duration > Duration.zero;
+
+  void _onCatalogItemSelected(UpgradeCatalogItem item) {
+    _nameController.text = item.name;
+    // Suggest levels if none entered
+    if (_fromLevelController.text.trim().isEmpty &&
+        _toLevelController.text.trim().isEmpty) {
+      if (item.minLevel > 0) {
+        _fromLevelController.text = '${item.minLevel}';
+        final next = item.suggestToLevel(item.minLevel);
+        if (next != null) {
+          _toLevelController.text = '$next';
+        }
+      }
+    }
+    setState(() {});
+  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -101,12 +130,13 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
       final notes = _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim();
+      final fromLevel = int.tryParse(_fromLevelController.text.trim());
+      final toLevel = int.tryParse(_toLevelController.text.trim());
 
       if (widget.isEditing) {
         final up = widget.upgrade!;
         final now = DateTime.now().toUtc();
 
-        // Check if duration was modified (allow 1 minute tolerance for live timer progress)
         DateTime? newExpectedCompletion;
         final diff = (_duration - _initialRemaining).inMinutes.abs();
         if (diff > 1) {
@@ -121,6 +151,10 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
               clearSlotKey: slotKey == null,
               notes: notes,
               clearNotes: notes == null,
+              fromLevel: fromLevel,
+              clearFromLevel: fromLevel == null,
+              toLevel: toLevel,
+              clearToLevel: toLevel == null,
               newExpectedCompletionAtUtc: newExpectedCompletion,
             );
       } else {
@@ -131,6 +165,8 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
               duration: _duration,
               slotKey: slotKey,
               notes: notes,
+              fromLevel: fromLevel,
+              toLevel: toLevel,
             );
       }
       if (mounted) Navigator.pop(context);
@@ -141,6 +177,13 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch custom suggestions for this category
+    final customSuggestionsAsync =
+        ref.watch(customUpgradeSuggestionsStreamProvider(_category));
+    final customNames = (customSuggestionsAsync.valueOrNull ?? [])
+        .map((e) => e.name)
+        .toList();
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -167,33 +210,216 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
               ),
               const SizedBox(height: 16),
 
-              // Name
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Upgrade name *',
-                  hintText: 'e.g. Barracks, Archer Queen, Custom Trap',
-                ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
-                textCapitalization: TextCapitalization.words,
-              ),
-              const SizedBox(height: 12),
-
-              // Category picker
+              // Category picker (4 primary facilities)
               DropdownButtonFormField<UpgradeCategory>(
                 initialValue: _category,
-                decoration: const InputDecoration(labelText: 'Category'),
+                decoration: const InputDecoration(
+                  labelText: 'Facility & Category',
+                  prefixIcon: Icon(Icons.category_outlined, size: 20),
+                ),
                 dropdownColor: AppColors.surfaceVariant,
-                items: UpgradeCategory.values
+                items: UpgradeCategory.primaryCategories
                     .map(
                       (c) => DropdownMenuItem(
                         value: c,
-                        child: Text(c.displayName),
+                        child: Text(
+                          c.displayName,
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ),
                     )
                     .toList(),
-                onChanged: (v) => setState(() => _category = v!),
+                onChanged: (v) {
+                  if (v != null) {
+                    setState(() => _category = v);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Autocomplete upgrade name
+              RawAutocomplete<UpgradeCatalogItem>(
+                textEditingController: _nameController,
+                focusNode: FocusNode(),
+                displayStringForOption: (item) => item.name,
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  return UpgradeCatalog.search(
+                    query: textEditingValue.text,
+                    category: _category,
+                    townHallLevel: widget.village.townHallLevel,
+                    customNames: customNames,
+                  );
+                },
+                onSelected: _onCatalogItemSelected,
+                fieldViewBuilder:
+                    (context, controller, focusNode, onFieldSubmitted) {
+                  return TextFormField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    decoration: InputDecoration(
+                      labelText: 'Upgrade name *',
+                      hintText: 'e.g. Archer Tower, P.E.K.K.A',
+                      prefixIcon:
+                          const Icon(Icons.arrow_upward_outlined, size: 20),
+                      suffixIcon: controller.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 18),
+                              onPressed: () {
+                                controller.clear();
+                                setState(() {});
+                              },
+                            )
+                          : null,
+                    ),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    textCapitalization: TextCapitalization.words,
+                    onFieldSubmitted: (v) => onFieldSubmitted(),
+                  );
+                },
+                optionsViewBuilder: (context, onSelected, options) {
+                  return Align(
+                    alignment: Alignment.topLeft,
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.surfaceVariant,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxHeight: 220,
+                          maxWidth: 340,
+                        ),
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          shrinkWrap: true,
+                          itemCount: options.length,
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1, color: AppColors.surface),
+                          itemBuilder: (context, index) {
+                            final item = options.elementAt(index);
+                            return InkWell(
+                              onTap: () => onSelected(item),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+                                          if (item.subtitle.isNotEmpty)
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 2),
+                                              child: Text(
+                                                item.subtitle,
+                                                style: const TextStyle(
+                                                  color: AppColors.textSecondary,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (item.isCustom)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.surface,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: const Text(
+                                          'Custom',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: AppColors.accent,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Optional Level row (From Level -> To Level)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _fromLevelController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'From Level (opt)',
+                        hintText: 'e.g. 18',
+                      ),
+                      onChanged: (val) {
+                        final fromN = int.tryParse(val.trim());
+                        if (fromN != null &&
+                            _toLevelController.text.trim().isEmpty) {
+                          _toLevelController.text = '${fromN + 1}';
+                        }
+                      },
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return null;
+                        final n = int.tryParse(v.trim());
+                        if (n == null || n <= 0) return 'Must be > 0';
+                        return null;
+                      },
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                    child: Icon(Icons.arrow_forward,
+                        size: 18, color: AppColors.textMuted),
+                  ),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _toLevelController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'To Level (opt)',
+                        hintText: 'e.g. 19',
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) return null;
+                        final n = int.tryParse(v.trim());
+                        if (n == null || n <= 0) return 'Must be > 0';
+                        final fromN =
+                            int.tryParse(_fromLevelController.text.trim());
+                        if (fromN != null && n <= fromN) {
+                          return 'Must be > From ($fromN)';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
 
@@ -239,7 +465,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                 controller: _slotController,
                 decoration: const InputDecoration(
                   labelText: 'Builder / slot (optional)',
-                  hintText: 'e.g. Builder 1, Master Builder',
+                  hintText: 'e.g. Builder 1, Master Builder, Lab Slot',
                 ),
               ),
               const SizedBox(height: 6),
@@ -268,7 +494,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                 controller: _notesController,
                 decoration: const InputDecoration(
                   labelText: 'Notes (optional)',
-                  hintText: 'e.g. Hammer of Building ready',
+                  hintText: 'e.g. Book of Building ready',
                 ),
                 maxLines: 2,
               ),
