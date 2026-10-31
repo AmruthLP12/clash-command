@@ -415,7 +415,7 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
   }
 }
 
-class _LevelItemCard extends StatelessWidget {
+class _LevelItemCard extends ConsumerWidget {
   const _LevelItemCard({
     required this.item,
     required this.onEdit,
@@ -431,7 +431,8 @@ class _LevelItemCard extends StatelessWidget {
   final VoidCallback onDecrement;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final displayPrefs = ref.watch(displayPreferencesProvider);
     final effectiveType = item.effectiveItemType;
     final typeIcon = LevelItemType.iconForType(effectiveType);
     final typeLabel = LevelItemType.conciseLabel(effectiveType);
@@ -515,7 +516,10 @@ class _LevelItemCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          DateTimeFormat.shortDate(item.updatedAtUtc),
+                          DateTimeFormat.shortDate(
+                            item.updatedAtUtc,
+                            displayPrefs.dateFormat,
+                          ),
                           style: const TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 11,

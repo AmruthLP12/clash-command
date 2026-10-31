@@ -400,3 +400,24 @@ Native Android home-screen widgets are implemented using `home_widget` (AppWidge
 -   Local-only data means uninstalling the app can remove data unless a
     backup exists.
 -   Cross-device sync is deliberately not part of v1.
+
+## 14. Profile-first entry & display preferences architecture
+
+### Profile-first entry (`VillageProfilesScreen`)
+- The application boots directly into `VillageProfilesScreen`, presenting all user-created village profiles as distinct cards displaying Town Hall, Builder Hall, and Builder capacity badges.
+- Tapping a village opens `DashboardScreen(selectedVillageId: village.id)`.
+- Eliminates duplicate switchers: Dashboard AppBar presents a clean village title with levels and a back button returning to `VillageProfilesScreen`.
+
+### Display & formatting preferences
+- User-customizable time format: 12-hour (`03:45 PM`) vs 24-hour (`15:45`).
+- User-customizable date format: `DD/MM/YYYY`, `MM/DD/YYYY`, and `YYYY-MM-DD`.
+- Stored in `SharedPreferences` and managed reactively via `displayPreferencesProvider`.
+- All database timestamps remain in UTC (`DateTime` in UTC); formatting is strictly a presentation-layer concern handled by `DateTimeFormat`.
+
+### Dynamic offline support QR code
+- Offline dynamic QR generation using `qr_flutter` rendered from `AppSupportLinks.qrPayload` (`9739337301@jupiteraxis`).
+- No external network or QR generation API dependencies.
+- Quick copy affordance with snackbar confirmation.
+
+### SFX player pooling
+- Multi-instance round-robin audio player pool in `AudioService` with `AndroidAudioFocus.none` context preventing latency, clipped audio, or dropped chimes on rapid successive taps.

@@ -1,12 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/constants/app_support_links.dart';
+import 'package:clash_command/core/formatting/date_time_format.dart';
 import 'package:clash_command/features/history/presentation/history_screen.dart';
 
 /// Settings screen for managing notifications, permissions, and app preferences.
@@ -110,6 +113,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final prefsAsync = ref.watch(notificationPreferencesStreamProvider);
+    final displayPrefs = ref.watch(displayPreferencesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -129,6 +133,279 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // Section 1: Support Clash Command
+              const Text(
+                'SUPPORT CLASH COMMAND',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.card,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Clash Command is 100% free, offline-first, and ad-free. If you find it helpful and want to support ongoing development, consider a contribution!',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.start,
+                      ),
+                      const SizedBox(height: 16),
+                      // Dynamic UPI QR Code
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: QrImageView(
+                          data: AppSupportLinks.qrPayload,
+                          version: QrVersions.auto,
+                          size: 190.0,
+                          backgroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          errorStateBuilder: (c, err) => const SizedBox(
+                            width: 190,
+                            height: 190,
+                            child: Center(
+                              child: Text(
+                                'Error generating QR code',
+                                style: TextStyle(color: Colors.black54, fontSize: 12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // UPI ID and Copy Button
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceVariant,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.qr_code, size: 18, color: AppColors.accent),
+                            const SizedBox(width: 8),
+                            SelectableText(
+                              AppSupportLinks.qrPayload,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(Icons.copy, size: 16),
+                              tooltip: 'Copy UPI ID',
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () {
+                                Clipboard.setData(
+                                  const ClipboardData(text: AppSupportLinks.qrPayload),
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('UPI ID copied to clipboard: 9739337301@jupiteraxis'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Scan with any supported UPI app to support Clash Command.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(height: 1),
+                      // Developer Portfolio
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.language_outlined, color: AppColors.accent),
+                        title: const Text(
+                          'Developer Portfolio',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          AppSupportLinks.portfolioUrl.isNotEmpty
+                              ? AppSupportLinks.portfolioUrl
+                              : 'Not configured yet',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchExternalUrl(
+                          context,
+                          AppSupportLinks.portfolioUrl,
+                          'Developer Portfolio',
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      // Support via Ko-fi
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.coffee, color: AppColors.accent),
+                        title: const Text(
+                          'Support via Ko-fi',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          AppSupportLinks.kofiUrl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchExternalUrl(
+                          context,
+                          AppSupportLinks.kofiUrl,
+                          'Ko-fi',
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      // Support via PayPal
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.payment, color: AppColors.accent),
+                        title: const Text(
+                          'Support via PayPal',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: Text(
+                          AppSupportLinks.paypalDonationUrl.isNotEmpty
+                              ? AppSupportLinks.paypalDonationUrl
+                              : 'Donation link not configured yet',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchExternalUrl(
+                          context,
+                          AppSupportLinks.paypalDonationUrl,
+                          'PayPal Donation',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Section 2: Display & Formatting
+              const Text(
+                'DISPLAY & FORMATTING',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.card,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Time Format',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: SegmentedButton<TimeFormatPreference>(
+                          segments: const [
+                            ButtonSegment(
+                              value: TimeFormatPreference.h12,
+                              label: Text('12-hour (03:45 PM)'),
+                            ),
+                            ButtonSegment(
+                              value: TimeFormatPreference.h24,
+                              label: Text('24-hour (15:45)'),
+                            ),
+                          ],
+                          selected: {displayPrefs.timeFormat},
+                          onSelectionChanged: (val) {
+                            ref
+                                .read(displayPreferencesProvider.notifier)
+                                .setTimeFormat(val.first);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(height: 1),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Date Format',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<DateFormatPreference>(
+                        initialValue: displayPrefs.dateFormat,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: AppColors.surfaceVariant,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        dropdownColor: AppColors.surfaceVariant,
+                        items: DateFormatPreference.values.map((df) {
+                          return DropdownMenuItem(
+                            value: df,
+                            child: Text('${df.label} (${df.example})'),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            ref
+                                .read(displayPreferencesProvider.notifier)
+                                .setDateFormat(val);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
               // Section: Activity History
               const Text(
                 'ACTIVITY & LOGS',
@@ -606,175 +883,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         const Divider(height: 20),
                         _DiagnosticRow(
                           label: 'Next Expected Completion',
-                          value:
-                              '${_nextCompletion!.toLocal().hour.toString().padLeft(2, '0')}:${_nextCompletion!.toLocal().minute.toString().padLeft(2, '0')} (${_nextCompletion!.toLocal().year}-${_nextCompletion!.toLocal().month.toString().padLeft(2, '0')}-${_nextCompletion!.toLocal().day.toString().padLeft(2, '0')})',
+                          value: DateTimeFormat.fullDateTime(
+                            _nextCompletion!,
+                            dateFormat: displayPrefs.dateFormat,
+                            timeFormat: displayPrefs.timeFormat,
+                          ),
                           isOk: true,
                         ),
                       ],
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Section: Developer & Support
-              const Text(
-                'DEVELOPER & SUPPORT',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.1,
-                  color: AppColors.textMuted,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Card(
-                color: AppColors.card,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Clash Command is 100% free, offline-first, and open-source. If you find it helpful and want to support ongoing development, feel free to connect!',
-                        style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                            height: 1.4),
-                      ),
-                      const SizedBox(height: 12),
-                      const Divider(height: 1),
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.code,
-                            color: AppColors.accent),
-                        title: const Text(
-                          'GitHub Repository',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: const Text(
-                          AppSupportLinks.githubRepoUrl,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: const Icon(Icons.open_in_new, size: 18),
-                        onTap: () => _launchExternalUrl(
-                          context,
-                          AppSupportLinks.githubRepoUrl,
-                          'GitHub Repository',
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.person_outline,
-                            color: AppColors.accent),
-                        title: const Text(
-                          'Developer Profile (GitHub)',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: const Text(
-                          AppSupportLinks.githubProfileUrl,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: const Icon(Icons.open_in_new, size: 18),
-                        onTap: () => _launchExternalUrl(
-                          context,
-                          AppSupportLinks.githubProfileUrl,
-                          'Developer Profile',
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.language_outlined,
-                            color: AppColors.accent),
-                        title: const Text(
-                          'Portfolio',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: Text(
-                          AppSupportLinks.portfolioUrl.isNotEmpty
-                              ? AppSupportLinks.portfolioUrl
-                              : 'Not configured yet',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: const Icon(Icons.open_in_new, size: 18),
-                        onTap: () => _launchExternalUrl(
-                          context,
-                          AppSupportLinks.portfolioUrl,
-                          'Developer Portfolio',
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.coffee,
-                            color: AppColors.accent),
-                        title: const Text(
-                          'Support via Ko-fi',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: const Text(
-                          AppSupportLinks.kofiUrl,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: const Icon(Icons.open_in_new, size: 18),
-                        onTap: () => _launchExternalUrl(
-                          context,
-                          AppSupportLinks.kofiUrl,
-                          'Ko-fi',
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.payment,
-                            color: AppColors.accent),
-                        title: const Text(
-                          'Support via PayPal',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: Text(
-                          AppSupportLinks.paypalDonationUrl.isNotEmpty
-                              ? AppSupportLinks.paypalDonationUrl
-                              : 'Donation link not configured yet',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: const Icon(Icons.open_in_new, size: 18),
-                        onTap: () => _launchExternalUrl(
-                          context,
-                          AppSupportLinks.paypalDonationUrl,
-                          'PayPal Donation',
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.qr_code_2,
-                            color: AppColors.accent),
-                        title: const Text(
-                          'Support QR Code',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        subtitle: Text(
-                          AppSupportLinks.qrAssetPath.isNotEmpty
-                              ? 'Tap to view and scan QR code'
-                              : 'QR asset not configured yet',
-                        ),
-                        trailing: const Icon(Icons.fullscreen, size: 20),
-                        onTap: () => _showQrCodeDialog(context),
-                      ),
                     ],
                   ),
                 ),
@@ -908,119 +1024,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     }
-  }
-
-  void _showQrCodeDialog(BuildContext context) {
-    if (AppSupportLinks.qrAssetPath.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.qr_code_scanner, color: AppColors.accent),
-              SizedBox(width: 8),
-              Text('Support QR Code'),
-            ],
-          ),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'No QR code asset has been configured yet.',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'To display a donation or support QR code:\n'
-                '1. Place your QR code image in assets/branding/support_qr.png.\n'
-                '2. Set AppSupportLinks.qrAssetPath in lib/core/constants/app_support_links.dart.',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Support & Donate',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  AppSupportLinks.qrAssetPath,
-                  width: 240,
-                  height: 240,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 240,
-                    height: 240,
-                    color: AppColors.surfaceVariant,
-                    alignment: Alignment.center,
-                    child: const Text(
-                      'QR asset not found',
-                      style: TextStyle(color: AppColors.textMuted),
-                    ),
-                  ),
-                ),
-              ),
-              if (AppSupportLinks.qrPayload.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                SelectableText(
-                  AppSupportLinks.qrPayload,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 

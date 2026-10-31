@@ -93,6 +93,7 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
   Widget build(BuildContext context) {
     final upgrade = widget.upgrade;
     final village = widget.village;
+    final displayPrefs = ref.watch(displayPreferencesProvider);
     const timerService = UpgradeTimerService();
     final remaining = timerService.remainingTime(_now, upgrade);
     final isPastDue = timerService.isPastDue(_now, upgrade);
@@ -273,7 +274,11 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                             style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                           ),
                           Text(
-                            DateTimeFormat.shortDateTime(upgrade.startedAtUtc),
+                            DateTimeFormat.shortDateTime(
+                              upgrade.startedAtUtc,
+                              dateFormat: displayPrefs.dateFormat,
+                              timeFormat: displayPrefs.timeFormat,
+                            ),
                             style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                           ),
                         ],
@@ -287,7 +292,11 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                             style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                           ),
                           Text(
-                            DateTimeFormat.shortDateTime(upgrade.expectedCompletionAtUtc),
+                            DateTimeFormat.shortDateTime(
+                              upgrade.expectedCompletionAtUtc,
+                              dateFormat: displayPrefs.dateFormat,
+                              timeFormat: displayPrefs.timeFormat,
+                            ),
                             style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                           ),
                         ],
@@ -302,7 +311,11 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                               style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                             ),
                             Text(
-                              DateTimeFormat.shortDateTime(upgrade.completedAtUtc!),
+                              DateTimeFormat.shortDateTime(
+                                upgrade.completedAtUtc!,
+                                dateFormat: displayPrefs.dateFormat,
+                                timeFormat: displayPrefs.timeFormat,
+                              ),
                               style: const TextStyle(color: AppColors.active, fontSize: 12),
                             ),
                           ],
@@ -604,12 +617,13 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-class _HistoryEventTile extends StatelessWidget {
+class _HistoryEventTile extends ConsumerWidget {
   const _HistoryEventTile({required this.event});
   final HistoryEvent event;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final displayPrefs = ref.watch(displayPreferencesProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -633,7 +647,11 @@ class _HistoryEventTile extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  DateTimeFormat.shortDateTime(event.createdAtUtc),
+                  DateTimeFormat.shortDateTime(
+                    event.createdAtUtc,
+                    dateFormat: displayPrefs.dateFormat,
+                    timeFormat: displayPrefs.timeFormat,
+                  ),
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.textMuted,

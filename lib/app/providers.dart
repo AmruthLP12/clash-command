@@ -21,6 +21,8 @@ import '../services/notifications/notification_reconciler.dart';
 import '../services/notifications/notification_service.dart';
 import '../services/widgets/home_widget_sync_service.dart';
 
+export '../core/formatting/display_preferences.dart';
+
 // ---------- Database ----------
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {

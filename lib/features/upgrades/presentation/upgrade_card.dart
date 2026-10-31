@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/formatting/date_time_format.dart';
+import 'package:clash_command/core/formatting/display_preferences.dart';
 import 'package:clash_command/core/formatting/duration_format.dart';
 import 'package:clash_command/domain/models/upgrade.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
@@ -136,6 +137,7 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
   Widget build(BuildContext context) {
     final upgrade = widget.upgrade;
     final village = _resolveVillage(ref);
+    final displayPrefs = ref.watch(displayPreferencesProvider);
     const service = UpgradeTimerService();
     final remaining = service.remainingTime(_now, upgrade);
     final isPastDue = service.isPastDue(_now, upgrade);
@@ -260,7 +262,11 @@ class _UpgradeCardState extends ConsumerState<UpgradeCard> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Ends ${DateTimeFormat.shortDateTime(upgrade.expectedCompletionAtUtc)}',
+                      'Ends ${DateTimeFormat.shortDateTime(
+                        upgrade.expectedCompletionAtUtc,
+                        dateFormat: displayPrefs.dateFormat,
+                        timeFormat: displayPrefs.timeFormat,
+                      )}',
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 11,

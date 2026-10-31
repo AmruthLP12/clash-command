@@ -1,22 +1,18 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Service managing sound effects and optional ambient background music.
+/// Centralized service managing reliable sound effects and ambient soundtrack.
 class AudioService with WidgetsBindingObserver {
   AudioService({
-    AudioPlayer? sfxPlayer,
-    AudioPlayer? musicPlayer,
     this.enableNativePlayback = true,
   }) {
-    _sfxPlayer = sfxPlayer;
-    _musicPlayer = musicPlayer;
     WidgetsBinding.instance.addObserver(this);
     _init();
   }
 
-  /// Whether actual platform audio playback is enabled.
-  /// Set to false in headless tests.
+  /// Whether actual platform audio playback is enabled (false in headless tests).
   final bool enableNativePlayback;
 
   static const String _prefSfxEnabled = 'audio_sfx_enabled';
@@ -24,23 +20,26 @@ class AudioService with WidgetsBindingObserver {
   static const String _prefSfxVolume = 'audio_sfx_volume';
   static const String _prefMusicVolume = 'audio_music_volume';
 
-  AudioPlayer? _sfxPlayer;
+  // SFX Player Pool to avoid dropped/interrupted sounds during rapid taps
+  static const int _sfxPoolSize = 4;
+  final List<AudioPlayer> _sfxPool = [];
+  int _sfxPoolIndex = 0;
+
   AudioPlayer? _musicPlayer;
-
-  AudioPlayer get sfxPlayer => _sfxPlayer ??= AudioPlayer();
-  AudioPlayer get musicPlayer => _musicPlayer ??= AudioPlayer();
-
   bool _sfxEnabled = true;
   bool _musicEnabled = false;
   double _sfxVolume = 0.7;
   double _musicVolume = 0.5;
   bool _isMusicPlaying = false;
   bool _appInBackground = false;
+  bool _initialized = false;
 
   bool get sfxEnabled => _sfxEnabled;
   bool get musicEnabled => _musicEnabled;
   double get sfxVolume => _sfxVolume;
   double get musicVolume => _musicVolume;
+  bool get isMusicPlaying => _isMusicPlaying;
+  bool get isInitialized => _initialized;
 
   final ValueNotifier<bool> sfxEnabledNotifier = ValueNotifier(true);
   final ValueNotifier<bool> musicEnabledNotifier = ValueNotifier(false);
@@ -60,26 +59,66 @@ class AudioService with WidgetsBindingObserver {
       sfxVolumeNotifier.value = _sfxVolume;
       musicVolumeNotifier.value = _musicVolume;
 
-      if (enableNativePlayback && _musicEnabled && !_appInBackground) {
-        await _startMusic();
+      if (enableNativePlayback) {
+        _initSfxPool();
+        if (_musicEnabled && !_appInBackground) {
+          await _startMusic();
+        }
+      }
+      _initialized = true;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('AudioService init error: $e');
+      }
+    }
+  }
+
+  void _initSfxPool() {
+    if (!enableNativePlayback) return;
+    try {
+      for (int i = 0; i < _sfxPoolSize; i++) {
+        final p = AudioPlayer();
+        p.setVolume(_sfxVolume).catchError((_) {});
+        p.setReleaseMode(ReleaseMode.stop).catchError((_) {});
+        // Avoid requesting exclusive audio focus for sound effects on Android
+        p
+            .setAudioContext(
+              AudioContext(
+                android: AudioContextAndroid(
+                  isSpeakerphoneOn: true,
+                  stayAwake: false,
+                  contentType: AndroidContentType.sonification,
+                  usageType: AndroidUsageType.assistanceSonification,
+                  audioFocus: AndroidAudioFocus.none,
+                ),
+              ),
+            )
+            .catchError((_) {});
+        _sfxPool.add(p);
       }
     } catch (e) {
-      debugPrint('AudioService init error: $e');
+      if (kDebugMode) {
+        debugPrint('SFX pool creation error: $e');
+      }
     }
   }
 
   Future<void> setSfxEnabled(bool enabled) async {
     _sfxEnabled = enabled;
     sfxEnabledNotifier.value = enabled;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_prefSfxEnabled, enabled);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_prefSfxEnabled, enabled);
+    } catch (_) {}
   }
 
   Future<void> setMusicEnabled(bool enabled) async {
     _musicEnabled = enabled;
     musicEnabledNotifier.value = enabled;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_prefMusicEnabled, enabled);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_prefMusicEnabled, enabled);
+    } catch (_) {}
 
     if (enabled) {
       if (!_appInBackground && !_isMusicPlaying) {
@@ -93,36 +132,51 @@ class AudioService with WidgetsBindingObserver {
   Future<void> setSfxVolume(double volume) async {
     _sfxVolume = volume.clamp(0.0, 1.0);
     sfxVolumeNotifier.value = _sfxVolume;
-    if (enableNativePlayback && _sfxPlayer != null) {
-      try {
-        await _sfxPlayer!.setVolume(_sfxVolume);
-      } catch (_) {}
+
+    if (enableNativePlayback) {
+      for (final p in _sfxPool) {
+        try {
+          await p.setVolume(_sfxVolume);
+        } catch (_) {}
+      }
     }
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_prefSfxVolume, _sfxVolume);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble(_prefSfxVolume, _sfxVolume);
+    } catch (_) {}
   }
 
   Future<void> setMusicVolume(double volume) async {
     _musicVolume = volume.clamp(0.0, 1.0);
     musicVolumeNotifier.value = _musicVolume;
+
     if (enableNativePlayback && _musicPlayer != null) {
       try {
         await _musicPlayer!.setVolume(_musicVolume);
       } catch (_) {}
     }
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_prefMusicVolume, _musicVolume);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble(_prefMusicVolume, _musicVolume);
+    } catch (_) {}
   }
+
+  AudioPlayer get musicPlayer => _musicPlayer ??= AudioPlayer();
 
   Future<void> _startMusic() async {
     if (!enableNativePlayback || !_musicEnabled || _appInBackground) return;
     try {
-      await musicPlayer.setVolume(_musicVolume);
-      await musicPlayer.setReleaseMode(ReleaseMode.loop);
-      await musicPlayer.play(AssetSource('audio/ambient_loop.wav'));
+      final p = musicPlayer;
+      await p.setVolume(_musicVolume);
+      await p.setReleaseMode(ReleaseMode.loop);
+      await p.play(AssetSource('audio/ambient_loop.wav'));
       _isMusicPlaying = true;
     } catch (e) {
-      debugPrint('Music play error: $e');
+      if (kDebugMode) {
+        debugPrint('Music play error: $e');
+      }
     }
   }
 
@@ -132,17 +186,43 @@ class AudioService with WidgetsBindingObserver {
       await _musicPlayer!.stop();
       _isMusicPlaying = false;
     } catch (e) {
-      debugPrint('Music stop error: $e');
+      if (kDebugMode) {
+        debugPrint('Music stop error: $e');
+      }
     }
   }
 
-  Future<void> _playSfx(String assetPath) async {
+  /// Plays a short sound effect from the rotating player pool without blocking.
+  void _playSfx(String assetPath) {
     if (!enableNativePlayback || !_sfxEnabled) return;
+
+    if (_sfxPool.isEmpty) {
+      _initSfxPool();
+      if (_sfxPool.isEmpty) return;
+    }
+
     try {
-      await sfxPlayer.setVolume(_sfxVolume);
-      await sfxPlayer.play(AssetSource(assetPath), mode: PlayerMode.lowLatency);
+      final player = _sfxPool[_sfxPoolIndex];
+      _sfxPoolIndex = (_sfxPoolIndex + 1) % _sfxPool.length;
+
+      // Reset and play asynchronously without awaiting or blocking UI
+      player.stop().then((_) {
+        player
+            .play(AssetSource(assetPath), mode: PlayerMode.lowLatency)
+            .catchError((e) {
+          if (kDebugMode) {
+            debugPrint('SFX play error ($assetPath): $e');
+          }
+        });
+      }).catchError((e) {
+        if (kDebugMode) {
+          debugPrint('SFX stop error ($assetPath): $e');
+        }
+      });
     } catch (e) {
-      debugPrint('SFX play error ($assetPath): $e');
+      if (kDebugMode) {
+        debugPrint('SFX dispatch error ($assetPath): $e');
+      }
     }
   }
 
@@ -177,7 +257,10 @@ class AudioService with WidgetsBindingObserver {
 
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _sfxPlayer?.dispose();
+    for (final p in _sfxPool) {
+      p.dispose();
+    }
+    _sfxPool.clear();
     _musicPlayer?.dispose();
     sfxEnabledNotifier.dispose();
     musicEnabledNotifier.dispose();

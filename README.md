@@ -199,6 +199,13 @@ make test
 - [Architecture Details](docs/architecture.md)
 - [Product Specifications](docs/prod.md)
 - [Development Guide](docs/development-guide.md)
+- [Support Clash Command](SUPPORT.md)
+
+---
+
+## Support & Contributions
+
+Clash Command is 100% free, offline-first, and ad-free. If you find the app helpful and want to support ongoing development, see [SUPPORT.md](SUPPORT.md) for voluntary contribution options including UPI (`9739337301@jupiteraxis`), Ko-fi, and PayPal.
 
 ---
 

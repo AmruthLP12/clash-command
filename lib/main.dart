@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_theme.dart';
-import 'package:clash_command/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:clash_command/features/villages/presentation/village_profiles_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,7 +50,7 @@ class ClashCommandApp extends StatelessWidget {
       title: 'Clash Command',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
-      home: const DashboardScreen(),
+      home: const VillageProfilesScreen(),
     );
   }
 }

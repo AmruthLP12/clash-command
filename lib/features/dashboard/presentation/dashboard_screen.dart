@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
+import 'package:clash_command/core/formatting/date_time_format.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/services/village_service.dart';
@@ -17,7 +18,9 @@ import 'package:clash_command/features/villages/application/villages_notifier.da
 import 'package:clash_command/features/villages/presentation/add_village_sheet.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.selectedVillageId});
+
+  final String? selectedVillageId;
 
   @override
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
@@ -35,7 +38,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSavedVillageId();
+    if (widget.selectedVillageId != null) {
+      _selectedVillageId = widget.selectedVillageId;
+    } else {
+      _loadSavedVillageId();
+    }
   }
 
   Future<void> _loadSavedVillageId() async {
@@ -46,19 +53,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         setState(() => _selectedVillageId = savedId);
       }
     } catch (_) {}
-  }
-
-  Future<void> _selectVillage(String id) async {
-    if (_selectedVillageId == id) return;
-    ref.read(audioServiceProvider).playVillageSwitch();
-    setState(() => _selectedVillageId = id);
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('last_selected_village_id', id);
-    } catch (_) {}
-    ref
-        .read(homeWidgetSyncServiceProvider)
-        .syncWidgets(specificVillageId: id);
   }
 
   @override
@@ -136,44 +130,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: villages.length <= 1
-                ? (selectedVillage != null
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(selectedVillage.name),
-                          if (_selectedRealm == VillageRealm.homeVillage && selectedVillage.townHallLevel != null)
-                            Text(
-                              'Town Hall ${selectedVillage.townHallLevel}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            )
-                          else if (_selectedRealm == VillageRealm.builderBase && selectedVillage.builderHallLevel != null)
-                            Text(
-                              'Builder Hall ${selectedVillage.builderHallLevel}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            )
-                          else if (selectedVillage.townHallLevel != null)
-                            Text(
-                              'Town Hall ${selectedVillage.townHallLevel}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
+            leading: Navigator.canPop(context)
+                ? IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    tooltip: 'Back to profiles',
+                    onPressed: () => Navigator.pop(context),
+                  )
+                : null,
+            title: selectedVillage != null
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedVillage.name,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Builder(
+                        builder: (context) {
+                          final levels = [
+                            if (selectedVillage.townHallLevel != null)
+                              'TH ${selectedVillage.townHallLevel}',
+                            if (selectedVillage.builderHallLevel != null)
+                              'BH ${selectedVillage.builderHallLevel}',
+                          ];
+                          if (levels.isEmpty) return const SizedBox.shrink();
+                          return Text(
+                            levels.join(' · '),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
                             ),
-                        ],
-                      )
-                    : const Text('Clash Command'))
-                : _VillageDropdownTitle(
-                    villages: villages,
-                    selectedId: _selectedVillageId!,
-                    onSelected: _selectVillage,
-                  ),
+                          );
+                        },
+                      ),
+                    ],
+                  )
+                : const Text('Clash Command'),
             actions: [
               if (selectedVillage != null)
                 PopupMenuButton<String>(
@@ -211,19 +203,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                   ],
                 ),
-              IconButton(
-                icon: const Icon(Icons.add_home_outlined),
-                tooltip: 'Add village',
-                onPressed: () => _showAddVillage(context),
-              ),
             ],
           ),
           body: villages.isEmpty
               ? _EmptyVillagesState(onAdd: () => _showAddVillage(context))
               : _DashboardBody(
                   village: selectedVillage!,
-                  allVillages: villages,
-                  onVillageSelected: _selectVillage,
                   selectedRealm: _selectedRealm,
                   selectedCategory: _selectedCategory,
                   onRealmChanged: (realm) {
@@ -374,107 +359,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-class _VillageDropdownTitle extends StatelessWidget {
-  const _VillageDropdownTitle({
-    required this.villages,
-    required this.selectedId,
-    required this.onSelected,
-  });
-
-  final List<Village> villages;
-  final String selectedId;
-  final ValueChanged<String> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedVillage = villages.firstWhere(
-      (v) => v.id == selectedId,
-      orElse: () => villages.first,
-    );
-
-    return PopupMenuButton<String>(
-      onSelected: onSelected,
-      color: AppColors.surfaceVariant,
-      tooltip: 'Switch village',
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  selectedVillage.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                ),
-                Builder(
-                  builder: (context) {
-                    final levels = [
-                      if (selectedVillage.townHallLevel != null) 'TH ${selectedVillage.townHallLevel}',
-                      if (selectedVillage.builderHallLevel != null) 'BH ${selectedVillage.builderHallLevel}',
-                    ];
-                    if (levels.isEmpty) return const SizedBox.shrink();
-                    return Text(
-                      levels.join(' · '),
-                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 4),
-          const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
-        ],
-      ),
-      itemBuilder: (context) {
-        return villages.map((v) {
-          final isCurrent = v.id == selectedId;
-          final badge = [
-            if (v.townHallLevel != null) 'TH${v.townHallLevel}',
-            if (v.builderHallLevel != null) 'BH${v.builderHallLevel}',
-          ].join(' ');
-
-          return PopupMenuItem<String>(
-            value: v.id,
-            child: Row(
-              children: [
-                Icon(
-                  isCurrent ? Icons.check_circle : Icons.circle_outlined,
-                  size: 16,
-                  color: isCurrent ? AppColors.accent : AppColors.textMuted,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    v.name,
-                    style: TextStyle(
-                      fontWeight: isCurrent ? FontWeight.w700 : FontWeight.normal,
-                      color: isCurrent ? AppColors.accent : AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                if (badge.isNotEmpty)
-                  Text(
-                    badge,
-                    style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                  ),
-              ],
-            ),
-          );
-        }).toList();
-      },
-    );
-  }
-}
-
 class _DashboardBody extends ConsumerStatefulWidget {
   const _DashboardBody({
     required this.village,
-    required this.allVillages,
-    required this.onVillageSelected,
     required this.selectedRealm,
     required this.selectedCategory,
     required this.onRealmChanged,
@@ -483,8 +370,6 @@ class _DashboardBody extends ConsumerStatefulWidget {
   });
 
   final Village village;
-  final List<Village> allVillages;
-  final ValueChanged<String> onVillageSelected;
   final VillageRealm selectedRealm;
   final UpgradeCategory selectedCategory;
   final ValueChanged<VillageRealm> onRealmChanged;
@@ -500,16 +385,13 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
 
   @override
   Widget build(BuildContext context) {
+    final displayPrefs = ref.watch(displayPreferencesProvider);
     final upgradesAsync =
         ref.watch(activeUpgradesForVillageProvider(widget.village.id));
 
     return upgradesAsync.when(
       loading: () => CustomScrollView(
         slivers: [
-          if (widget.allVillages.length > 1)
-            SliverToBoxAdapter(
-              child: _buildProfileSwitcher(),
-            ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -576,11 +458,6 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
 
         return CustomScrollView(
           slivers: [
-            if (widget.allVillages.length > 1)
-              SliverToBoxAdapter(
-                child: _buildProfileSwitcher(),
-              ),
-
             // Top Section: Village Selector (Home Village vs Builder Base)
             SliverToBoxAdapter(
               child: Padding(
@@ -657,7 +534,7 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Next: ${_formatDate(nextCompletion)}',
+                              'Next: ${_formatDate(nextCompletion, displayPrefs)}',
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: AppColors.textSecondary,
@@ -849,74 +726,11 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
     );
   }
 
-  String _formatDate(DateTime utc) {
-    final local = utc.toLocal();
-    return '${local.day}/${local.month} '
-        '${local.hour}:${local.minute.toString().padLeft(2, '0')}';
-  }
-
-  Widget _buildProfileSwitcher() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: widget.allVillages.map((v) {
-            final isSelected = v.id == widget.village.id;
-            final badge = [
-              if (v.townHallLevel != null) 'TH${v.townHallLevel}',
-              if (v.builderHallLevel != null) 'BH${v.builderHallLevel}',
-            ].join(' ');
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                selected: isSelected,
-                selectedColor: AppColors.accent,
-                backgroundColor: AppColors.surfaceVariant,
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.account_circle_outlined,
-                      size: 16,
-                      color:
-                          isSelected ? Colors.black : AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      v.name,
-                      style: TextStyle(
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color:
-                            isSelected ? Colors.black : AppColors.textPrimary,
-                        fontSize: 13,
-                      ),
-                    ),
-                    if (badge.isNotEmpty) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        badge,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              isSelected ? Colors.black87 : AppColors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                onSelected: (selected) {
-                  if (selected && !isSelected) {
-                    widget.onVillageSelected(v.id);
-                  }
-                },
-              ),
-            );
-          }).toList(),
-        ),
-      ),
+  String _formatDate(DateTime utc, DisplayPreferences prefs) {
+    return DateTimeFormat.shortDateTime(
+      utc,
+      dateFormat: prefs.dateFormat,
+      timeFormat: prefs.timeFormat,
     );
   }
 }

@@ -348,7 +348,7 @@ void main() {
       expect(find.widgetWithText(NavigationDestination, 'History'), findsNothing);
     });
 
-    testWidgets('Dashboard shows prominent village profile chips for multiple villages', (tester) async {
+    testWidgets('Dashboard does not show duplicate village profile chips', (tester) async {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -359,9 +359,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Both village chips are displayed prominently
-      expect(find.widgetWithText(ChoiceChip, 'Main Base'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'Second Base'), findsOneWidget);
+      // ChoiceChips were removed from dashboard to eliminate duplicate switcher controls
+      expect(find.byType(ChoiceChip), findsNothing);
+      // Dashboard title shows the selected village name
+      expect(find.text('Main Base'), findsOneWidget);
     });
   });
 }

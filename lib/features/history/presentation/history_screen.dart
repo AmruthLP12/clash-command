@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/formatting/date_time_format.dart';
+import 'package:clash_command/core/formatting/display_preferences.dart';
 import 'package:clash_command/domain/models/history_event.dart';
 import 'package:clash_command/features/upgrades/application/upgrades_notifier.dart';
 import 'package:clash_command/features/villages/application/villages_notifier.dart';
@@ -29,6 +30,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final displayPrefs = ref.watch(displayPreferencesProvider);
     final villagesAsync = ref.watch(villagesStreamProvider);
     final eventsAsync = _selectedVillageId != null
         ? ref.watch(villageHistoryEventsProvider(_selectedVillageId!))
@@ -221,6 +223,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                     Text(
                                       DateTimeFormat.shortDateTime(
                                         event.createdAtUtc,
+                                        dateFormat: displayPrefs.dateFormat,
+                                        timeFormat: displayPrefs.timeFormat,
                                       ),
                                       style: const TextStyle(
                                         fontSize: 11,

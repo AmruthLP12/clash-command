@@ -4,6 +4,34 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2026-10-31
+
+### Added
+- **Dynamic In-App Support QR Code**:
+  - Dynamically generated offline UPI QR code powered by `qr_flutter` with exact payload `9739337301@jupiteraxis` configured in `AppSupportLinks.qrPayload`.
+  - Displayed prominently in Settings → Support inside a high-contrast white card with quick copy button and scan instructions.
+- **Display & Formatting Preferences**:
+  - User-configurable time format: 12-hour (`03:45 PM`) vs 24-hour (`15:45`).
+  - User-configurable calendar date format: `DD/MM/YYYY`, `MM/DD/YYYY`, and `YYYY-MM-DD`.
+  - Persisted in local `SharedPreferences` and reactively wired via `displayPreferencesProvider` across `UpgradeCard`, `UpgradeDetailSheet`, `HistoryScreen`, `LevelsScreen`, and `DashboardScreen`.
+- **Profile-First App Entry Experience**:
+  - Introduced `VillageProfilesScreen` as the initial application screen displaying all saved village profile cards with Town Hall, Builder Hall, and Builder capacity badges.
+  - Branded startup loading animation with glowing pulse and error recovery state.
+  - Tapping any village card directly opens that village's dashboard.
+- **Support Documentation**:
+  - Added root-level `SUPPORT.md` outlining the ad-free, 100% free open-source mission, voluntary UPI ID (`9739337301@jupiteraxis`), Ko-fi, PayPal, and developer portfolio links.
+  - Updated `README.md` with Support and Contributions section linking to `SUPPORT.md`.
+- **Audio Service SFX Pool & Focus Optimization**:
+  - Multi-instance round-robin audio player pool eliminating dropped sound effects during rapid taps.
+  - Pre-allocated audio volumes and `AndroidAudioFocus.none` context preventing latency and audio clipping.
+
+### Changed & Fixed
+- **Eliminated Duplicate Profile Selectors**:
+  - Removed redundant `_VillageDropdownTitle` from Dashboard AppBar and removed duplicate horizontal choice chips from the dashboard body.
+  - Dashboard AppBar now displays the selected village name and Town Hall/Builder Hall levels with a clean back button to return to village profiles.
+- **Simplified External Links in App**:
+  - Removed separate GitHub repository and GitHub profile tiles from in-app UI. Retained developer portfolio, Ko-fi, and PayPal donation links.
+
 ## [1.0.6] - 2026-10-31
 
 ### Added
