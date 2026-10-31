@@ -37,6 +37,12 @@ feature-oriented structure.
   Notifications           `flutter_local_notifications`   Local scheduled
                                                           notifications
 
+  Audio                   `audioplayers`                  Offline sound effects
+                                                          and optional soundtrack
+
+  Preferences             `shared_preferences`            Fast local key-value
+                                                          UI state & active profile
+
   IDs                     UUID or stable integer primary  Stable record and
                           keys                            notification identity
 

@@ -21,6 +21,8 @@ appear to conflict, stop and resolve the discrepancy before coding.
 -   Drift over SQLite for persistent user data.
 -   `flutter_local_notifications` for scheduled local notifications,
     after validating current Android setup requirements.
+-   `audioplayers` for offline sound effects and optional ambient music.
+-   `shared_preferences` for lightweight UI settings and active profile persistence.
 -   `flutter_test` and `integration_test` where appropriate.
 
 ## Non-negotiable design rules

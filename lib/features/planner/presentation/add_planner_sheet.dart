@@ -46,7 +46,6 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
   // Resource controllers
   late final TextEditingController _resourceAmountController;
   late String _selectedResourceType;
-  late List<PlannerResource> _resources;
 
   late VillageRealm _realm;
   late UpgradeCategory _category;
@@ -96,10 +95,17 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
 
     _priority = it?.priority ?? 'Medium';
 
-    // Resources
-    _resources = List.from(it?.resources ?? []);
-    _resourceAmountController = TextEditingController();
-    _selectedResourceType = _defaultResourceTypeForRealm(_realm);
+    // Resources (single selector & amount)
+    final initialRes = (it?.resources != null && it!.resources.isNotEmpty)
+        ? it.resources.first
+        : null;
+    _selectedResourceType =
+        initialRes?.type ?? _defaultResourceTypeForRealm(_realm);
+    _resourceAmountController = TextEditingController(
+      text: initialRes != null && initialRes.amount > 0
+          ? '${initialRes.amount}'
+          : '',
+    );
   }
 
   @override
@@ -170,29 +176,6 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     });
   }
 
-  void _addResource() {
-    final amtText = _resourceAmountController.text.trim();
-    if (amtText.isEmpty) return;
-    final amount = int.tryParse(amtText);
-    if (amount == null || amount <= 0) return;
-
-    setState(() {
-      // Remove any previous requirement with the same resource type to replace it
-      _resources.removeWhere((r) => r.type == _selectedResourceType);
-      _resources.add(PlannerResource(
-        type: _selectedResourceType,
-        amount: amount,
-      ));
-      _resourceAmountController.clear();
-    });
-  }
-
-  void _removeResource(int index) {
-    setState(() {
-      _resources.removeAt(index);
-    });
-  }
-
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
@@ -213,6 +196,13 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
       final totalSec = d * 86400 + h * 3600 + m * 60;
       final durationSeconds = totalSec > 0 ? totalSec : null;
 
+      // Single resource amount parsed
+      final amtText = _resourceAmountController.text.trim();
+      final resourceAmount = amtText.isNotEmpty ? int.tryParse(amtText) : null;
+      final resources = (resourceAmount != null && resourceAmount > 0)
+          ? [PlannerResource(type: _selectedResourceType, amount: resourceAmount)]
+          : <PlannerResource>[];
+
       if (widget.isEditing) {
         final updated = widget.item!.copyWith(
           category: _category,
@@ -224,10 +214,11 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
           clearNotes: notes == null,
           durationSeconds: durationSeconds,
           clearDurationSeconds: durationSeconds == null,
-          resources: _resources,
+          resources: resources,
           updatedAtUtc: now,
         );
         await ref.read(plannerDaoProvider).upsert(updated);
+        ref.read(audioServiceProvider).playConfirm();
       } else {
         final newItem = PlannerItem(
           id: const IdGenerator().newId(),
@@ -241,11 +232,12 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
           status: 'planned',
           isNext: false,
           durationSeconds: durationSeconds,
-          resources: _resources,
+          resources: resources,
           createdAtUtc: now,
           updatedAtUtc: now,
         );
         await ref.read(plannerDaoProvider).upsert(newItem);
+        ref.read(audioServiceProvider).playItemAdd();
       }
       if (mounted) Navigator.pop(context);
     } finally {
@@ -556,7 +548,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                         flex: 5,
                         child: DropdownButtonFormField<String>(
                           key: ValueKey('res_$_selectedResourceType'),
-                          initialValue: _selectedResourceType,
+                          initialValue: resourceTypes.contains(_selectedResourceType)
+                              ? _selectedResourceType
+                              : resourceTypes.first,
                           isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Resource',
@@ -594,37 +588,8 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                           keyboardType: TextInputType.number,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton.filledTonal(
-                        icon: const Icon(Icons.add, size: 20),
-                        tooltip: 'Add resource',
-                        onPressed: _addResource,
-                      ),
                     ],
                   ),
-                  if (_resources.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: List.generate(_resources.length, (index) {
-                        final res = _resources[index];
-                        return Chip(
-                          label: Text(res.formattedAmount),
-                          deleteIcon:
-                              const Icon(Icons.close, size: 16),
-                          onDeleted: () => _removeResource(index),
-                          backgroundColor:
-                              AppColors.surfaceVariant,
-                          labelStyle: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
                   const SizedBox(height: 12),
 
                   // Notes

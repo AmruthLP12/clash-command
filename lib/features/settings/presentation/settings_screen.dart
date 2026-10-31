@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/constants/app_support_links.dart';
+import 'package:clash_command/features/history/presentation/history_screen.dart';
 
 /// Settings screen for managing notifications, permissions, and app preferences.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -128,6 +129,202 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // Section: Activity History
+              const Text(
+                'ACTIVITY & LOGS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.card,
+                child: ListTile(
+                  leading: const Icon(Icons.history, color: AppColors.accent),
+                  title: const Text('Activity History',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: const Text(
+                    'View completed upgrades, cancellations, and timeline events',
+                    style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    ref.read(audioServiceProvider).playTap();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const HistoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Section: Sound & Music
+              const Text(
+                'SOUND & MUSIC',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.card,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Column(
+                    children: [
+                      ValueListenableBuilder<bool>(
+                        valueListenable:
+                            ref.watch(audioServiceProvider).sfxEnabledNotifier,
+                        builder: (context, sfxEnabled, _) {
+                          return SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            secondary: const Icon(Icons.volume_up_outlined,
+                                color: AppColors.accent),
+                            title: const Text('Sound Effects',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
+                            subtitle: const Text(
+                                'Tap, upgrade start, completion, and alert chimes',
+                                style: TextStyle(
+                                    fontSize: 12, color: AppColors.textMuted)),
+                            value: sfxEnabled,
+                            activeThumbColor: AppColors.accent,
+                            onChanged: (val) {
+                              ref.read(audioServiceProvider).setSfxEnabled(val);
+                              if (val) ref.read(audioServiceProvider).playTap();
+                            },
+                          );
+                        },
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable:
+                            ref.watch(audioServiceProvider).sfxEnabledNotifier,
+                        builder: (context, sfxEnabled, _) {
+                          if (!sfxEnabled) return const SizedBox.shrink();
+                          return ValueListenableBuilder<double>(
+                            valueListenable:
+                                ref.watch(audioServiceProvider).sfxVolumeNotifier,
+                            builder: (context, volume, _) {
+                              return Row(
+                                children: [
+                                  const SizedBox(width: 40),
+                                  const Text('SFX Volume',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          color: AppColors.textSecondary)),
+                                  Expanded(
+                                    child: Slider(
+                                      value: volume,
+                                      min: 0.0,
+                                      max: 1.0,
+                                      divisions: 10,
+                                      activeColor: AppColors.accent,
+                                      onChanged: (v) => ref
+                                          .read(audioServiceProvider)
+                                          .setSfxVolume(v),
+                                      onChangeEnd: (v) =>
+                                          ref.read(audioServiceProvider).playTap(),
+                                    ),
+                                  ),
+                                  Text('${(volume * 100).round()}%',
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.textMuted)),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      const Divider(height: 20),
+                      ValueListenableBuilder<bool>(
+                        valueListenable:
+                            ref.watch(audioServiceProvider).musicEnabledNotifier,
+                        builder: (context, musicEnabled, _) {
+                          return SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            secondary: const Icon(Icons.music_note_outlined,
+                                color: AppColors.accent),
+                            title: const Text('Ambient Music',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
+                            subtitle: const Text(
+                                'Looping background ambient soundtrack',
+                                style: TextStyle(
+                                    fontSize: 12, color: AppColors.textMuted)),
+                            value: musicEnabled,
+                            activeThumbColor: AppColors.accent,
+                            onChanged: (val) {
+                              ref
+                                  .read(audioServiceProvider)
+                                  .setMusicEnabled(val);
+                            },
+                          );
+                        },
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable:
+                            ref.watch(audioServiceProvider).musicEnabledNotifier,
+                        builder: (context, musicEnabled, _) {
+                          if (!musicEnabled) return const SizedBox.shrink();
+                          return ValueListenableBuilder<double>(
+                            valueListenable: ref
+                                .watch(audioServiceProvider)
+                                .musicVolumeNotifier,
+                            builder: (context, volume, _) {
+                              return Row(
+                                children: [
+                                  const SizedBox(width: 40),
+                                  const Text('Music Volume',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          color: AppColors.textSecondary)),
+                                  Expanded(
+                                    child: Slider(
+                                      value: volume,
+                                      min: 0.0,
+                                      max: 1.0,
+                                      divisions: 10,
+                                      activeColor: AppColors.accent,
+                                      onChanged: (v) => ref
+                                          .read(audioServiceProvider)
+                                          .setMusicVolume(v),
+                                    ),
+                                  ),
+                                  Text('${(volume * 100).round()}%',
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.textMuted)),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Section: Notification Permissions
+              const Text(
+                'NOTIFICATIONS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
               // Permission status card
               Card(
                 color: AppColors.card,
@@ -438,6 +635,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const Text(
+                        'Clash Command is 100% free, offline-first, and open-source. If you find it helpful and want to support ongoing development, feel free to connect!',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                            height: 1.4),
+                      ),
+                      const SizedBox(height: 12),
+                      const Divider(height: 1),
                       ListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
@@ -509,7 +715,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.coffee_outlined,
+                        leading: const Icon(Icons.coffee,
+                            color: AppColors.accent),
+                        title: const Text(
+                          'Support via Ko-fi',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        subtitle: const Text(
+                          AppSupportLinks.kofiUrl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.open_in_new, size: 18),
+                        onTap: () => _launchExternalUrl(
+                          context,
+                          AppSupportLinks.kofiUrl,
+                          'Ko-fi',
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.payment,
                             color: AppColors.accent),
                         title: const Text(
                           'Support via PayPal',

@@ -51,6 +51,9 @@ instructions for all work in this repository.
 
 ## Coding rules
 
+-   Keep app startup non-blocking: never await heavy plugin initializations or
+    database-wide queries before `runApp`. Use post-frame callbacks and skeletons.
+-   All audio assets must remain 100% royalty-free, locally bundled, and offline-only.
 -   Keep UI, domain logic, persistence, and platform services separated.
 -   Do not run database queries from widgets.
 -   Do not put timer arithmetic in presentation widgets.

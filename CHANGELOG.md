@@ -4,6 +4,48 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-10-31
+
+### Added
+- **Instant Staged App Startup**:
+  - Eliminated the 5–10 second blocking startup delay by running `runApp()` immediately upon app execution.
+  - Deferred heavy services (`notificationServiceProvider.initialize()`, `notificationReconcilerProvider.reconcile()`, `homeWidgetSyncServiceProvider.syncWidgets()`) to non-blocking post-frame background tasks.
+  - Added `_DashboardSkeleton` with smooth placeholder cards to display the UI shell instantly without spinners or layout jumps.
+- **Audio System & Ambient Soundtrack**:
+  - Procedurally synthesized 8 original 16-bit 44.1kHz PCM audio assets in `assets/audio/` (button tap, village switch, upgrade start, upgrade complete, item add, confirm, error, and a seamless 5-second harmonic ambient music loop).
+  - Implemented `AudioService` with Android lifecycle observation (`WidgetsBindingObserver`) to auto-pause music in background and resume on foreground.
+  - Added Audio Settings section in Settings with toggles for Sound Effects (ON by default) and Ambient Music (OFF by default), plus smooth volume sliders (0–100%) persisted in `SharedPreferences`.
+  - Wired interactive audio chimes to bottom navigation, village switching, upgrade creation, planner additions, and confirmations.
+- **Prominent Village/Profile Switcher & Persistence**:
+  - Added horizontal profile choice chips directly on the Dashboard header for instant 1-tap village switching.
+  - Automatically loads and persists `last_selected_village_id` via `SharedPreferences`.
+- **TH17 Hero Cap Updates & Dragon Duke**:
+  - Updated built-in catalogue max levels to official Town Hall 17 release values:
+    - Barbarian King: Max Level 100 (up from 95)
+    - Archer Queen: Max Level 100 (up from 95)
+    - Grand Warden: Max Level 75 (up from 70)
+    - Royal Champion: Max Level 50 (up from 45)
+    - Minion Prince: Max Level 90 (up from 40)
+    - Added new TH17 Hero `Dragon Duke` (minTownHall: 17, maxLevel: 20)
+    - Verified Battle Machine and Battle Copter max level caps at 35 (Builder Hall 10).
+- **Settings — About & Developer Support Enhancements**:
+  - Added dedicated Activity History navigation tile in Settings.
+  - Added live links to developer Portfolio (`https://amruthlp.vercel.app/`) and Ko-fi (`https://ko-fi.com/amruthlp`).
+  - Added friendly open-source community support message in Settings.
+
+### Changed & Fixed
+- **Navigation Bar Streamlining**:
+  - Reduced bottom navigation from 5 destinations to 4: `Dashboard`, `Planner`, `Levels`, and `Settings`.
+  - Moved `Activity History` into Settings as an accessible dedicated screen.
+- **Track Upgrade — Duration Inputs & Validation**:
+  - Days, hours, and minutes input fields now start empty instead of prefilled with `0`.
+  - Empty fields are treated as `0`; validation error displays only when total duration is 0 or all fields are blank.
+- **Planner → Start Upgrade Duration Transfer**:
+  - Fixed bug where starting an upgrade from the Planner reset remaining duration to 0 by adding `initialDurationSeconds` to `AddUpgradeSheet` and passing `item.durationSeconds`.
+  - Automatically transitions planner item status to `started` upon starting the upgrade.
+- **Planner — Simplified Single Resource Cost Entry**:
+  - Streamlined resource entry to a single dropdown selector and amount input field, removing the redundant `+` chip UI while maintaining 100% backwards-compatibility with existing data.
+
 ## [1.0.5] - 2026-10-24
 
 ### Added

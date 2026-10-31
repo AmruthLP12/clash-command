@@ -81,6 +81,22 @@ Android device. The primary workflow is:
     configured capacity.
 -   Provide a useful empty state when no upgrades are active.
 
+#### Sound & Audio (Offline)
+
+-   Provide original, royalty-free audio effects for tactile UI feedback:
+    button tap, village switch, upgrade start, upgrade complete, planner add,
+    action confirmation, and error chime.
+-   Provide optional looping harmonic ambient soundtrack (OFF by default).
+-   User controls in Settings: sound effects toggle, music toggle, SFX volume slider,
+    and music volume slider with persistent settings and Android lifecycle awareness.
+
+#### Staged App Startup
+
+-   Instant application launch: UI shell renders immediately without blocking for
+    notification setup, database reconciliation, or home widget syncing.
+-   Background services are scheduled non-blockingly after the first frame renders.
+-   Smooth dashboard skeleton layout avoids full-screen spinners or visual jarring.
+
 #### Notifications
 
 -   Optional notification at completion.

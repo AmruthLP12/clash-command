@@ -30,6 +30,7 @@ class AddUpgradeSheet extends ConsumerStatefulWidget {
     this.initialCategory,
     this.initialName,
     this.initialTargetLevel,
+    this.initialDurationSeconds,
     this.plannerItemId,
   });
 
@@ -38,6 +39,7 @@ class AddUpgradeSheet extends ConsumerStatefulWidget {
   final UpgradeCategory? initialCategory;
   final String? initialName;
   final int? initialTargetLevel;
+  final int? initialDurationSeconds;
   final String? plannerItemId;
 
   bool get isEditing => upgrade != null;
@@ -97,13 +99,22 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
       final days = _initialRemaining.inDays;
       final hours = _initialRemaining.inHours % 24;
       final minutes = _initialRemaining.inMinutes % 60;
-      _daysController = TextEditingController(text: '$days');
-      _hoursController = TextEditingController(text: '$hours');
-      _minutesController = TextEditingController(text: '$minutes');
+      _daysController = TextEditingController(text: days > 0 ? '$days' : '');
+      _hoursController = TextEditingController(text: hours > 0 ? '$hours' : '');
+      _minutesController = TextEditingController(text: minutes > 0 ? '$minutes' : '');
+    } else if (widget.initialDurationSeconds != null &&
+        widget.initialDurationSeconds! > 0) {
+      final totalSec = widget.initialDurationSeconds!;
+      final days = totalSec ~/ 86400;
+      final hours = (totalSec % 86400) ~/ 3600;
+      final minutes = (totalSec % 3600) ~/ 60;
+      _daysController = TextEditingController(text: days > 0 ? '$days' : '');
+      _hoursController = TextEditingController(text: hours > 0 ? '$hours' : '');
+      _minutesController = TextEditingController(text: minutes > 0 ? '$minutes' : '');
     } else {
-      _daysController = TextEditingController(text: '0');
-      _hoursController = TextEditingController(text: '0');
-      _minutesController = TextEditingController(text: '0');
+      _daysController = TextEditingController();
+      _hoursController = TextEditingController();
+      _minutesController = TextEditingController();
     }
   }
 
@@ -161,7 +172,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
     if (!_formKey.currentState!.validate()) return;
     if (!_durationValid) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Duration must be greater than zero.')),
+        const SnackBar(content: Text('Duration is required (must be greater than zero).')),
       );
       return;
     }
@@ -199,6 +210,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
               clearToLevel: toLevel == null,
               newExpectedCompletionAtUtc: newExpectedCompletion,
             );
+        ref.read(audioServiceProvider).playConfirm();
       } else {
         await ref.read(upgradesNotifierProvider.notifier).startUpgrade(
               villageId: widget.village.id,
@@ -214,6 +226,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
               .read(plannerDaoProvider)
               .updateStatus(widget.plannerItemId!, 'started');
         }
+        ref.read(audioServiceProvider).playUpgradeStart();
       }
       if (mounted) Navigator.pop(context);
     } finally {
@@ -695,9 +708,13 @@ class _DurationField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.number,
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: '0',
+      ),
       validator: (v) {
-        final n = int.tryParse(v ?? '');
+        if (v == null || v.trim().isEmpty) return null;
+        final n = int.tryParse(v.trim());
         if (n == null || n < 0) return '≥ 0';
         if (max != null && n > max!) return '≤ $max';
         return null;

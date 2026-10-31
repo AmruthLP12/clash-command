@@ -5,19 +5,10 @@ import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_theme.dart';
 import 'package:clash_command/features/dashboard/presentation/dashboard_screen.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   final container = ProviderContainer();
-
-  // Initialize notifications
-  await container.read(notificationServiceProvider).initialize();
-
-  // Reconcile notifications on launch
-  await container.read(notificationReconcilerProvider).reconcile();
-
-  // Sync home-screen widgets on launch
-  await container.read(homeWidgetSyncServiceProvider).syncWidgets();
 
   runApp(
     UncontrolledProviderScope(
@@ -25,6 +16,29 @@ void main() async {
       child: const ClashCommandApp(),
     ),
   );
+
+  // Initialize non-blocking background services after the first frame renders
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _initBackgroundServices(container);
+  });
+}
+
+Future<void> _initBackgroundServices(ProviderContainer container) async {
+  try {
+    // Eagerly instantiate audio service so settings and listeners are loaded
+    container.read(audioServiceProvider);
+
+    // Initialize notifications
+    await container.read(notificationServiceProvider).initialize();
+
+    // Reconcile notifications on launch
+    await container.read(notificationReconcilerProvider).reconcile();
+
+    // Sync home-screen widgets on launch
+    await container.read(homeWidgetSyncServiceProvider).syncWidgets();
+  } catch (e) {
+    debugPrint('Background services initialization error: $e');
+  }
 }
 
 class ClashCommandApp extends StatelessWidget {

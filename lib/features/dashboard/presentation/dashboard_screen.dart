@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/domain/services/village_service.dart';
-import 'package:clash_command/features/history/presentation/history_screen.dart';
 import 'package:clash_command/features/levels/presentation/levels_screen.dart';
 import 'package:clash_command/features/planner/presentation/planner_screen.dart';
 import 'package:clash_command/features/settings/presentation/settings_screen.dart';
@@ -33,6 +33,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final Set<int> _loadedTabs = {0};
 
   @override
+  void initState() {
+    super.initState();
+    _loadSavedVillageId();
+  }
+
+  Future<void> _loadSavedVillageId() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedId = prefs.getString('last_selected_village_id');
+      if (savedId != null && mounted) {
+        setState(() => _selectedVillageId = savedId);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _selectVillage(String id) async {
+    if (_selectedVillageId == id) return;
+    ref.read(audioServiceProvider).playVillageSwitch();
+    setState(() => _selectedVillageId = id);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_selected_village_id', id);
+    } catch (_) {}
+    ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: id);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
@@ -46,9 +75,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ? LevelsScreen(initialVillageId: _selectedVillageId)
               : const SizedBox.shrink(),
           _loadedTabs.contains(3)
-              ? HistoryScreen(initialVillageId: _selectedVillageId)
-              : const SizedBox.shrink(),
-          _loadedTabs.contains(4)
               ? const SettingsScreen()
               : const SizedBox.shrink(),
         ],
@@ -61,9 +87,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final villagesAsync = ref.watch(villagesStreamProvider);
 
     return villagesAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => const _DashboardSkeleton(),
       error: (e, _) => Scaffold(
         body: Center(child: Text('Error: $e')),
       ),
@@ -148,12 +172,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 : _VillageDropdownTitle(
                     villages: villages,
                     selectedId: _selectedVillageId!,
-                    onSelected: (id) {
-                      setState(() => _selectedVillageId = id);
-                      ref
-                          .read(homeWidgetSyncServiceProvider)
-                          .syncWidgets(specificVillageId: id);
-                    },
+                    onSelected: _selectVillage,
                   ),
             actions: [
               if (selectedVillage != null)
@@ -203,6 +222,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ? _EmptyVillagesState(onAdd: () => _showAddVillage(context))
               : _DashboardBody(
                   village: selectedVillage!,
+                  allVillages: villages,
+                  onVillageSelected: _selectVillage,
                   selectedRealm: _selectedRealm,
                   selectedCategory: _selectedCategory,
                   onRealmChanged: (realm) {
@@ -244,6 +265,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       backgroundColor: AppColors.surface,
       indicatorColor: AppColors.accent,
       onDestinationSelected: (index) {
+        ref.read(audioServiceProvider).playTap();
         setState(() {
           _navIndex = index;
           _loadedTabs.add(index);
@@ -264,11 +286,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           icon: Icon(Icons.format_list_numbered_outlined),
           selectedIcon: Icon(Icons.format_list_numbered, color: Colors.black),
           label: 'Levels',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.history_outlined),
-          selectedIcon: Icon(Icons.history, color: Colors.black),
-          label: 'History',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),
@@ -456,6 +473,8 @@ class _VillageDropdownTitle extends StatelessWidget {
 class _DashboardBody extends ConsumerStatefulWidget {
   const _DashboardBody({
     required this.village,
+    required this.allVillages,
+    required this.onVillageSelected,
     required this.selectedRealm,
     required this.selectedCategory,
     required this.onRealmChanged,
@@ -464,6 +483,8 @@ class _DashboardBody extends ConsumerStatefulWidget {
   });
 
   final Village village;
+  final List<Village> allVillages;
+  final ValueChanged<String> onVillageSelected;
   final VillageRealm selectedRealm;
   final UpgradeCategory selectedCategory;
   final ValueChanged<VillageRealm> onRealmChanged;
@@ -483,7 +504,45 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
         ref.watch(activeUpgradesForVillageProvider(widget.village.id));
 
     return upgradesAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => CustomScrollView(
+        slivers: [
+          if (widget.allVillages.length > 1)
+            SliverToBoxAdapter(
+              child: _buildProfileSwitcher(),
+            ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ...List.generate(
+                    2,
+                    (_) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Container(
+                        height: 110,
+                        decoration: BoxDecoration(
+                          color: AppColors.card,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (upgrades) {
         final activeCategory = widget.selectedCategory;
@@ -517,6 +576,11 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
 
         return CustomScrollView(
           slivers: [
+            if (widget.allVillages.length > 1)
+              SliverToBoxAdapter(
+                child: _buildProfileSwitcher(),
+              ),
+
             // Top Section: Village Selector (Home Village vs Builder Base)
             SliverToBoxAdapter(
               child: Padding(
@@ -790,6 +854,71 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
     return '${local.day}/${local.month} '
         '${local.hour}:${local.minute.toString().padLeft(2, '0')}';
   }
+
+  Widget _buildProfileSwitcher() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: widget.allVillages.map((v) {
+            final isSelected = v.id == widget.village.id;
+            final badge = [
+              if (v.townHallLevel != null) 'TH${v.townHallLevel}',
+              if (v.builderHallLevel != null) 'BH${v.builderHallLevel}',
+            ].join(' ');
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                selected: isSelected,
+                selectedColor: AppColors.accent,
+                backgroundColor: AppColors.surfaceVariant,
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.account_circle_outlined,
+                      size: 16,
+                      color:
+                          isSelected ? Colors.black : AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      v.name,
+                      style: TextStyle(
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color:
+                            isSelected ? Colors.black : AppColors.textPrimary,
+                        fontSize: 13,
+                      ),
+                    ),
+                    if (badge.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        badge,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              isSelected ? Colors.black87 : AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                onSelected: (selected) {
+                  if (selected && !isSelected) {
+                    widget.onVillageSelected(v.id);
+                  }
+                },
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
 }
 
 class _DashboardCategoryCard extends StatelessWidget {
@@ -955,6 +1084,67 @@ class _EmptyUpgradesState extends StatelessWidget {
                 label: const Text('Track new upgrade'),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardSkeleton extends StatelessWidget {
+  const _DashboardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Container(
+          width: 140,
+          height: 20,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: 3,
+                itemBuilder: (_, index) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    height: 110,
+                    decoration: BoxDecoration(
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

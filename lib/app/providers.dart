@@ -15,6 +15,7 @@ import '../domain/services/notification_plan_service.dart';
 import '../domain/services/upgrade_lifecycle_service.dart';
 import '../domain/services/upgrade_timer_service.dart';
 import '../domain/services/village_service.dart';
+import '../services/audio/audio_service.dart';
 import '../services/notifications/local_notification_service.dart';
 import '../services/notifications/notification_reconciler.dart';
 import '../services/notifications/notification_service.dart';
@@ -131,4 +132,12 @@ final homeWidgetSyncServiceProvider = Provider<HomeWidgetSyncService>((ref) {
     villagesDao: ref.watch(villagesDaoProvider),
     upgradesDao: ref.watch(upgradesDaoProvider),
   );
+});
+
+// ---------- Audio Service ----------
+
+final audioServiceProvider = Provider<AudioService>((ref) {
+  final service = AudioService();
+  ref.onDispose(service.dispose);
+  return service;
 });

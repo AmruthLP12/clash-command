@@ -113,6 +113,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
         initialCategory: item.category,
         initialName: item.name,
         initialTargetLevel: item.targetLevel,
+        initialDurationSeconds: item.durationSeconds,
         plannerItemId: item.id,
       ),
     );
