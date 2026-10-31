@@ -22,9 +22,9 @@ class CustomUpgradeSuggestionsDao extends DatabaseAccessor<AppDatabase>
           ..where((tbl) => tbl.category.equals(primName))
           ..orderBy([
             (tbl) => OrderingTerm(
-                  expression: tbl.updatedAtUtc,
-                  mode: OrderingMode.desc,
-                )
+              expression: tbl.updatedAtUtc,
+              mode: OrderingMode.desc,
+            ),
           ]))
         .watch();
   }
@@ -32,9 +32,9 @@ class CustomUpgradeSuggestionsDao extends DatabaseAccessor<AppDatabase>
   /// Gets all custom suggestion names for a given category.
   Future<List<String>> getNamesForCategory(UpgradeCategory category) async {
     final primName = category.primaryCategory.name;
-    final rows = await (select(customUpgradeSuggestions)
-          ..where((tbl) => tbl.category.equals(primName)))
-        .get();
+    final rows = await (select(
+      customUpgradeSuggestions,
+    )..where((tbl) => tbl.category.equals(primName))).get();
     return rows.map((r) => r.name).toList();
   }
 
@@ -54,13 +54,13 @@ class CustomUpgradeSuggestionsDao extends DatabaseAccessor<AppDatabase>
     }
 
     // 2. Check against existing custom suggestions in the database
-    final existing = await (select(customUpgradeSuggestions)
-          ..where(
-            (tbl) =>
-                tbl.category.equals(targetCategory.name) &
-                tbl.name.lower().equals(cleanLower),
-          ))
-        .get();
+    final existing =
+        await (select(customUpgradeSuggestions)..where(
+              (tbl) =>
+                  tbl.category.equals(targetCategory.name) &
+                  tbl.name.lower().equals(cleanLower),
+            ))
+            .get();
 
     if (existing.isNotEmpty) {
       return false; // Duplicate
@@ -80,4 +80,3 @@ class CustomUpgradeSuggestionsDao extends DatabaseAccessor<AppDatabase>
     return true;
   }
 }
-

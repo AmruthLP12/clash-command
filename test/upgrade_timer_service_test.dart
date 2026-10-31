@@ -58,30 +58,44 @@ void main() {
   group('UpgradeTimerService.remainingTime', () {
     test('returns correct remaining duration for an active upgrade', () {
       final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
-      final upgrade = makeActive(now: now, remainingFromNow: const Duration(hours: 2));
+      final upgrade = makeActive(
+        now: now,
+        remainingFromNow: const Duration(hours: 2),
+      );
       expect(service.remainingTime(now, upgrade), const Duration(hours: 2));
     });
 
     test('returns zero for a completed upgrade', () {
       final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
-      expect(service.remainingTime(now, makeCompleted(now: now)), Duration.zero);
+      expect(
+        service.remainingTime(now, makeCompleted(now: now)),
+        Duration.zero,
+      );
     });
 
     test('returns zero for a cancelled upgrade', () {
       final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
-      expect(service.remainingTime(now, makeCancelled(now: now)), Duration.zero);
+      expect(
+        service.remainingTime(now, makeCancelled(now: now)),
+        Duration.zero,
+      );
     });
 
     test('returns zero (not negative) when an active upgrade is past due', () {
       final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
-      final upgrade = makeActive(now: now, remainingFromNow: const Duration(minutes: -30));
+      final upgrade = makeActive(
+        now: now,
+        remainingFromNow: const Duration(minutes: -30),
+      );
       expect(service.remainingTime(now, upgrade), Duration.zero);
     });
 
     test('remaining time decreases correctly over time', () {
       final start = DateTime.utc(2026, 10, 19, 12, 0, 0);
       final upgrade = makeActive(
-          now: start, remainingFromNow: const Duration(hours: 3));
+        now: start,
+        remainingFromNow: const Duration(hours: 3),
+      );
       final twoHoursLater = start.add(const Duration(hours: 2));
       final remaining = service.remainingTime(twoHoursLater, upgrade);
       expect(remaining, const Duration(hours: 1));
@@ -91,13 +105,19 @@ void main() {
   group('UpgradeTimerService.isPastDue', () {
     test('returns true when active and past expected completion', () {
       final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
-      final upgrade = makeActive(now: now, remainingFromNow: const Duration(minutes: -1));
+      final upgrade = makeActive(
+        now: now,
+        remainingFromNow: const Duration(minutes: -1),
+      );
       expect(service.isPastDue(now, upgrade), isTrue);
     });
 
     test('returns false when active and not yet past completion', () {
       final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
-      final upgrade = makeActive(now: now, remainingFromNow: const Duration(minutes: 30));
+      final upgrade = makeActive(
+        now: now,
+        remainingFromNow: const Duration(minutes: 30),
+      );
       expect(service.isPastDue(now, upgrade), isFalse);
     });
 
@@ -116,7 +136,12 @@ void main() {
     test('isCompleted is true only for completed status', () {
       final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
       expect(service.isCompleted(makeCompleted(now: now)), isTrue);
-      expect(service.isCompleted(makeActive(now: now, remainingFromNow: const Duration(hours: 1))), isFalse);
+      expect(
+        service.isCompleted(
+          makeActive(now: now, remainingFromNow: const Duration(hours: 1)),
+        ),
+        isFalse,
+      );
       expect(service.isCompleted(makeCancelled(now: now)), isFalse);
     });
 
@@ -124,7 +149,12 @@ void main() {
       final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
       expect(service.isCancelled(makeCancelled(now: now)), isTrue);
       expect(service.isCancelled(makeCompleted(now: now)), isFalse);
-      expect(service.isCancelled(makeActive(now: now, remainingFromNow: const Duration(hours: 1))), isFalse);
+      expect(
+        service.isCancelled(
+          makeActive(now: now, remainingFromNow: const Duration(hours: 1)),
+        ),
+        isFalse,
+      );
     });
   });
 

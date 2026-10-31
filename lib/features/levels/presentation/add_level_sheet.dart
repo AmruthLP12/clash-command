@@ -59,11 +59,13 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
     );
     _levelFocusNode = FocusNode();
 
-    _category = it?.category.primaryCategory ??
+    _category =
+        it?.category.primaryCategory ??
         widget.initialCategory?.primaryCategory ??
         UpgradeCategory.homeBuilder;
 
-    _realm = (_category == UpgradeCategory.builderBaseBuilder ||
+    _realm =
+        (_category == UpgradeCategory.builderBaseBuilder ||
             _category == UpgradeCategory.builderBaseStarLab)
         ? VillageRealm.builderBase
         : VillageRealm.homeVillage;
@@ -104,7 +106,8 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
     if (_category == cat) return;
     setState(() {
       _category = cat;
-      _realm = (cat == UpgradeCategory.builderBaseBuilder ||
+      _realm =
+          (cat == UpgradeCategory.builderBaseBuilder ||
               cat == UpgradeCategory.builderBaseStarLab)
           ? VillageRealm.builderBase
           : VillageRealm.homeVillage;
@@ -125,12 +128,15 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
   void _onCatalogItemSelected(UpgradeCatalogItem item) {
     _nameController.text = item.name;
     final targetCategory = item.category.primaryCategory;
-    final targetRealm = (targetCategory == UpgradeCategory.builderBaseBuilder ||
+    final targetRealm =
+        (targetCategory == UpgradeCategory.builderBaseBuilder ||
             targetCategory == UpgradeCategory.builderBaseStarLab)
         ? VillageRealm.builderBase
         : VillageRealm.homeVillage;
-    final inferredType =
-        LevelItemType.fromCatalogType(item.type, targetCategory);
+    final inferredType = LevelItemType.fromCatalogType(
+      item.type,
+      targetCategory,
+    );
 
     setState(() {
       _category = targetCategory;
@@ -154,11 +160,9 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
       final now = DateTime.now().toUtc();
 
       // Check if an existing record with this name and category in the target village exists
-      final existing = await ref.read(villageItemLevelsDaoProvider).findByItem(
-            _selectedVillageId,
-            _category,
-            name,
-          );
+      final existing = await ref
+          .read(villageItemLevelsDaoProvider)
+          .findByItem(_selectedVillageId, _category, name);
 
       if (widget.isEditing) {
         if (existing != null && existing.id != widget.item!.id) {
@@ -183,6 +187,7 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
           );
           await ref.read(villageItemLevelsDaoProvider).upsert(updated);
         }
+        ref.read(audioServiceProvider).playConfirm();
       } else {
         final record = VillageItemLevel(
           id: existing?.id ?? const IdGenerator().newId(),
@@ -194,6 +199,7 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
           updatedAtUtc: now,
         );
         await ref.read(villageItemLevelsDaoProvider).upsert(record);
+        ref.read(audioServiceProvider).playItemAdd();
       }
 
       if (mounted) Navigator.pop(context);
@@ -205,8 +211,9 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
   @override
   Widget build(BuildContext context) {
     final villagesAsync = ref.watch(villagesStreamProvider);
-    final customSuggestionsAsync =
-        ref.watch(customUpgradeSuggestionsStreamProvider(_category));
+    final customSuggestionsAsync = ref.watch(
+      customUpgradeSuggestionsStreamProvider(_category),
+    );
     final customNames = (customSuggestionsAsync.valueOrNull ?? [])
         .map((e) => e.name)
         .toList();
@@ -241,7 +248,7 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                               ? 'Edit tracked item'
                               : 'Track item level',
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
@@ -264,7 +271,8 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: DropdownButtonFormField<String>(
-                          initialValue: villages.any((v) => v.id == _selectedVillageId)
+                          initialValue:
+                              villages.any((v) => v.id == _selectedVillageId)
                               ? _selectedVillageId
                               : villages.first.id,
                           decoration: const InputDecoration(
@@ -317,7 +325,7 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                   const SizedBox(height: 14),
 
                   // 3. Item Type Selector
-                  const Text(
+                  Text(
                     'Item Type',
                     style: TextStyle(
                       fontSize: 13,
@@ -336,7 +344,9 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                         avatar: Icon(
                           icon,
                           size: 16,
-                          color: isSelected ? Colors.black : AppColors.textSecondary,
+                          color: isSelected
+                              ? Colors.black
+                              : AppColors.textSecondary,
                         ),
                         label: Text(type),
                         selected: isSelected,
@@ -346,8 +356,12 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                         selectedColor: AppColors.accent,
                         backgroundColor: AppColors.surfaceVariant,
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.black : AppColors.textPrimary,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.black
+                              : AppColors.textPrimary,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           fontSize: 13,
                         ),
                       );
@@ -374,29 +388,32 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                     onSelected: _onCatalogItemSelected,
                     fieldViewBuilder:
                         (context, controller, focusNode, onFieldSubmitted) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: InputDecoration(
-                          labelText: 'Item name *',
-                          hintText: 'e.g. Archer Tower, Barbarian King',
-                          prefixIcon:
-                              const Icon(Icons.shield_outlined, size: 20),
-                          suffixIcon: controller.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, size: 18),
-                                  onPressed: () {
-                                    controller.clear();
-                                    setState(() {});
-                                  },
-                                )
-                              : null,
-                        ),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                        textCapitalization: TextCapitalization.words,
-                      );
-                    },
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: 'Item name *',
+                              hintText: 'e.g. Archer Tower, Barbarian King',
+                              prefixIcon: const Icon(
+                                Icons.shield_outlined,
+                                size: 20,
+                              ),
+                              suffixIcon: controller.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear, size: 18),
+                                      onPressed: () {
+                                        controller.clear();
+                                        setState(() {});
+                                      },
+                                    )
+                                  : null,
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
+                            textCapitalization: TextCapitalization.words,
+                          );
+                        },
                     optionsViewBuilder: (context, onSelected, options) {
                       return Align(
                         alignment: Alignment.topLeft,
@@ -419,7 +436,7 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                                   dense: true,
                                   title: Text(
                                     opt.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.textPrimary,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
@@ -429,7 +446,7 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                                     opt.isCustom
                                         ? 'Custom · $_itemType'
                                         : '${opt.type}${opt.maxLevel != null ? ' · Max Lv. ${opt.maxLevel}' : ''}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.textSecondary,
                                       fontSize: 11,
                                     ),
@@ -472,10 +489,11 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                       IconButton.filledTonal(
                         icon: const Icon(Icons.remove),
                         onPressed: () {
-                          final cur =
-                              int.tryParse(_levelController.text) ?? 1;
+                          final cur = int.tryParse(_levelController.text) ?? 1;
                           if (cur > 1) {
-                            setState(() => _levelController.text = '${cur - 1}');
+                            setState(
+                              () => _levelController.text = '${cur - 1}',
+                            );
                           }
                         },
                       ),
@@ -483,8 +501,7 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                       IconButton.filledTonal(
                         icon: const Icon(Icons.add),
                         onPressed: () {
-                          final cur =
-                              int.tryParse(_levelController.text) ?? 1;
+                          final cur = int.tryParse(_levelController.text) ?? 1;
                           setState(() => _levelController.text = '${cur + 1}');
                         },
                       ),
@@ -506,9 +523,11 @@ class _AddLevelSheetState extends ConsumerState<AddLevelSheet> {
                                 color: Colors.black,
                               ),
                             )
-                          : Text(widget.isEditing
-                              ? 'Save changes'
-                              : 'Record level'),
+                          : Text(
+                              widget.isEditing
+                                  ? 'Save changes'
+                                  : 'Record level',
+                            ),
                     ),
                   ),
                 ],
@@ -609,8 +628,7 @@ class _CategoryPill extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected ? Colors.black : AppColors.textPrimary,
                   ),
                 ),

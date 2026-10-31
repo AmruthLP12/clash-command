@@ -62,7 +62,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             data: (villages) {
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     FilterChip(
@@ -79,7 +82,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         fontSize: 12,
                       ),
                       side: BorderSide.none,
-                      onSelected: (_) => setState(() => _selectedVillageId = null),
+                      onSelected: (_) =>
+                          setState(() => _selectedVillageId = null),
                     ),
                     const SizedBox(width: 8),
                     ...villages.map((v) {
@@ -119,8 +123,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               data: (allEvents) {
                 final filtered = _selectedTypeFilter != null
                     ? allEvents
-                        .where((e) => e.eventType == _selectedTypeFilter)
-                        .toList()
+                          .where((e) => e.eventType == _selectedTypeFilter)
+                          .toList()
                     : allEvents;
 
                 if (filtered.isEmpty) {
@@ -130,13 +134,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.history,
                             size: 48,
                             color: AppColors.textMuted,
                           ),
                           const SizedBox(height: 12),
-                          const Text(
+                          Text(
                             'No activity recorded yet',
                             style: TextStyle(
                               fontSize: 16,
@@ -150,7 +154,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                 ? 'No events for the selected village.'
                                 : 'Activities will appear here as you track upgrades and villages.',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 13,
                             ),
@@ -164,10 +168,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   itemCount: filtered.length,
-                  separatorBuilder: (_, _) => const Divider(
-                    height: 1,
-                    color: AppColors.surfaceVariant,
-                  ),
+                  separatorBuilder: (_, _) =>
+                      Divider(height: 1, color: AppColors.surfaceVariant),
                   itemBuilder: (context, index) {
                     final event = filtered[index];
                     return Padding(
@@ -195,7 +197,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                               children: [
                                 Text(
                                   event.description,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                     color: AppColors.textPrimary,
@@ -207,12 +209,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                     if (event.villageName != null) ...[
                                       Text(
                                         event.villageName!,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
                                           color: AppColors.accentLight,
                                         ),
                                       ),
-                                      const Text(
+                                      Text(
                                         ' • ',
                                         style: TextStyle(
                                           fontSize: 12,
@@ -226,7 +228,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                         dateFormat: displayPrefs.dateFormat,
                                         timeFormat: displayPrefs.timeFormat,
                                       ),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         color: AppColors.textMuted,
                                       ),
@@ -247,7 +249,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             ),
                             child: Text(
                               event.eventType.displayName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 10,
                                 color: AppColors.textSecondary,
                               ),

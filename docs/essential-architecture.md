@@ -82,6 +82,16 @@ clear.
     invalidates the previous notification plan.
 -   Avoid scheduling notifications in the past.
 
+## Navigation and Theme Rules
+
+-   Initial screen is `VillageProfilesScreen`. Each profile card supports in-place editing.
+-   Add village action uses a bottom-right FAB (`FloatingActionButton.extended`).
+-   Internal tabs (Dashboard, Planner, Levels, Settings) are strictly scoped to the selected village profile; internal village dropdown switchers are disallowed.
+-   Back pops routes; Home (`Icons.home_outlined`) returns to Tab 0 (Dashboard). `PopScope` on Dashboard maps system back on internal tabs back to Tab 0.
+-   Theme defaults to Dark mode if no preference is saved. Full support for System Default, Dark Mode, and Light Mode via `themePreferencesProvider`.
+-   Upgrade completions display relative dates (`Today`, `Tomorrow`, or localized date for later days).
+-   Audio is restricted to meaningful user actions; no audio on tab switches or passive navigation.
+
 ## Quality gates
 
 Before considering a feature complete: - `dart format` has been run. -

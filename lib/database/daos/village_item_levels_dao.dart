@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village_item_level.dart';
+
 import '../app_database.dart';
 import '../tables/village_item_levels_table.dart';
 
@@ -26,27 +27,34 @@ class VillageItemLevelsDao extends DatabaseAccessor<AppDatabase>
 
   /// Watches all tracked item levels for a village and specific category.
   Stream<List<VillageItemLevel>> watchForVillageAndCategory(
-      String villageId, UpgradeCategory category) {
+    String villageId,
+    UpgradeCategory category,
+  ) {
     return (select(villageItemLevels)
-          ..where((t) =>
-              t.villageId.equals(villageId) &
-              t.category.equals(category.name))
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.itemName),
-          ]))
+          ..where(
+            (t) =>
+                t.villageId.equals(villageId) &
+                t.category.equals(category.name),
+          )
+          ..orderBy([(t) => OrderingTerm.asc(t.itemName)]))
         .watch()
         .map((rows) => rows.map(_toDomain).toList());
   }
 
   /// Finds a specific item level record for a village, category, and item name.
   Future<VillageItemLevel?> findByItem(
-      String villageId, UpgradeCategory category, String itemName) async {
+    String villageId,
+    UpgradeCategory category,
+    String itemName,
+  ) async {
     final cleanName = itemName.trim().toLowerCase();
-    final rows = await (select(villageItemLevels)
-          ..where((t) =>
-              t.villageId.equals(villageId) &
-              t.category.equals(category.name)))
-        .get();
+    final rows =
+        await (select(villageItemLevels)..where(
+              (t) =>
+                  t.villageId.equals(villageId) &
+                  t.category.equals(category.name),
+            ))
+            .get();
 
     for (final row in rows) {
       if (row.itemName.trim().toLowerCase() == cleanName) {
@@ -90,4 +98,3 @@ class VillageItemLevelsDao extends DatabaseAccessor<AppDatabase>
     );
   }
 }
-

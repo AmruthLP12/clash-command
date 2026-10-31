@@ -14,14 +14,16 @@ class NotificationPreferencesDao extends DatabaseAccessor<AppDatabase>
 
   /// Watch notification preferences (row id = 1).
   Stream<NotificationPreference> watchPreferences() {
-    return (select(notificationPreferences)..where((t) => t.id.equals(1)))
-        .watchSingle();
+    return (select(
+      notificationPreferences,
+    )..where((t) => t.id.equals(1))).watchSingle();
   }
 
   /// Get current notification preferences.
   Future<NotificationPreference> getPreferences() {
-    return (select(notificationPreferences)..where((t) => t.id.equals(1)))
-        .getSingle();
+    return (select(
+      notificationPreferences,
+    )..where((t) => t.id.equals(1))).getSingle();
   }
 
   /// Update preferences.
@@ -44,8 +46,8 @@ class NotificationPreferencesDao extends DatabaseAccessor<AppDatabase>
       updatedAtUtc: Value(now),
     );
 
-    await (update(notificationPreferences)..where((t) => t.id.equals(1)))
-        .write(companion);
+    await (update(
+      notificationPreferences,
+    )..where((t) => t.id.equals(1))).write(companion);
   }
 }
-

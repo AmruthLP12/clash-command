@@ -43,7 +43,6 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
   }
 
   void _showAddVillage(BuildContext context) {
-    ref.read(audioServiceProvider).playTap();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -55,9 +54,23 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
     );
   }
 
+  void _showEditVillage(BuildContext context, Village village) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => AddVillageSheet(village: village),
+    );
+  }
+
   void _openVillageDashboard(BuildContext context, Village village) {
     ref.read(audioServiceProvider).playVillageSwitch();
-    ref.read(homeWidgetSyncServiceProvider).syncWidgets(specificVillageId: village.id);
+    ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: village.id);
 
     Navigator.push(
       context,
@@ -73,7 +86,7 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -91,19 +104,20 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
             icon: const Icon(Icons.settings_outlined),
             tooltip: 'Settings & Support',
             onPressed: () {
-              ref.read(audioServiceProvider).playTap();
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.add_home_outlined),
-            tooltip: 'Add village',
-            onPressed: () => _showAddVillage(context),
-          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddVillage(context),
+        icon: const Icon(Icons.add),
+        label: const Text('Add village'),
+        backgroundColor: AppColors.accent,
+        foregroundColor: Colors.black,
       ),
       body: villagesAsync.when(
         loading: () => _buildStartupLoadingView(),
@@ -144,7 +158,7 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
                   child: Image.asset(
                     'assets/branding/logo.png',
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
+                    errorBuilder: (context, error, stackTrace) => Icon(
                       Icons.shield_outlined,
                       size: 48,
                       color: AppColors.accent,
@@ -154,7 +168,7 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Clash Command',
               style: TextStyle(
                 fontSize: 20,
@@ -164,15 +178,12 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Loading commander profiles...',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 20),
-            const SizedBox(
+            SizedBox(
               width: 28,
               height: 28,
               child: CircularProgressIndicator(
@@ -193,7 +204,7 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+            Icon(Icons.error_outline, size: 48, color: AppColors.error),
             const SizedBox(height: 16),
             const Text(
               'Unable to load villages',
@@ -203,7 +214,7 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
             Text(
               '$error',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
@@ -224,13 +235,9 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.fort_outlined,
-              size: 64,
-              color: AppColors.textMuted,
-            ),
+            Icon(Icons.fort_outlined, size: 64, color: AppColors.textMuted),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No Villages Yet',
               style: TextStyle(
                 fontSize: 20,
@@ -239,16 +246,10 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Create a Home Village or Builder Base to begin tracking upgrades.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => _showAddVillage(context),
-              icon: const Icon(Icons.add),
-              label: const Text('Add your first village'),
             ),
           ],
         ),
@@ -258,13 +259,14 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
 
   Widget _buildProfilesList(List<Village> villages) {
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
       itemCount: villages.length,
       itemBuilder: (context, index) {
         final village = villages[index];
         return _VillageProfileCard(
           village: village,
           onTap: () => _openVillageDashboard(context, village),
+          onEdit: () => _showEditVillage(context, village),
         );
       },
     );
@@ -275,15 +277,21 @@ class _VillageProfileCard extends StatelessWidget {
   const _VillageProfileCard({
     required this.village,
     required this.onTap,
+    required this.onEdit,
   });
 
   final Village village;
   final VoidCallback onTap;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
-    final thBadge = village.townHallLevel != null ? 'TH ${village.townHallLevel}' : null;
-    final bhBadge = village.builderHallLevel != null ? 'BH ${village.builderHallLevel}' : null;
+    final thBadge = village.townHallLevel != null
+        ? 'TH ${village.townHallLevel}'
+        : null;
+    final bhBadge = village.builderHallLevel != null
+        ? 'BH ${village.builderHallLevel}'
+        : null;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
@@ -308,7 +316,7 @@ class _VillageProfileCard extends StatelessWidget {
                   color: AppColors.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.fort_outlined,
                   color: AppColors.accent,
                   size: 26,
@@ -321,7 +329,7 @@ class _VillageProfileCard extends StatelessWidget {
                   children: [
                     Text(
                       village.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
@@ -333,15 +341,9 @@ class _VillageProfileCard extends StatelessWidget {
                       runSpacing: 4,
                       children: [
                         if (thBadge != null)
-                          _BadgePill(
-                            label: thBadge,
-                            color: AppColors.accent,
-                          ),
+                          _BadgePill(label: thBadge, color: AppColors.accent),
                         if (bhBadge != null)
-                          _BadgePill(
-                            label: bhBadge,
-                            color: Colors.blueAccent,
-                          ),
+                          _BadgePill(label: bhBadge, color: Colors.blueAccent),
                         _BadgePill(
                           label: '${village.builderCapacity} Builders',
                           color: AppColors.textSecondary,
@@ -354,7 +356,7 @@ class _VillageProfileCard extends StatelessWidget {
                         village.notes!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textMuted,
                         ),
@@ -363,9 +365,15 @@ class _VillageProfileCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 20),
+                tooltip: 'Edit profile',
+                color: AppColors.textMuted,
+                onPressed: onEdit,
+              ),
+              Icon(
                 Icons.arrow_forward_ios,
-                size: 16,
+                size: 14,
                 color: AppColors.textMuted,
               ),
             ],
@@ -377,10 +385,7 @@ class _VillageProfileCard extends StatelessWidget {
 }
 
 class _BadgePill extends StatelessWidget {
-  const _BadgePill({
-    required this.label,
-    required this.color,
-  });
+  const _BadgePill({required this.label, required this.color});
 
   final String label;
   final Color color;

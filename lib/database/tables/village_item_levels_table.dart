@@ -6,7 +6,8 @@ import 'villages_table.dart';
 @DataClassName('VillageItemLevelRow')
 class VillageItemLevels extends Table {
   TextColumn get id => text()();
-  TextColumn get villageId => text().references(Villages, #id, onDelete: KeyAction.cascade)();
+  TextColumn get villageId =>
+      text().references(Villages, #id, onDelete: KeyAction.cascade)();
   TextColumn get category => text()();
   TextColumn get itemType => text().nullable()();
   TextColumn get itemName => text().withLength(min: 1, max: 200)();
@@ -21,4 +22,3 @@ class VillageItemLevels extends Table {
     {villageId, category, itemName},
   ];
 }
-

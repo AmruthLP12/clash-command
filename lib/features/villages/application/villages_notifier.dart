@@ -39,7 +39,9 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
     await ref.read(villagesDaoProvider).upsert(village);
 
     // Record history event
-    await ref.read(historyEventsDaoProvider).insertEvent(
+    await ref
+        .read(historyEventsDaoProvider)
+        .insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             villageId: id,
@@ -51,7 +53,9 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
         );
 
     ref.invalidateSelf();
-    await ref.read(homeWidgetSyncServiceProvider).syncWidgets(specificVillageId: id);
+    await ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: id);
   }
 
   Future<void> updateVillage(Village village) async {
@@ -60,7 +64,9 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
     await ref.read(villagesDaoProvider).upsert(updated);
 
     // Record history event
-    await ref.read(historyEventsDaoProvider).insertEvent(
+    await ref
+        .read(historyEventsDaoProvider)
+        .insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             villageId: village.id,
@@ -72,7 +78,9 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
         );
 
     ref.invalidateSelf();
-    await ref.read(homeWidgetSyncServiceProvider).syncWidgets(specificVillageId: village.id);
+    await ref
+        .read(homeWidgetSyncServiceProvider)
+        .syncWidgets(specificVillageId: village.id);
   }
 
   Future<void> archiveVillage(String id) async {
@@ -80,7 +88,9 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
     await ref.read(villagesDaoProvider).archive(id);
 
     if (village != null) {
-      await ref.read(historyEventsDaoProvider).insertEvent(
+      await ref
+          .read(historyEventsDaoProvider)
+          .insertEvent(
             HistoryEvent(
               id: const IdGenerator().newId(),
               villageId: id,
@@ -105,5 +115,5 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
 
 final villagesNotifierProvider =
     AsyncNotifierProvider<VillagesNotifier, List<Village>>(
-  VillagesNotifier.new,
-);
+      VillagesNotifier.new,
+    );

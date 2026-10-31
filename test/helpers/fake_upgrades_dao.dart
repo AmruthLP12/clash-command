@@ -12,9 +12,7 @@ class FakeUpgradesDao implements UpgradesDao {
 
   @override
   Stream<List<Upgrade>> watchActiveForVillage(String villageId) =>
-      Stream.value(
-        _active.where((u) => u.villageId == villageId).toList(),
-      );
+      Stream.value(_active.where((u) => u.villageId == villageId).toList());
 
   @override
   Stream<List<Upgrade>> watchAllActive() => Stream.value(_active);
@@ -24,11 +22,9 @@ class FakeUpgradesDao implements UpgradesDao {
       Stream.value(_upgrades.where((u) => u.villageId == villageId).toList());
 
   @override
-  Future<Upgrade?> findById(String id) async =>
-      _upgrades.cast<Upgrade?>().firstWhere(
-            (u) => u?.id == id,
-            orElse: () => null,
-          );
+  Future<Upgrade?> findById(String id) async => _upgrades
+      .cast<Upgrade?>()
+      .firstWhere((u) => u?.id == id, orElse: () => null);
 
   @override
   Future<void> upsert(Upgrade upgrade) async {}

@@ -9,9 +9,7 @@ class VillageService {
 
   /// Returns the count of currently active upgrades.
   int activeUpgradeCount(List<Upgrade> upgrades) {
-    return upgrades
-        .where((u) => u.status == UpgradeStatus.active)
-        .length;
+    return upgrades.where((u) => u.status == UpgradeStatus.active).length;
   }
 
   /// Returns the expected completion time of the soonest active upgrade,
@@ -59,8 +57,7 @@ class VillageService {
         .where((u) => u.status == UpgradeStatus.active)
         .toList();
     active.sort(
-      (a, b) =>
-          a.expectedCompletionAtUtc.compareTo(b.expectedCompletionAtUtc),
+      (a, b) => a.expectedCompletionAtUtc.compareTo(b.expectedCompletionAtUtc),
     );
     return active;
   }

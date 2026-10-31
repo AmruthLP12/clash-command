@@ -6,7 +6,8 @@ import 'villages_table.dart';
 @DataClassName('PlannerItemRow')
 class PlannerItems extends Table {
   TextColumn get id => text()();
-  TextColumn get villageId => text().references(Villages, #id, onDelete: KeyAction.cascade)();
+  TextColumn get villageId =>
+      text().references(Villages, #id, onDelete: KeyAction.cascade)();
   TextColumn get category => text()();
   TextColumn get name => text().withLength(min: 1, max: 200)();
   IntColumn get targetLevel => integer().nullable()();
@@ -23,4 +24,3 @@ class PlannerItems extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
-

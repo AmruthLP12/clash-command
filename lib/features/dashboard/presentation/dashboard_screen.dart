@@ -57,23 +57,37 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _navIndex,
-        children: [
-          _buildDashboardTab(),
-          _loadedTabs.contains(1)
-              ? PlannerScreen(initialVillageId: _selectedVillageId)
-              : const SizedBox.shrink(),
-          _loadedTabs.contains(2)
-              ? LevelsScreen(initialVillageId: _selectedVillageId)
-              : const SizedBox.shrink(),
-          _loadedTabs.contains(3)
-              ? const SettingsScreen()
-              : const SizedBox.shrink(),
-        ],
+    return PopScope(
+      canPop: _navIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          setState(() => _navIndex = 0);
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _navIndex,
+          children: [
+            _buildDashboardTab(),
+            _loadedTabs.contains(1)
+                ? PlannerScreen(
+                    initialVillageId: _selectedVillageId,
+                    onHome: () => setState(() => _navIndex = 0),
+                  )
+                : const SizedBox.shrink(),
+            _loadedTabs.contains(2)
+                ? LevelsScreen(
+                    initialVillageId: _selectedVillageId,
+                    onHome: () => setState(() => _navIndex = 0),
+                  )
+                : const SizedBox.shrink(),
+            _loadedTabs.contains(3)
+                ? SettingsScreen(onHome: () => setState(() => _navIndex = 0))
+                : const SizedBox.shrink(),
+          ],
+        ),
+        bottomNavigationBar: _buildBottomNav(),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -82,9 +96,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     return villagesAsync.when(
       loading: () => const _DashboardSkeleton(),
-      error: (e, _) => Scaffold(
-        body: Center(child: Text('Error: $e')),
-      ),
+      error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
       data: (villages) {
         if (villages.isNotEmpty) {
           if (_selectedVillageId == null ||
@@ -103,24 +115,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               );
 
         if (selectedVillage != null && !_userSelectedCategory) {
-          final activeUpgrades = ref
+          final activeUpgrades =
+              ref
                   .watch(activeUpgradesForVillageProvider(selectedVillage.id))
                   .valueOrNull ??
               [];
           if (activeUpgrades.isNotEmpty) {
             final hasHomeBuilder = activeUpgrades.any(
-                (u) => u.category.primaryCategory == UpgradeCategory.homeBuilder);
+              (u) => u.category.primaryCategory == UpgradeCategory.homeBuilder,
+            );
             if (!hasHomeBuilder) {
               if (activeUpgrades.any(
-                  (u) => u.category.primaryCategory == UpgradeCategory.homeLab)) {
+                (u) => u.category.primaryCategory == UpgradeCategory.homeLab,
+              )) {
                 _selectedRealm = VillageRealm.homeVillage;
                 _selectedCategory = UpgradeCategory.homeLab;
-              } else if (activeUpgrades.any((u) =>
-                  u.category.primaryCategory == UpgradeCategory.builderBaseBuilder)) {
+              } else if (activeUpgrades.any(
+                (u) =>
+                    u.category.primaryCategory ==
+                    UpgradeCategory.builderBaseBuilder,
+              )) {
                 _selectedRealm = VillageRealm.builderBase;
                 _selectedCategory = UpgradeCategory.builderBaseBuilder;
-              } else if (activeUpgrades.any((u) =>
-                  u.category.primaryCategory == UpgradeCategory.builderBaseStarLab)) {
+              } else if (activeUpgrades.any(
+                (u) =>
+                    u.category.primaryCategory ==
+                    UpgradeCategory.builderBaseStarLab,
+              )) {
                 _selectedRealm = VillageRealm.builderBase;
                 _selectedCategory = UpgradeCategory.builderBaseStarLab;
               }
@@ -156,7 +177,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           if (levels.isEmpty) return const SizedBox.shrink();
                           return Text(
                             levels.join(' · '),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               color: AppColors.textSecondary,
                             ),
@@ -169,7 +190,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             actions: [
               if (selectedVillage != null)
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, size: 20, color: AppColors.textSecondary),
+                  icon: Icon(
+                    Icons.more_vert,
+                    size: 20,
+                    color: AppColors.textSecondary,
+                  ),
                   color: AppColors.surfaceVariant,
                   tooltip: 'Village options',
                   onSelected: (val) {
@@ -180,24 +205,35 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     }
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'edit',
                       child: Row(
                         children: [
-                          Icon(Icons.edit_outlined, size: 18, color: AppColors.accent),
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 18,
+                            color: AppColors.accent,
+                          ),
                           SizedBox(width: 8),
                           Text('Edit village'),
                         ],
                       ),
                     ),
                     const PopupMenuDivider(),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                          Icon(
+                            Icons.delete_outline,
+                            size: 18,
+                            color: AppColors.error,
+                          ),
                           SizedBox(width: 8),
-                          Text('Delete village', style: TextStyle(color: AppColors.error)),
+                          Text(
+                            'Delete village',
+                            style: TextStyle(color: AppColors.error),
+                          ),
                         ],
                       ),
                     ),
@@ -226,14 +262,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       _selectedCategory = cat;
                     });
                   },
-                  onTrackUpgrade: () =>
-                      _showAddUpgrade(context, selectedVillage, _selectedCategory),
+                  onTrackUpgrade: () => _showAddUpgrade(
+                    context,
+                    selectedVillage,
+                    _selectedCategory,
+                  ),
                 ),
           floatingActionButton: villages.isEmpty
               ? null
               : FloatingActionButton.extended(
-                  onPressed: () =>
-                      _showAddUpgrade(context, selectedVillage!, _selectedCategory),
+                  onPressed: () => _showAddUpgrade(
+                    context,
+                    selectedVillage!,
+                    _selectedCategory,
+                  ),
                   icon: const Icon(Icons.add),
                   label: const Text('Track upgrade'),
                   backgroundColor: AppColors.accent,
@@ -250,7 +292,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       backgroundColor: AppColors.surface,
       indicatorColor: AppColors.accent,
       onDestinationSelected: (index) {
-        ref.read(audioServiceProvider).playTap();
         setState(() {
           _navIndex = index;
           _loadedTabs.add(index);
@@ -351,10 +392,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => AddUpgradeSheet(
-        village: village,
-        initialCategory: initialCategory,
-      ),
+      builder: (_) =>
+          AddUpgradeSheet(village: village, initialCategory: initialCategory),
     );
   }
 }
@@ -386,8 +425,9 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
   @override
   Widget build(BuildContext context) {
     final displayPrefs = ref.watch(displayPreferencesProvider);
-    final upgradesAsync =
-        ref.watch(activeUpgradesForVillageProvider(widget.village.id));
+    final upgradesAsync = ref.watch(
+      activeUpgradesForVillageProvider(widget.village.id),
+    );
 
     return upgradesAsync.when(
       loading: () => CustomScrollView(
@@ -431,18 +471,26 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
         final activeRealm = widget.selectedRealm;
 
         final homeBuilderCount = upgrades
-            .where((u) => u.category.primaryCategory == UpgradeCategory.homeBuilder)
+            .where(
+              (u) => u.category.primaryCategory == UpgradeCategory.homeBuilder,
+            )
             .length;
         final homeLabCount = upgrades
             .where((u) => u.category.primaryCategory == UpgradeCategory.homeLab)
             .length;
         final bbBuilderCount = upgrades
-            .where((u) =>
-                u.category.primaryCategory == UpgradeCategory.builderBaseBuilder)
+            .where(
+              (u) =>
+                  u.category.primaryCategory ==
+                  UpgradeCategory.builderBaseBuilder,
+            )
             .length;
         final bbStarLabCount = upgrades
-            .where((u) =>
-                u.category.primaryCategory == UpgradeCategory.builderBaseStarLab)
+            .where(
+              (u) =>
+                  u.category.primaryCategory ==
+                  UpgradeCategory.builderBaseStarLab,
+            )
             .length;
 
         final visibleUpgrades = upgrades
@@ -450,11 +498,15 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
             .toList();
 
         final villageService = const VillageService();
-        final nextCompletion =
-            villageService.nextCompletionAtUtc(visibleUpgrades);
+        final nextCompletion = villageService.nextCompletionAtUtc(
+          visibleUpgrades,
+        );
 
         final totalBuilders = widget.village.builderCapacity;
-        final availableHomeBuilders = (totalBuilders - homeBuilderCount).clamp(0, totalBuilders);
+        final availableHomeBuilders = (totalBuilders - homeBuilderCount).clamp(
+          0,
+          totalBuilders,
+        );
 
         return CustomScrollView(
           slivers: [
@@ -476,8 +528,7 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
                     ),
                   ],
                   selected: {activeRealm},
-                  onSelectionChanged: (set) =>
-                      widget.onRealmChanged(set.first),
+                  onSelectionChanged: (set) => widget.onRealmChanged(set.first),
                 ),
               ),
             ),
@@ -485,7 +536,10 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
             // Category Selector beneath Village Selector
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: _buildCategorySelector(
                   realm: activeRealm,
                   selectedCategory: activeCategory,
@@ -527,7 +581,7 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.schedule,
                               size: 13,
                               color: AppColors.textMuted,
@@ -535,7 +589,7 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
                             const SizedBox(width: 4),
                             Text(
                               'Next: ${_formatDate(nextCompletion, displayPrefs)}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 color: AppColors.textSecondary,
                               ),
@@ -548,9 +602,7 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
                         widget.village.notes!.isNotEmpty)
                       IconButton(
                         icon: Icon(
-                          _notesExpanded
-                              ? Icons.info
-                              : Icons.info_outline,
+                          _notesExpanded ? Icons.info : Icons.info_outline,
                           size: 18,
                           color: _notesExpanded
                               ? AppColors.accent
@@ -581,7 +633,7 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
                     ),
                     child: Text(
                       widget.village.notes!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
                         fontStyle: FontStyle.italic,
@@ -663,7 +715,8 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
               icon: Icons.construction_outlined,
               badgeText: '$bbBuilderCount active',
               selected: selectedCategory == UpgradeCategory.builderBaseBuilder,
-              onTap: () => onCategorySelected(UpgradeCategory.builderBaseBuilder),
+              onTap: () =>
+                  onCategorySelected(UpgradeCategory.builderBaseBuilder),
             ),
           ),
           const SizedBox(width: 10),
@@ -673,7 +726,8 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
               icon: Icons.auto_awesome_outlined,
               badgeText: '$bbStarLabCount active',
               selected: selectedCategory == UpgradeCategory.builderBaseStarLab,
-              onTap: () => onCategorySelected(UpgradeCategory.builderBaseStarLab),
+              onTap: () =>
+                  onCategorySelected(UpgradeCategory.builderBaseStarLab),
             ),
           ),
         ],
@@ -717,7 +771,7 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
       ),
       child: Text(
         '$activeCount ${activeCount == 1 ? 'upgrade' : 'upgrades'} active',
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.accent,
           fontWeight: FontWeight.w600,
           fontSize: 12,
@@ -727,7 +781,7 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
   }
 
   String _formatDate(DateTime utc, DisplayPreferences prefs) {
-    return DateTimeFormat.shortDateTime(
+    return DateTimeFormat.relativeCompletionDateTime(
       utc,
       dateFormat: prefs.dateFormat,
       timeFormat: prefs.timeFormat,
@@ -788,14 +842,18 @@ class _DashboardCategoryCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                      color: selected ? AppColors.accent : AppColors.textPrimary,
+                      color: selected
+                          ? AppColors.accent
+                          : AppColors.textPrimary,
                     ),
                   ),
                   Text(
                     badgeText,
                     style: TextStyle(
                       fontSize: 11,
-                      color: selected ? AppColors.accentLight : AppColors.textMuted,
+                      color: selected
+                          ? AppColors.accentLight
+                          : AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -820,13 +878,9 @@ class _EmptyVillagesState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.castle_outlined,
-              size: 64,
-              color: AppColors.textMuted,
-            ),
+            Icon(Icons.castle_outlined, size: 64, color: AppColors.textMuted),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No villages yet',
               style: TextStyle(
                 fontSize: 20,
@@ -835,7 +889,7 @@ class _EmptyVillagesState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Add your first village to start tracking upgrades.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary),
@@ -854,10 +908,7 @@ class _EmptyVillagesState extends StatelessWidget {
 }
 
 class _EmptyUpgradesState extends StatelessWidget {
-  const _EmptyUpgradesState({
-    required this.categoryName,
-    this.onAdd,
-  });
+  const _EmptyUpgradesState({required this.categoryName, this.onAdd});
 
   final String categoryName;
   final VoidCallback? onAdd;
@@ -870,13 +921,13 @@ class _EmptyUpgradesState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.construction_outlined,
               size: 48,
               color: AppColors.textMuted,
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'No active upgrades',
               style: TextStyle(
                 fontSize: 18,
@@ -888,7 +939,7 @@ class _EmptyUpgradesState extends StatelessWidget {
             Text(
               'No upgrades running in $categoryName.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
             if (onAdd != null) ...[
               const SizedBox(height: 16),

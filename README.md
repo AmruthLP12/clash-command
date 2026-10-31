@@ -17,7 +17,11 @@ Clash Command is an Android-first, offline-first Flutter application designed to
 
 ## Features
 
-- **Multi-Village Management**: Create and switch between multiple villages, customize Town Hall levels (supports up to Town Hall 18 with an extensible architecture for future releases), notes, and builder capacities (1–6 builders).
+- **Multi-Village Management**: Profile-first opening screen with quick village switching, inline profile editing, and bottom-right floating action button. Configure Town Hall levels, Builder Hall levels, notes, and builder capacities (1–6 builders).
+- **Light & Dark Theme Modes**: Material 3 dark (default) and light themes with system default option, immediate reactive switching, and dynamic color palettes.
+- **Relative Completion Dates**: Live countdowns and friendly completion targets (`Today, 8:45 PM`, `Tomorrow, 10:30 AM`, or localized calendar dates for later days).
+- **Navigation Hierarchy**: Distinct Back navigation and dedicated Home action returning to the active village Dashboard, backed by Android system back `PopScope` integration.
+- **Strict Profile Scoping**: All internal tabs (Dashboard, Planner, Levels, Settings) are strictly scoped to the active profile chosen at startup.
 - **Four Upgrade Categories & Facilities**: Dedicated tracking for **Home Village — Builder**, **Home Village — Laboratory**, **Builder Base — Builder**, and **Builder Base — Star Laboratory**.
 - **Upgrade Name Autocomplete & Local Catalogue**: Built-in, verified catalogue of buildings, troops, heroes, spells, and defenses with instant case-insensitive search and level suggestions. Fully customizable with local user suggestion persistence.
 - **Optional From Level & To Level Tracking**: Track upgrade progressions clearly (e.g. `Archer Tower · Lv. 18 → 19`) with intelligent auto-suggestion and level validation.

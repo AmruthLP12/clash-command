@@ -62,4 +62,3 @@ class UpgradeCatalogItem {
     return parts.join(' • ');
   }
 }
-

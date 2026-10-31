@@ -10,12 +10,12 @@ void main() {
   final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
 
   Village makeVillage({int builders = 2}) => Village(
-        id: 'v1',
-        name: 'Test Village',
-        builderCapacity: builders,
-        createdAtUtc: now,
-        updatedAtUtc: now,
-      );
+    id: 'v1',
+    name: 'Test Village',
+    builderCapacity: builders,
+    createdAtUtc: now,
+    updatedAtUtc: now,
+  );
 
   Upgrade makeUpgrade({
     required String id,
@@ -63,13 +63,15 @@ void main() {
     test('returns the earliest expected completion among active upgrades', () {
       final upgrades = [
         makeUpgrade(
-            id: 'u1',
-            status: UpgradeStatus.active,
-            completionOffset: const Duration(hours: 2)),
+          id: 'u1',
+          status: UpgradeStatus.active,
+          completionOffset: const Duration(hours: 2),
+        ),
         makeUpgrade(
-            id: 'u2',
-            status: UpgradeStatus.active,
-            completionOffset: const Duration(minutes: 45)),
+          id: 'u2',
+          status: UpgradeStatus.active,
+          completionOffset: const Duration(minutes: 45),
+        ),
         makeUpgrade(id: 'u3', status: UpgradeStatus.completed),
       ];
       expect(
@@ -79,9 +81,7 @@ void main() {
     });
 
     test('returns null when there are no active upgrades', () {
-      final upgrades = [
-        makeUpgrade(id: 'u1', status: UpgradeStatus.completed),
-      ];
+      final upgrades = [makeUpgrade(id: 'u1', status: UpgradeStatus.completed)];
       expect(service.nextCompletionAtUtc(upgrades), isNull);
     });
 
@@ -93,9 +93,10 @@ void main() {
       final expected = now.add(const Duration(hours: 3));
       final upgrades = [
         makeUpgrade(
-            id: 'u1',
-            status: UpgradeStatus.active,
-            completionOffset: const Duration(hours: 3)),
+          id: 'u1',
+          status: UpgradeStatus.active,
+          completionOffset: const Duration(hours: 3),
+        ),
       ];
       expect(service.nextCompletionAtUtc(upgrades), expected);
     });
@@ -113,10 +114,11 @@ void main() {
   group('VillageService.hasAvailableSlot', () {
     test('returns true when fewer actives than capacity', () {
       final village = makeVillage(builders: 2);
-      final upgrades = [
-        makeUpgrade(id: 'u1', status: UpgradeStatus.active),
-      ];
-      expect(service.hasAvailableSlot(upgrades, village.builderCapacity), isTrue);
+      final upgrades = [makeUpgrade(id: 'u1', status: UpgradeStatus.active)];
+      expect(
+        service.hasAvailableSlot(upgrades, village.builderCapacity),
+        isTrue,
+      );
     });
 
     test('returns false when actives equal capacity', () {
@@ -125,23 +127,25 @@ void main() {
         makeUpgrade(id: 'u1', status: UpgradeStatus.active),
         makeUpgrade(id: 'u2', status: UpgradeStatus.active),
       ];
-      expect(service.hasAvailableSlot(upgrades, village.builderCapacity), isFalse);
+      expect(
+        service.hasAvailableSlot(upgrades, village.builderCapacity),
+        isFalse,
+      );
     });
 
     test('completed upgrades do not consume slots', () {
       final village = makeVillage(builders: 1);
-      final upgrades = [
-        makeUpgrade(id: 'u1', status: UpgradeStatus.completed),
-      ];
-      expect(service.hasAvailableSlot(upgrades, village.builderCapacity), isTrue);
+      final upgrades = [makeUpgrade(id: 'u1', status: UpgradeStatus.completed)];
+      expect(
+        service.hasAvailableSlot(upgrades, village.builderCapacity),
+        isTrue,
+      );
     });
   });
 
   group('VillageService.availableSlots', () {
     test('computes correct free count', () {
-      final upgrades = [
-        makeUpgrade(id: 'u1', status: UpgradeStatus.active),
-      ];
+      final upgrades = [makeUpgrade(id: 'u1', status: UpgradeStatus.active)];
       expect(service.availableSlots(upgrades, 3), 2);
     });
 
@@ -159,17 +163,20 @@ void main() {
     test('returns only active upgrades sorted by completion ASC', () {
       final upgrades = [
         makeUpgrade(
-            id: 'u1',
-            status: UpgradeStatus.active,
-            completionOffset: const Duration(hours: 3)),
+          id: 'u1',
+          status: UpgradeStatus.active,
+          completionOffset: const Duration(hours: 3),
+        ),
         makeUpgrade(
-            id: 'u2',
-            status: UpgradeStatus.active,
-            completionOffset: const Duration(hours: 1)),
+          id: 'u2',
+          status: UpgradeStatus.active,
+          completionOffset: const Duration(hours: 1),
+        ),
         makeUpgrade(
-            id: 'u3',
-            status: UpgradeStatus.completed,
-            completionOffset: const Duration(minutes: 5)),
+          id: 'u3',
+          status: UpgradeStatus.completed,
+          completionOffset: const Duration(minutes: 5),
+        ),
       ];
       final sorted = service.activeUpgradesSortedByCompletion(upgrades);
       expect(sorted.length, 2);

@@ -10,11 +10,14 @@ import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/constants/app_support_links.dart';
 import 'package:clash_command/core/formatting/date_time_format.dart';
+import 'package:clash_command/core/theme/theme_preferences.dart';
 import 'package:clash_command/features/history/presentation/history_screen.dart';
 
 /// Settings screen for managing notifications, permissions, and app preferences.
 class SettingsScreen extends ConsumerStatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.onHome});
+
+  final VoidCallback? onHome;
 
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
@@ -88,17 +91,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (proceed != true) return;
 
-    final granted =
-        await ref.read(notificationServiceProvider).requestPermission();
+    final granted = await ref
+        .read(notificationServiceProvider)
+        .requestPermission();
     if (mounted) {
       setState(() => _hasPermission = granted);
       _loadDiagnostics();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            granted
-                ? 'Notification permission granted.'
-                : 'Notification permission denied. You can change this in device settings.',
+            granted ? 'Notification permission granted.' : 'Notification permission denied. You can change this in device settings.',
           ),
         ),
       );
@@ -117,6 +119,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: widget.onHome == null,
+        leading: widget.onHome != null
+            ? IconButton(
+                icon: const Icon(Icons.home_outlined),
+                tooltip: 'Dashboard',
+                onPressed: widget.onHome,
+              )
+            : null,
         title: const Text('Settings'),
       ),
       body: prefsAsync.when(
@@ -134,7 +144,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               // Section 1: Support Clash Command
-              const Text(
+              Text(
                 'SUPPORT CLASH COMMAND',
                 style: TextStyle(
                   fontSize: 12,
@@ -151,7 +161,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'Clash Command is 100% free, offline-first, and ad-free. If you find it helpful and want to support ongoing development, consider a contribution!',
                         style: TextStyle(
                           fontSize: 13,
@@ -187,7 +197,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: Center(
                               child: Text(
                                 'Error generating QR code',
-                                style: TextStyle(color: Colors.black54, fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ),
@@ -196,7 +209,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 12),
                       // UPI ID and Copy Button
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceVariant,
                           borderRadius: BorderRadius.circular(8),
@@ -204,11 +220,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.qr_code, size: 18, color: AppColors.accent),
+                            Icon(
+                              Icons.qr_code,
+                              size: 18,
+                              color: AppColors.accent,
+                            ),
                             const SizedBox(width: 8),
                             SelectableText(
                               AppSupportLinks.qrPayload,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textPrimary,
@@ -223,11 +243,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               constraints: const BoxConstraints(),
                               onPressed: () {
                                 Clipboard.setData(
-                                  const ClipboardData(text: AppSupportLinks.qrPayload),
+                                  const ClipboardData(
+                                    text: AppSupportLinks.qrPayload,
+                                  ),
                                 );
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('UPI ID copied to clipboard: 9739337301@jupiteraxis'),
+                                    content: Text(
+                                      'UPI ID copied to clipboard: 9739337301@jupiteraxis',
+                                    ),
                                     duration: Duration(seconds: 2),
                                   ),
                                 );
@@ -237,7 +261,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Scan with any supported UPI app to support Clash Command.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -251,7 +275,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.language_outlined, color: AppColors.accent),
+                        leading: Icon(
+                          Icons.language_outlined,
+                          color: AppColors.accent,
+                        ),
                         title: const Text(
                           'Developer Portfolio',
                           style: TextStyle(fontWeight: FontWeight.w600),
@@ -275,7 +302,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.coffee, color: AppColors.accent),
+                        leading: Icon(Icons.coffee, color: AppColors.accent),
                         title: const Text(
                           'Support via Ko-fi',
                           style: TextStyle(fontWeight: FontWeight.w600),
@@ -297,7 +324,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.payment, color: AppColors.accent),
+                        leading: Icon(Icons.payment, color: AppColors.accent),
                         title: const Text(
                           'Support via PayPal',
                           style: TextStyle(fontWeight: FontWeight.w600),
@@ -322,8 +349,85 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 24),
 
+              // Appearance & Theme
+              Text(
+                'APPEARANCE & THEME',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.card,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Theme Mode',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Choose between system default, dark mode, or light mode. Dark mode is default.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final currentMode = ref.watch(
+                            themePreferencesProvider,
+                          );
+                          return SizedBox(
+                            width: double.infinity,
+                            child: SegmentedButton<AppThemeModePreference>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: AppThemeModePreference.system,
+                                  label: Text('System'),
+                                  icon: Icon(Icons.brightness_auto, size: 16),
+                                ),
+                                ButtonSegment(
+                                  value: AppThemeModePreference.dark,
+                                  label: Text('Dark'),
+                                  icon: Icon(Icons.dark_mode, size: 16),
+                                ),
+                                ButtonSegment(
+                                  value: AppThemeModePreference.light,
+                                  label: Text('Light'),
+                                  icon: Icon(Icons.light_mode, size: 16),
+                                ),
+                              ],
+                              selected: {currentMode},
+                              onSelectionChanged: (selected) {
+                                if (selected.isNotEmpty) {
+                                  ref
+                                      .read(themePreferencesProvider.notifier)
+                                      .setThemeMode(selected.first);
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
               // Section 2: Display & Formatting
-              const Text(
+              Text(
                 'DISPLAY & FORMATTING',
                 style: TextStyle(
                   fontSize: 12,
@@ -342,7 +446,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     children: [
                       const Text(
                         'Time Format',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       SizedBox(
@@ -371,7 +478,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 16),
                       const Text(
                         'Date Format',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<DateFormatPreference>(
@@ -379,8 +489,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: AppColors.surfaceVariant,
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide.none,
@@ -407,7 +519,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 24),
               // Section: Activity History
-              const Text(
+              Text(
                 'ACTIVITY & LOGS',
                 style: TextStyle(
                   fontSize: 12,
@@ -420,21 +532,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Card(
                 color: AppColors.card,
                 child: ListTile(
-                  leading: const Icon(Icons.history, color: AppColors.accent),
-                  title: const Text('Activity History',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: const Text(
+                  leading: Icon(Icons.history, color: AppColors.accent),
+                  title: const Text(
+                    'Activity History',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
                     'View completed upgrades, cancellations, and timeline events',
                     style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    ref.read(audioServiceProvider).playTap();
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const HistoryScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const HistoryScreen()),
                     );
                   },
                 ),
@@ -442,7 +553,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 24),
 
               // Section: Sound & Music
-              const Text(
+              Text(
                 'SOUND & MUSIC',
                 style: TextStyle(
                   fontSize: 12,
@@ -455,23 +566,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Card(
                 color: AppColors.card,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Column(
                     children: [
                       ValueListenableBuilder<bool>(
-                        valueListenable:
-                            ref.watch(audioServiceProvider).sfxEnabledNotifier,
+                        valueListenable: ref
+                            .watch(audioServiceProvider)
+                            .sfxEnabledNotifier,
                         builder: (context, sfxEnabled, _) {
                           return SwitchListTile(
                             contentPadding: EdgeInsets.zero,
-                            secondary: const Icon(Icons.volume_up_outlined,
-                                color: AppColors.accent),
-                            title: const Text('Sound Effects',
-                                style: TextStyle(fontWeight: FontWeight.w600)),
-                            subtitle: const Text(
-                                'Tap, upgrade start, completion, and alert chimes',
-                                style: TextStyle(
-                                    fontSize: 12, color: AppColors.textMuted)),
+                            secondary: Icon(
+                              Icons.volume_up_outlined,
+                              color: AppColors.accent,
+                            ),
+                            title: const Text(
+                              'Sound Effects',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            subtitle: Text(
+                              'Tap, upgrade start, completion, and alert chimes',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
                             value: sfxEnabled,
                             activeThumbColor: AppColors.accent,
                             onChanged: (val) {
@@ -482,21 +604,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         },
                       ),
                       ValueListenableBuilder<bool>(
-                        valueListenable:
-                            ref.watch(audioServiceProvider).sfxEnabledNotifier,
+                        valueListenable: ref
+                            .watch(audioServiceProvider)
+                            .sfxEnabledNotifier,
                         builder: (context, sfxEnabled, _) {
                           if (!sfxEnabled) return const SizedBox.shrink();
                           return ValueListenableBuilder<double>(
-                            valueListenable:
-                                ref.watch(audioServiceProvider).sfxVolumeNotifier,
+                            valueListenable: ref
+                                .watch(audioServiceProvider)
+                                .sfxVolumeNotifier,
                             builder: (context, volume, _) {
                               return Row(
                                 children: [
                                   const SizedBox(width: 40),
-                                  const Text('SFX Volume',
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color: AppColors.textSecondary)),
+                                  Text(
+                                    'SFX Volume',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
                                   Expanded(
                                     child: Slider(
                                       value: volume,
@@ -507,14 +634,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       onChanged: (v) => ref
                                           .read(audioServiceProvider)
                                           .setSfxVolume(v),
-                                      onChangeEnd: (v) =>
-                                          ref.read(audioServiceProvider).playTap(),
+                                      onChangeEnd: (v) => ref
+                                          .read(audioServiceProvider)
+                                          .playTap(),
                                     ),
                                   ),
-                                  Text('${(volume * 100).round()}%',
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.textMuted)),
+                                  Text(
+                                    '${(volume * 100).round()}%',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
                                 ],
                               );
                             },
@@ -523,19 +654,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const Divider(height: 20),
                       ValueListenableBuilder<bool>(
-                        valueListenable:
-                            ref.watch(audioServiceProvider).musicEnabledNotifier,
+                        valueListenable: ref
+                            .watch(audioServiceProvider)
+                            .musicEnabledNotifier,
                         builder: (context, musicEnabled, _) {
                           return SwitchListTile(
                             contentPadding: EdgeInsets.zero,
-                            secondary: const Icon(Icons.music_note_outlined,
-                                color: AppColors.accent),
-                            title: const Text('Ambient Music',
-                                style: TextStyle(fontWeight: FontWeight.w600)),
-                            subtitle: const Text(
-                                'Looping background ambient soundtrack',
-                                style: TextStyle(
-                                    fontSize: 12, color: AppColors.textMuted)),
+                            secondary: Icon(
+                              Icons.music_note_outlined,
+                              color: AppColors.accent,
+                            ),
+                            title: const Text(
+                              'Ambient Music',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            subtitle: Text(
+                              'Looping background ambient soundtrack',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
                             value: musicEnabled,
                             activeThumbColor: AppColors.accent,
                             onChanged: (val) {
@@ -547,8 +686,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         },
                       ),
                       ValueListenableBuilder<bool>(
-                        valueListenable:
-                            ref.watch(audioServiceProvider).musicEnabledNotifier,
+                        valueListenable: ref
+                            .watch(audioServiceProvider)
+                            .musicEnabledNotifier,
                         builder: (context, musicEnabled, _) {
                           if (!musicEnabled) return const SizedBox.shrink();
                           return ValueListenableBuilder<double>(
@@ -559,10 +699,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               return Row(
                                 children: [
                                   const SizedBox(width: 40),
-                                  const Text('Music Volume',
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          color: AppColors.textSecondary)),
+                                  Text(
+                                    'Music Volume',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
                                   Expanded(
                                     child: Slider(
                                       value: volume,
@@ -575,10 +718,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           .setMusicVolume(v),
                                     ),
                                   ),
-                                  Text('${(volume * 100).round()}%',
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.textMuted)),
+                                  Text(
+                                    '${(volume * 100).round()}%',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
                                 ],
                               );
                             },
@@ -592,7 +738,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 24),
 
               // Section: Notification Permissions
-              const Text(
+              Text(
                 'NOTIFICATIONS',
                 style: TextStyle(
                   fontSize: 12,
@@ -625,7 +771,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'System Permission',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w700,
@@ -667,7 +813,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 20),
 
               // Section: Notification Preferences
-              const Text(
+              Text(
                 'NOTIFICATION PREFERENCES',
                 style: TextStyle(
                   fontSize: 12,
@@ -683,9 +829,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     SwitchListTile(
                       title: const Text('Completion alerts'),
-                      subtitle: const Text(
+                      subtitle: Text(
                         'Alert when an upgrade reaches 100% completion',
-                        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                       value: prefs.completionEnabled,
                       activeThumbColor: AppColors.accent,
@@ -699,9 +848,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const Divider(height: 1),
                     SwitchListTile(
                       title: const Text('Upcoming reminders'),
-                      subtitle: const Text(
+                      subtitle: Text(
                         'Send reminder alerts before an upgrade finishes',
-                        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                       value: prefs.preAlertsEnabled,
                       activeThumbColor: AppColors.accent,
@@ -719,7 +871,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               // Section: Configurable Intervals
               if (prefs.preAlertsEnabled) ...[
-                const Text(
+                Text(
                   'REMINDER INTERVALS BEFORE COMPLETION',
                   style: TextStyle(
                     fontSize: 12,
@@ -736,9 +888,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Choose which alerts to receive before an upgrade finishes:',
-                          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
@@ -793,9 +948,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Card(
                 color: AppColors.card,
                 child: ListTile(
-                  leading: const Icon(Icons.send_outlined, color: AppColors.accent),
+                  leading: Icon(Icons.send_outlined, color: AppColors.accent),
                   title: const Text('Send test notification'),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Verifies that alerts can appear on this device',
                     style: TextStyle(fontSize: 12, color: AppColors.textMuted),
                   ),
@@ -816,7 +971,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 24),
 
               // Section: Diagnostics
-              const Text(
+              Text(
                 'NOTIFICATION DIAGNOSTICS',
                 style: TextStyle(
                   fontSize: 12,
@@ -854,10 +1009,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.accent,
-                              side: const BorderSide(color: AppColors.accent),
+                              side: BorderSide(color: AppColors.accent),
                             ),
                             icon: const Icon(Icons.alarm_on, size: 18),
-                            label: const Text('Allow Exact Alarms in System Settings'),
+                            label: const Text(
+                              'Allow Exact Alarms in System Settings',
+                            ),
                             onPressed: () async {
                               await ref
                                   .read(notificationServiceProvider)
@@ -898,7 +1055,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 24),
 
               // Section: About
-              const Text(
+              Text(
                 'ABOUT',
                 style: TextStyle(
                   fontSize: 12,
@@ -927,7 +1084,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                           ),
                           const SizedBox(width: 14),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -942,7 +1099,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 SizedBox(height: 4),
                                 Text(
                                   'Version 1.0.5 (Build 6) • Offline-first Clash of Clans tracker',
-                                  style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textMuted,
+                                  ),
                                 ),
                               ],
                             ),
@@ -950,9 +1110,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         'All villages, upgrades, and history records are stored exclusively in your local device SQLite database. No external accounts or cloud dependencies.',
-                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -1002,9 +1165,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
     final uri = Uri.tryParse(url.trim());
     if (uri == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invalid link URL: $url')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Invalid link URL: $url')));
       return;
     }
     try {
@@ -1076,10 +1238,7 @@ class _DiagnosticRow extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
           ),
         ),
         const SizedBox(width: 8),

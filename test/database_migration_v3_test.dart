@@ -109,10 +109,7 @@ void main() {
 
       await upgradesDao.upsert(upgrade);
 
-      final edited = upgrade.copyWith(
-        fromLevel: 15,
-        toLevel: 16,
-      );
+      final edited = upgrade.copyWith(fromLevel: 15, toLevel: 16);
       await upgradesDao.upsert(edited);
 
       final loaded = await upgradesDao.findById('up-3');
@@ -136,39 +133,45 @@ void main() {
       expect(names.contains('Super Crafted Tower'), isTrue);
     });
 
-    test('does not save built-in catalogue items as custom suggestions', () async {
-      // "Archer Tower" already exists in built-in catalogue
-      final added = await suggestionsDao.addSuggestion(
-        'Archer Tower',
-        UpgradeCategory.homeBuilder,
-      );
-      expect(added, isFalse);
+    test(
+      'does not save built-in catalogue items as custom suggestions',
+      () async {
+        // "Archer Tower" already exists in built-in catalogue
+        final added = await suggestionsDao.addSuggestion(
+          'Archer Tower',
+          UpgradeCategory.homeBuilder,
+        );
+        expect(added, isFalse);
 
-      final names = await suggestionsDao.getNamesForCategory(
-        UpgradeCategory.homeBuilder,
-      );
-      expect(names.contains('Archer Tower'), isFalse);
-    });
+        final names = await suggestionsDao.getNamesForCategory(
+          UpgradeCategory.homeBuilder,
+        );
+        expect(names.contains('Archer Tower'), isFalse);
+      },
+    );
 
-    test('handles case-insensitivity and whitespace duplicates for custom names', () async {
-      final first = await suggestionsDao.addSuggestion(
-        'Custom Trap',
-        UpgradeCategory.homeBuilder,
-      );
-      expect(first, isTrue);
+    test(
+      'handles case-insensitivity and whitespace duplicates for custom names',
+      () async {
+        final first = await suggestionsDao.addSuggestion(
+          'Custom Trap',
+          UpgradeCategory.homeBuilder,
+        );
+        expect(first, isTrue);
 
-      // Same name with different casing and whitespace
-      final duplicate = await suggestionsDao.addSuggestion(
-        '  custom trap  ',
-        UpgradeCategory.homeBuilder,
-      );
-      expect(duplicate, isFalse);
+        // Same name with different casing and whitespace
+        final duplicate = await suggestionsDao.addSuggestion(
+          '  custom trap  ',
+          UpgradeCategory.homeBuilder,
+        );
+        expect(duplicate, isFalse);
 
-      final names = await suggestionsDao.getNamesForCategory(
-        UpgradeCategory.homeBuilder,
-      );
-      expect(names.where((n) => n.toLowerCase() == 'custom trap').length, 1);
-    });
+        final names = await suggestionsDao.getNamesForCategory(
+          UpgradeCategory.homeBuilder,
+        );
+        expect(names.where((n) => n.toLowerCase() == 'custom trap').length, 1);
+      },
+    );
 
     test('isolates custom suggestions across different categories', () async {
       await suggestionsDao.addSuggestion(

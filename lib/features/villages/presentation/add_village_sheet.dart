@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/domain/models/game_constants.dart';
 import 'package:clash_command/domain/models/village.dart';
@@ -64,9 +65,13 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
           notes: notes,
           clearNotes: notes == null,
         );
-        await ref.read(villagesNotifierProvider.notifier).updateVillage(updated);
+        await ref
+            .read(villagesNotifierProvider.notifier)
+            .updateVillage(updated);
       } else {
-        await ref.read(villagesNotifierProvider.notifier).createVillage(
+        await ref
+            .read(villagesNotifierProvider.notifier)
+            .createVillage(
               name: name,
               townHallLevel: _townHallLevel,
               builderHallLevel: _builderHallLevel,
@@ -74,6 +79,7 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
               notes: notes,
             );
       }
+      ref.read(audioServiceProvider).playConfirm();
       if (mounted) Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -98,7 +104,7 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
             children: [
               Text(
                 widget.isEditing ? 'Edit village' : 'Add village',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -127,7 +133,10 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
                 ),
                 dropdownColor: AppColors.surfaceVariant,
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('Unknown / None')),
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('Unknown / None'),
+                  ),
                   ...TownHallConstants.availableLevels.map(
                     (level) => DropdownMenuItem(
                       value: level,
@@ -147,7 +156,10 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
                 ),
                 dropdownColor: AppColors.surfaceVariant,
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('Unknown / None')),
+                  const DropdownMenuItem(
+                    value: null,
+                    child: Text('Unknown / None'),
+                  ),
                   ...BuilderHallConstants.availableLevels.map(
                     (level) => DropdownMenuItem(
                       value: level,
@@ -162,7 +174,7 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
               // Builder capacity
               Row(
                 children: [
-                  const Text(
+                  Text(
                     'Builder capacity',
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
@@ -175,7 +187,7 @@ class _AddVillageSheetState extends ConsumerState<AddVillageSheet> {
                   ),
                   Text(
                     '$_builderCapacity',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,

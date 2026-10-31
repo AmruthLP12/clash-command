@@ -289,3 +289,11 @@ path in ordinary create/edit/complete/cancel workflows.
 5.  Add history and backup after core behavior is stable.
 6.  Test on a physical Android device, including permission denial,
     reboot, time-zone changes, and battery optimization.
+
+## 11. Profile-first, Navigation, and Theme Features
+
+-   **Profile Selection & Management**: Initial app screen lists user villages with TH/BH badges, builder counts, inline editing, and a bottom-right FAB.
+-   **Dynamic Themes**: System Default, Dark Mode (default), and Light Mode configurable from Settings with instant reactive switching.
+-   **Scoped Tabs**: Internal tabs (Dashboard, Planner, Levels, Settings) are strictly scoped to the active village; village switch dropdowns are removed from internal tabs.
+-   **Relative Completion Dates**: Live upgrades show `Today, <time>`, `Tomorrow, <time>`, or localized calendar dates for later days.
+-   **Disciplined Audio**: Sound effects for meaningful user actions only (profile selection, starting an upgrade, planning, level tracking, village save).

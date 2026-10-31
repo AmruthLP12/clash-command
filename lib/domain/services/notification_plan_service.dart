@@ -60,8 +60,7 @@ class NotificationPlanService {
             scheduledAtUtc: scheduledAt,
             type: NotificationPlanType.completion,
             title: '✅ ${upgrade.name} is done!',
-            body:
-                'Your ${upgrade.name} upgrade has completed in $vName.',
+            body: 'Your ${upgrade.name} upgrade has completed in $vName.',
           ),
         );
       }
@@ -70,8 +69,9 @@ class NotificationPlanService {
     // Pre-alert notifications
     for (var i = 0; i < reminderOffsetMinutes.length; i++) {
       final offset = reminderOffsetMinutes[i];
-      final scheduledAt = upgrade.expectedCompletionAtUtc
-          .subtract(Duration(minutes: offset));
+      final scheduledAt = upgrade.expectedCompletionAtUtc.subtract(
+        Duration(minutes: offset),
+      );
       if (scheduledAt.isAfter(now)) {
         final offsetText = offset >= 60
             ? '${offset ~/ 60} hour${offset >= 120 ? 's' : ''}'
@@ -83,8 +83,7 @@ class NotificationPlanService {
             scheduledAtUtc: scheduledAt,
             type: NotificationPlanType.preAlert,
             title: '⏰ ${upgrade.name} finishing soon',
-            body:
-                '${upgrade.name} completes in $offsetText.',
+            body: '${upgrade.name} completes in $offsetText.',
           ),
         );
       }
@@ -94,10 +93,7 @@ class NotificationPlanService {
   }
 
   /// Returns all notification IDs that should be cancelled for an upgrade.
-  List<int> idsForUpgrade(
-    String upgradeId, {
-    int maxPreAlerts = 10,
-  }) {
+  List<int> idsForUpgrade(String upgradeId, {int maxPreAlerts = 10}) {
     return [
       completionId(upgradeId),
       for (var i = 0; i < maxPreAlerts; i++) preAlertId(upgradeId, i),

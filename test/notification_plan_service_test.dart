@@ -8,10 +8,7 @@ void main() {
   const service = NotificationPlanService();
   final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
 
-  Upgrade makeActive({
-    String id = 'u1',
-    required DateTime completesAt,
-  }) =>
+  Upgrade makeActive({String id = 'u1', required DateTime completesAt}) =>
       Upgrade(
         id: id,
         villageId: 'v1',
@@ -32,13 +29,17 @@ void main() {
 
     test('pre-alert IDs differ from completion ID', () {
       const upgradeId = 'abc-123';
-      expect(service.preAlertId(upgradeId, 0),
-          isNot(equals(service.completionId(upgradeId))));
+      expect(
+        service.preAlertId(upgradeId, 0),
+        isNot(equals(service.completionId(upgradeId))),
+      );
     });
 
     test('different upgrade IDs produce different notification IDs', () {
-      expect(service.completionId('upgrade-1'),
-          isNot(equals(service.completionId('upgrade-2'))));
+      expect(
+        service.completionId('upgrade-1'),
+        isNot(equals(service.completionId('upgrade-2'))),
+      );
     });
   });
 
@@ -50,22 +51,25 @@ void main() {
       expect(service.buildPlan(completed, now), isEmpty);
     });
 
-    test('schedules completion + pre-alerts when completion is in the future', () {
-      final completesAt = now.add(const Duration(hours: 3));
-      final upgrade = makeActive(completesAt: completesAt);
-      final plans = service.buildPlan(upgrade, now);
+    test(
+      'schedules completion + pre-alerts when completion is in the future',
+      () {
+        final completesAt = now.add(const Duration(hours: 3));
+        final upgrade = makeActive(completesAt: completesAt);
+        final plans = service.buildPlan(upgrade, now);
 
-      // 1 completion + 2 pre-alerts (30m and 5m) — all in the future
-      expect(plans.length, 3);
-      expect(
-        plans.any((p) => p.type == NotificationPlanType.completion),
-        isTrue,
-      );
-      expect(
-        plans.where((p) => p.type == NotificationPlanType.preAlert).length,
-        2,
-      );
-    });
+        // 1 completion + 2 pre-alerts (30m and 5m) — all in the future
+        expect(plans.length, 3);
+        expect(
+          plans.any((p) => p.type == NotificationPlanType.completion),
+          isTrue,
+        );
+        expect(
+          plans.where((p) => p.type == NotificationPlanType.preAlert).length,
+          2,
+        );
+      },
+    );
 
     test('skips pre-alert when its time has already passed', () {
       // Upgrade completes in 10 minutes — 30m pre-alert is in the past
@@ -75,9 +79,15 @@ void main() {
 
       // 1 completion + 1 pre-alert (5m, which is within 10m window)
       // The 30m pre-alert would be at now - 20m → skipped
-      expect(plans.where((p) => p.type == NotificationPlanType.completion).length, 1);
+      expect(
+        plans.where((p) => p.type == NotificationPlanType.completion).length,
+        1,
+      );
       // 5m pre-alert is at now + 5m → scheduled
-      expect(plans.where((p) => p.type == NotificationPlanType.preAlert).length, 1);
+      expect(
+        plans.where((p) => p.type == NotificationPlanType.preAlert).length,
+        1,
+      );
     });
 
     test('skips all notifications when completion is already in the past', () {
@@ -94,8 +104,9 @@ void main() {
         completesAt: now.add(const Duration(hours: 2)),
       );
       final plans = service.buildPlan(upgrade, now);
-      final completionPlan =
-          plans.firstWhere((p) => p.type == NotificationPlanType.completion);
+      final completionPlan = plans.firstWhere(
+        (p) => p.type == NotificationPlanType.completion,
+      );
       expect(completionPlan.id, service.completionId(id));
     });
 
@@ -111,19 +122,18 @@ void main() {
       expect(plans.length, 3);
     });
 
-    test('completion notification is omitted when completionEnabled is false', () {
-      final completesAt = now.add(const Duration(hours: 2));
-      final upgrade = makeActive(completesAt: completesAt);
-      final plans = service.buildPlan(
-        upgrade,
-        now,
-        completionEnabled: false,
-      );
-      expect(
-        plans.any((p) => p.type == NotificationPlanType.completion),
-        isFalse,
-      );
-    });
+    test(
+      'completion notification is omitted when completionEnabled is false',
+      () {
+        final completesAt = now.add(const Duration(hours: 2));
+        final upgrade = makeActive(completesAt: completesAt);
+        final plans = service.buildPlan(upgrade, now, completionEnabled: false);
+        expect(
+          plans.any((p) => p.type == NotificationPlanType.completion),
+          isFalse,
+        );
+      },
+    );
   });
 
   group('NotificationPlanService.idsForUpgrade', () {
@@ -134,11 +144,14 @@ void main() {
       expect(ids.contains(service.completionId(upgradeId)), isTrue);
     });
 
-    test('default idsForUpgrade provides 11 IDs to cancel up to 10 pre-alerts', () {
-      const upgradeId = 'u1';
-      final ids = service.idsForUpgrade(upgradeId);
-      expect(ids.length, 11); // 1 completion + 10 pre-alerts
-    });
+    test(
+      'default idsForUpgrade provides 11 IDs to cancel up to 10 pre-alerts',
+      () {
+        const upgradeId = 'u1';
+        final ids = service.idsForUpgrade(upgradeId);
+        expect(ids.length, 11); // 1 completion + 10 pre-alerts
+      },
+    );
 
     test('60-second test upgrade calculates completion at exactly 60 seconds and builds completion plan', () {
       final start = DateTime.utc(2026, 10, 22, 10, 0, 0);
@@ -163,7 +176,10 @@ void main() {
       );
 
       expect(upgrade.expectedCompletionAtUtc.difference(start).inSeconds, 60);
-      expect(plans.length, 1); // 1 completion plan, pre-alerts (minutes) are skipped
+      expect(
+        plans.length,
+        1,
+      ); // 1 completion plan, pre-alerts (minutes) are skipped
       final compPlan = plans.first;
       expect(compPlan.type, NotificationPlanType.completion);
       expect(compPlan.scheduledAtUtc, completesAt);

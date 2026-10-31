@@ -16,7 +16,10 @@ class FakeNotificationService implements NotificationService {
   Future<void> schedulePlans(List<NotificationPlan> plans) async {}
 
   @override
-  Future<void> cancelForUpgrade(String upgradeId, {int maxPreAlerts = 10}) async {}
+  Future<void> cancelForUpgrade(
+    String upgradeId, {
+    int maxPreAlerts = 10,
+  }) async {}
 
   @override
   Future<void> reconcile(

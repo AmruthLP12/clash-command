@@ -5,9 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Centralized service managing reliable sound effects and ambient soundtrack.
 class AudioService with WidgetsBindingObserver {
-  AudioService({
-    this.enableNativePlayback = true,
-  }) {
+  AudioService({this.enableNativePlayback = true}) {
     WidgetsBinding.instance.addObserver(this);
     _init();
   }
@@ -60,7 +58,7 @@ class AudioService with WidgetsBindingObserver {
       musicVolumeNotifier.value = _musicVolume;
 
       if (enableNativePlayback) {
-        _initSfxPool();
+        // Player instances are allocated lazily on first playback to avoid startup overhead
         if (_musicEnabled && !_appInBackground) {
           await _startMusic();
         }
@@ -73,14 +71,13 @@ class AudioService with WidgetsBindingObserver {
     }
   }
 
-  void _initSfxPool() {
-    if (!enableNativePlayback) return;
-    try {
-      for (int i = 0; i < _sfxPoolSize; i++) {
+  AudioPlayer? _obtainPlayer() {
+    if (!enableNativePlayback) return null;
+    if (_sfxPool.length < _sfxPoolSize) {
+      try {
         final p = AudioPlayer();
         p.setVolume(_sfxVolume).catchError((_) {});
         p.setReleaseMode(ReleaseMode.stop).catchError((_) {});
-        // Avoid requesting exclusive audio focus for sound effects on Android
         p
             .setAudioContext(
               AudioContext(
@@ -95,12 +92,17 @@ class AudioService with WidgetsBindingObserver {
             )
             .catchError((_) {});
         _sfxPool.add(p);
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('SFX pool creation error: $e');
+        return p;
+      } catch (e) {
+        if (kDebugMode) {
+          debugPrint('SFX pool creation error: $e');
+        }
       }
     }
+    if (_sfxPool.isEmpty) return null;
+    final player = _sfxPool[_sfxPoolIndex];
+    _sfxPoolIndex = (_sfxPoolIndex + 1) % _sfxPool.length;
+    return player;
   }
 
   Future<void> setSfxEnabled(bool enabled) async {
@@ -196,29 +198,27 @@ class AudioService with WidgetsBindingObserver {
   void _playSfx(String assetPath) {
     if (!enableNativePlayback || !_sfxEnabled) return;
 
-    if (_sfxPool.isEmpty) {
-      _initSfxPool();
-      if (_sfxPool.isEmpty) return;
-    }
+    final player = _obtainPlayer();
+    if (player == null) return;
 
     try {
-      final player = _sfxPool[_sfxPoolIndex];
-      _sfxPoolIndex = (_sfxPoolIndex + 1) % _sfxPool.length;
-
       // Reset and play asynchronously without awaiting or blocking UI
-      player.stop().then((_) {
-        player
-            .play(AssetSource(assetPath), mode: PlayerMode.lowLatency)
-            .catchError((e) {
-          if (kDebugMode) {
-            debugPrint('SFX play error ($assetPath): $e');
-          }
-        });
-      }).catchError((e) {
-        if (kDebugMode) {
-          debugPrint('SFX stop error ($assetPath): $e');
-        }
-      });
+      player
+          .stop()
+          .then((_) {
+            player
+                .play(AssetSource(assetPath), mode: PlayerMode.lowLatency)
+                .catchError((e) {
+                  if (kDebugMode) {
+                    debugPrint('SFX play error ($assetPath): $e');
+                  }
+                });
+          })
+          .catchError((e) {
+            if (kDebugMode) {
+              debugPrint('SFX stop error ($assetPath): $e');
+            }
+          });
     } catch (e) {
       if (kDebugMode) {
         debugPrint('SFX dispatch error ($assetPath): $e');

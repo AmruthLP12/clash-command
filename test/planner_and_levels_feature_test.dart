@@ -79,7 +79,18 @@ void main() {
     test('validates Builder Hall constants up to level 10', () {
       expect(BuilderHallConstants.minLevel, 1);
       expect(BuilderHallConstants.maxSupportedLevel, 10);
-      expect(BuilderHallConstants.availableLevels, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(BuilderHallConstants.availableLevels, [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+      ]);
       expect(BuilderHallConstants.isValidLevel(10), isTrue);
       expect(BuilderHallConstants.isValidLevel(11), isFalse);
     });
@@ -99,33 +110,36 @@ void main() {
   });
 
   group('2. Upgrade Planner Operations & Isolation', () {
-    test('planned upgrade persists with all fields without starting active timers', () async {
-      final plan = PlannerItem(
-        id: 'plan-1',
-        villageId: 'v-1',
-        category: UpgradeCategory.homeBuilder,
-        name: 'Eagle Artillery',
-        targetLevel: 7,
-        priority: 'High',
-        notes: 'Upgrade after CWL',
-        sortOrder: 0,
-        status: 'planned',
-        isNext: true,
-        createdAtUtc: now,
-        updatedAtUtc: now,
-      );
+    test(
+      'planned upgrade persists with all fields without starting active timers',
+      () async {
+        final plan = PlannerItem(
+          id: 'plan-1',
+          villageId: 'v-1',
+          category: UpgradeCategory.homeBuilder,
+          name: 'Eagle Artillery',
+          targetLevel: 7,
+          priority: 'High',
+          notes: 'Upgrade after CWL',
+          sortOrder: 0,
+          status: 'planned',
+          isNext: true,
+          createdAtUtc: now,
+          updatedAtUtc: now,
+        );
 
-      await plannerDao.upsert(plan);
-      final fetched = await plannerDao.findById('plan-1');
+        await plannerDao.upsert(plan);
+        final fetched = await plannerDao.findById('plan-1');
 
-      expect(fetched, isNotNull);
-      expect(fetched!.name, 'Eagle Artillery');
-      expect(fetched.targetLevel, 7);
-      expect(fetched.priority, 'High');
-      expect(fetched.status, 'planned');
-      expect(fetched.isNext, isTrue);
-      expect(fetched.displayNameWithLevel, 'Eagle Artillery · Lv. 7');
-    });
+        expect(fetched, isNotNull);
+        expect(fetched!.name, 'Eagle Artillery');
+        expect(fetched.targetLevel, 7);
+        expect(fetched.priority, 'High');
+        expect(fetched.status, 'planned');
+        expect(fetched.isNext, isTrue);
+        expect(fetched.displayNameWithLevel, 'Eagle Artillery · Lv. 7');
+      },
+    );
 
     test('can edit, mark as next, and delete planned upgrades', () async {
       final plan1 = PlannerItem(
@@ -186,62 +200,73 @@ void main() {
   });
 
   group('3. Village Item Levels Tracker & Account Scoping', () {
-    test('stores and updates current levels scoped strictly to each village', () async {
-      final levelV1 = VillageItemLevel(
-        id: 'lvl-1',
-        villageId: 'v-1',
-        category: UpgradeCategory.homeBuilder,
-        itemName: 'Archer Tower',
-        currentLevel: 18,
-        updatedAtUtc: now,
-      );
+    test(
+      'stores and updates current levels scoped strictly to each village',
+      () async {
+        final levelV1 = VillageItemLevel(
+          id: 'lvl-1',
+          villageId: 'v-1',
+          category: UpgradeCategory.homeBuilder,
+          itemName: 'Archer Tower',
+          currentLevel: 18,
+          updatedAtUtc: now,
+        );
 
-      final levelV2 = VillageItemLevel(
-        id: 'lvl-2',
-        villageId: 'v-2',
-        category: UpgradeCategory.homeBuilder,
-        itemName: 'Archer Tower',
-        currentLevel: 12,
-        updatedAtUtc: now,
-      );
+        final levelV2 = VillageItemLevel(
+          id: 'lvl-2',
+          villageId: 'v-2',
+          category: UpgradeCategory.homeBuilder,
+          itemName: 'Archer Tower',
+          currentLevel: 12,
+          updatedAtUtc: now,
+        );
 
-      await levelsDao.upsert(levelV1);
-      await levelsDao.upsert(levelV2);
+        await levelsDao.upsert(levelV1);
+        await levelsDao.upsert(levelV2);
 
-      // Query v-1
-      final v1Record = await levelsDao.findByItem(
-        'v-1',
-        UpgradeCategory.homeBuilder,
-        'Archer Tower',
-      );
-      // Query v-2
-      final v2Record = await levelsDao.findByItem(
-        'v-2',
-        UpgradeCategory.homeBuilder,
-        'Archer Tower',
-      );
+        // Query v-1
+        final v1Record = await levelsDao.findByItem(
+          'v-1',
+          UpgradeCategory.homeBuilder,
+          'Archer Tower',
+        );
+        // Query v-2
+        final v2Record = await levelsDao.findByItem(
+          'v-2',
+          UpgradeCategory.homeBuilder,
+          'Archer Tower',
+        );
 
-      expect(v1Record, isNotNull);
-      expect(v1Record!.currentLevel, 18);
-      expect(v1Record.villageId, 'v-1');
+        expect(v1Record, isNotNull);
+        expect(v1Record!.currentLevel, 18);
+        expect(v1Record.villageId, 'v-1');
 
-      expect(v2Record, isNotNull);
-      expect(v2Record!.currentLevel, 12);
-      expect(v2Record.villageId, 'v-2');
+        expect(v2Record, isNotNull);
+        expect(v2Record!.currentLevel, 12);
+        expect(v2Record.villageId, 'v-2');
 
-      // Modifying v-1 does not affect v-2
-      final updatedV1 = v1Record.copyWith(
-        currentLevel: 19,
-        updatedAtUtc: now.add(const Duration(days: 1)),
-      );
-      await levelsDao.upsert(updatedV1);
+        // Modifying v-1 does not affect v-2
+        final updatedV1 = v1Record.copyWith(
+          currentLevel: 19,
+          updatedAtUtc: now.add(const Duration(days: 1)),
+        );
+        await levelsDao.upsert(updatedV1);
 
-      final recheckedV1 = await levelsDao.findByItem('v-1', UpgradeCategory.homeBuilder, 'Archer Tower');
-      final recheckedV2 = await levelsDao.findByItem('v-2', UpgradeCategory.homeBuilder, 'Archer Tower');
+        final recheckedV1 = await levelsDao.findByItem(
+          'v-1',
+          UpgradeCategory.homeBuilder,
+          'Archer Tower',
+        );
+        final recheckedV2 = await levelsDao.findByItem(
+          'v-2',
+          UpgradeCategory.homeBuilder,
+          'Archer Tower',
+        );
 
-      expect(recheckedV1!.currentLevel, 19);
-      expect(recheckedV2!.currentLevel, 12); // Unaltered
-    });
+        expect(recheckedV1!.currentLevel, 19);
+        expect(recheckedV2!.currentLevel, 12); // Unaltered
+      },
+    );
 
     test('updating levels to target level is idempotent and avoids duplicate increments', () async {
       final record = VillageItemLevel(
@@ -257,109 +282,141 @@ void main() {
       const targetLevel = 16;
 
       // First completion update
-      final existing1 = await levelsDao.findByItem('v-1', UpgradeCategory.homeBuilder, 'Cannon');
+      final existing1 = await levelsDao.findByItem(
+        'v-1',
+        UpgradeCategory.homeBuilder,
+        'Cannon',
+      );
       expect(existing1!.currentLevel, 15);
       if (existing1.currentLevel < targetLevel) {
-        await levelsDao.upsert(existing1.copyWith(currentLevel: targetLevel, updatedAtUtc: now));
+        await levelsDao.upsert(
+          existing1.copyWith(currentLevel: targetLevel, updatedAtUtc: now),
+        );
       }
 
-      final afterFirst = await levelsDao.findByItem('v-1', UpgradeCategory.homeBuilder, 'Cannon');
+      final afterFirst = await levelsDao.findByItem(
+        'v-1',
+        UpgradeCategory.homeBuilder,
+        'Cannon',
+      );
       expect(afterFirst!.currentLevel, 16);
 
       // Duplicate revisit / completion click
-      final existing2 = await levelsDao.findByItem('v-1', UpgradeCategory.homeBuilder, 'Cannon');
+      final existing2 = await levelsDao.findByItem(
+        'v-1',
+        UpgradeCategory.homeBuilder,
+        'Cannon',
+      );
       if (existing2!.currentLevel < targetLevel) {
-        await levelsDao.upsert(existing2.copyWith(currentLevel: targetLevel, updatedAtUtc: now));
+        await levelsDao.upsert(
+          existing2.copyWith(currentLevel: targetLevel, updatedAtUtc: now),
+        );
       }
 
-      final afterSecond = await levelsDao.findByItem('v-1', UpgradeCategory.homeBuilder, 'Cannon');
-      expect(afterSecond!.currentLevel, 16); // Still exactly 16, no double increment
+      final afterSecond = await levelsDao.findByItem(
+        'v-1',
+        UpgradeCategory.homeBuilder,
+        'Cannon',
+      );
+      expect(
+        afterSecond!.currentLevel,
+        16,
+      ); // Still exactly 16, no double increment
     });
   });
 
   group('4. Cleaner Upgrade Cards (Redundant Label Removal)', () {
-    testWidgets('omits redundant category label from upgrade card when showCategory is false', (tester) async {
-      final upgrade = Upgrade(
-        id: 'u-1',
-        villageId: 'v-1',
-        name: 'Hidden Tesla',
-        category: UpgradeCategory.homeBuilder,
-        slotKey: 'Builder 3',
-        startedAtUtc: now,
-        expectedCompletionAtUtc: now.add(const Duration(days: 1)),
-        status: UpgradeStatus.active,
-        createdAtUtc: now,
-        updatedAtUtc: now,
-      );
+    testWidgets(
+      'omits redundant category label from upgrade card when showCategory is false',
+      (tester) async {
+        final upgrade = Upgrade(
+          id: 'u-1',
+          villageId: 'v-1',
+          name: 'Hidden Tesla',
+          category: UpgradeCategory.homeBuilder,
+          slotKey: 'Builder 3',
+          startedAtUtc: now,
+          expectedCompletionAtUtc: now.add(const Duration(days: 1)),
+          status: UpgradeStatus.active,
+          createdAtUtc: now,
+          updatedAtUtc: now,
+        );
 
-      final village = Village(
-        id: 'v-1',
-        name: 'Main Village',
-        createdAtUtc: now,
-        updatedAtUtc: now,
-      );
+        final village = Village(
+          id: 'v-1',
+          name: 'Main Village',
+          createdAtUtc: now,
+          updatedAtUtc: now,
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: UpgradeCard(
-                upgrade: upgrade,
-                village: village,
-                showCategory: false, // Default in dashboard
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: UpgradeCard(
+                  upgrade: upgrade,
+                  village: village,
+                  showCategory: false, // Default in dashboard
+                ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Card shows name and slotKey
-      expect(find.text('Hidden Tesla'), findsOneWidget);
-      expect(find.text('Builder 3'), findsOneWidget);
+        // Card shows name and slotKey
+        expect(find.text('Hidden Tesla'), findsOneWidget);
+        expect(find.text('Builder 3'), findsOneWidget);
 
-      // Card does NOT display redundant category label "Home Village — Builder"
-      expect(find.text(UpgradeCategory.homeBuilder.displayName), findsNothing);
-    });
+        // Card does NOT display redundant category label "Home Village — Builder"
+        expect(
+          find.text(UpgradeCategory.homeBuilder.displayName),
+          findsNothing,
+        );
+      },
+    );
 
-    testWidgets('displays category label only when showCategory is explicitly true', (tester) async {
-      final upgrade = Upgrade(
-        id: 'u-1',
-        villageId: 'v-1',
-        name: 'Dragon',
-        category: UpgradeCategory.homeLab,
-        startedAtUtc: now,
-        expectedCompletionAtUtc: now.add(const Duration(days: 1)),
-        status: UpgradeStatus.active,
-        createdAtUtc: now,
-        updatedAtUtc: now,
-      );
+    testWidgets(
+      'displays category label only when showCategory is explicitly true',
+      (tester) async {
+        final upgrade = Upgrade(
+          id: 'u-1',
+          villageId: 'v-1',
+          name: 'Dragon',
+          category: UpgradeCategory.homeLab,
+          startedAtUtc: now,
+          expectedCompletionAtUtc: now.add(const Duration(days: 1)),
+          status: UpgradeStatus.active,
+          createdAtUtc: now,
+          updatedAtUtc: now,
+        );
 
-      final village = Village(
-        id: 'v-1',
-        name: 'Main Village',
-        createdAtUtc: now,
-        updatedAtUtc: now,
-      );
+        final village = Village(
+          id: 'v-1',
+          name: 'Main Village',
+          createdAtUtc: now,
+          updatedAtUtc: now,
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(
-              body: UpgradeCard(
-                upgrade: upgrade,
-                village: village,
-                showCategory: true,
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Scaffold(
+                body: UpgradeCard(
+                  upgrade: upgrade,
+                  village: village,
+                  showCategory: true,
+                ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Dragon'), findsOneWidget);
-      expect(find.text(UpgradeCategory.homeLab.displayName), findsOneWidget);
-    });
+        expect(find.text('Dragon'), findsOneWidget);
+        expect(find.text(UpgradeCategory.homeLab.displayName), findsOneWidget);
+      },
+    );
   });
 
   group('5. Advanced Planner: Duration and Resource Planning', () {
@@ -480,10 +537,7 @@ void main() {
       expect(existing!.id, isNot(typo.id));
 
       // Merge: update existing with new level 12 and delete typo entry
-      final merged = existing.copyWith(
-        currentLevel: 12,
-        updatedAtUtc: now,
-      );
+      final merged = existing.copyWith(currentLevel: 12, updatedAtUtc: now);
       await levelsDao.upsert(merged);
       await levelsDao.deleteItem(typo.id);
 
@@ -496,66 +550,87 @@ void main() {
 
   group('7. Item Types, Subcategory Selection & Persistence', () {
     test('defines strictly valid item types for each realm category', () {
-      final homeBuilderTypes =
-          LevelItemType.typesForCategory(UpgradeCategory.homeBuilder);
-      expect(homeBuilderTypes, containsAll([
-        LevelItemType.buildings,
-        LevelItemType.defences,
-        LevelItemType.traps,
-        LevelItemType.heroes,
-        LevelItemType.heroPets,
-        LevelItemType.other,
-      ]));
+      final homeBuilderTypes = LevelItemType.typesForCategory(
+        UpgradeCategory.homeBuilder,
+      );
+      expect(
+        homeBuilderTypes,
+        containsAll([
+          LevelItemType.buildings,
+          LevelItemType.defences,
+          LevelItemType.traps,
+          LevelItemType.heroes,
+          LevelItemType.heroPets,
+          LevelItemType.other,
+        ]),
+      );
       expect(homeBuilderTypes.contains(LevelItemType.troops), isFalse);
       expect(homeBuilderTypes.contains(LevelItemType.spells), isFalse);
 
-      final homeLabTypes =
-          LevelItemType.typesForCategory(UpgradeCategory.homeLab);
-      expect(homeLabTypes, containsAll([
-        LevelItemType.troops,
-        LevelItemType.spells,
-        LevelItemType.siegeMachines,
-        LevelItemType.other,
-      ]));
+      final homeLabTypes = LevelItemType.typesForCategory(
+        UpgradeCategory.homeLab,
+      );
+      expect(
+        homeLabTypes,
+        containsAll([
+          LevelItemType.troops,
+          LevelItemType.spells,
+          LevelItemType.siegeMachines,
+          LevelItemType.other,
+        ]),
+      );
       expect(homeLabTypes.contains(LevelItemType.defences), isFalse);
       expect(homeLabTypes.contains(LevelItemType.heroPets), isFalse);
 
-      final bbBuilderTypes =
-          LevelItemType.typesForCategory(UpgradeCategory.builderBaseBuilder);
-      expect(bbBuilderTypes, containsAll([
-        LevelItemType.buildings,
-        LevelItemType.defences,
-        LevelItemType.traps,
-        LevelItemType.heroes,
-        LevelItemType.other,
-      ]));
+      final bbBuilderTypes = LevelItemType.typesForCategory(
+        UpgradeCategory.builderBaseBuilder,
+      );
+      expect(
+        bbBuilderTypes,
+        containsAll([
+          LevelItemType.buildings,
+          LevelItemType.defences,
+          LevelItemType.traps,
+          LevelItemType.heroes,
+          LevelItemType.other,
+        ]),
+      );
       expect(bbBuilderTypes.contains(LevelItemType.heroPets), isFalse);
       expect(bbBuilderTypes.contains(LevelItemType.spells), isFalse);
 
-      final bbStarLabTypes =
-          LevelItemType.typesForCategory(UpgradeCategory.builderBaseStarLab);
-      expect(bbStarLabTypes, containsAll([
-        LevelItemType.troops,
-        LevelItemType.other,
-      ]));
+      final bbStarLabTypes = LevelItemType.typesForCategory(
+        UpgradeCategory.builderBaseStarLab,
+      );
+      expect(
+        bbStarLabTypes,
+        containsAll([LevelItemType.troops, LevelItemType.other]),
+      );
       expect(bbStarLabTypes.contains(LevelItemType.buildings), isFalse);
       expect(bbStarLabTypes.contains(LevelItemType.defences), isFalse);
     });
 
-    test('UpgradeCatalog includes verified Hero Pets with max levels and unlocks', () {
-      final lassi = UpgradeCatalog.find('L.A.S.S.I', UpgradeCategory.homeBuilder);
-      expect(lassi, isNotNull);
-      expect(lassi!.type, 'Hero Pet');
-      expect(lassi.minTownHall, 14);
-      expect(lassi.maxLevel, 15);
+    test(
+      'UpgradeCatalog includes verified Hero Pets with max levels and unlocks',
+      () {
+        final lassi = UpgradeCatalog.find(
+          'L.A.S.S.I',
+          UpgradeCategory.homeBuilder,
+        );
+        expect(lassi, isNotNull);
+        expect(lassi!.type, 'Hero Pet');
+        expect(lassi.minTownHall, 14);
+        expect(lassi.maxLevel, 15);
 
-      final spiritFox =
-          UpgradeCatalog.find('Spirit Fox', UpgradeCategory.homeBuilder);
-      expect(spiritFox, isNotNull);
-      expect(spiritFox!.type, 'Hero Pet');
-      expect(spiritFox.minTownHall, 16);
-      expect(spiritFox.maxLevel, 10);
-    });
+        final spiritFox = UpgradeCatalog.find(
+          'Spirit Fox',
+          UpgradeCategory.homeBuilder,
+        );
+        expect(spiritFox, isNotNull);
+        expect(spiritFox!.type, 'Hero Pet');
+        expect(spiritFox.minTownHall, 16);
+        expect(spiritFox.maxLevel, 10);
+      },
+    );
 
     test('UpgradeCatalog.search filters results by selected itemType', () {
       // Searching Defences returns only defences
@@ -566,9 +641,11 @@ void main() {
       );
       expect(defences, isNotEmpty);
       expect(
-        defences.every((item) =>
-            item.type.toLowerCase() == 'defense' ||
-            item.type.toLowerCase() == 'merged defense'),
+        defences.every(
+          (item) =>
+              item.type.toLowerCase() == 'defense' ||
+              item.type.toLowerCase() == 'merged defense',
+        ),
         isTrue,
       );
 
@@ -590,8 +667,9 @@ void main() {
       );
       expect(spells, isNotEmpty);
       expect(
-        spells.every((item) =>
-            item.type == 'Spell' || item.type == 'Dark Spell'),
+        spells.every(
+          (item) => item.type == 'Spell' || item.type == 'Dark Spell',
+        ),
         isTrue,
       );
     });
@@ -656,4 +734,3 @@ void main() {
     });
   });
 }
-

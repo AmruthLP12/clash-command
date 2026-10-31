@@ -45,15 +45,16 @@ final historyEventsDaoProvider = Provider<HistoryEventsDao>((ref) {
   return HistoryEventsDao(ref.watch(appDatabaseProvider));
 });
 
-final notificationPreferencesDaoProvider =
-    Provider<NotificationPreferencesDao>((ref) {
-  return NotificationPreferencesDao(ref.watch(appDatabaseProvider));
-});
+final notificationPreferencesDaoProvider = Provider<NotificationPreferencesDao>(
+  (ref) {
+    return NotificationPreferencesDao(ref.watch(appDatabaseProvider));
+  },
+);
 
 final customUpgradeSuggestionsDaoProvider =
     Provider<CustomUpgradeSuggestionsDao>((ref) {
-  return CustomUpgradeSuggestionsDao(ref.watch(appDatabaseProvider));
-});
+      return CustomUpgradeSuggestionsDao(ref.watch(appDatabaseProvider));
+    });
 
 final plannerDaoProvider = Provider<PlannerDao>((ref) {
   return PlannerDao(ref.watch(appDatabaseProvider));
@@ -65,8 +66,8 @@ final villageItemLevelsDaoProvider = Provider<VillageItemLevelsDao>((ref) {
 
 final plannerItemsForVillageProvider =
     StreamProvider.family<List<PlannerItem>, String>((ref, villageId) {
-  return ref.watch(plannerDaoProvider).watchForVillage(villageId);
-});
+      return ref.watch(plannerDaoProvider).watchForVillage(villageId);
+    });
 
 final allPlannerItemsProvider = StreamProvider<List<PlannerItem>>((ref) {
   return ref.watch(plannerDaoProvider).watchAll();
@@ -74,22 +75,23 @@ final allPlannerItemsProvider = StreamProvider<List<PlannerItem>>((ref) {
 
 final villageItemLevelsStreamProvider =
     StreamProvider.family<List<VillageItemLevel>, String>((ref, villageId) {
-  return ref.watch(villageItemLevelsDaoProvider).watchForVillage(villageId);
-});
+      return ref.watch(villageItemLevelsDaoProvider).watchForVillage(villageId);
+    });
 
 final customUpgradeSuggestionsStreamProvider =
-    StreamProvider.family<List<CustomUpgradeSuggestionRow>, UpgradeCategory>(
-  (ref, category) {
-    return ref
-        .watch(customUpgradeSuggestionsDaoProvider)
-        .watchForCategory(category);
-  },
-);
+    StreamProvider.family<List<CustomUpgradeSuggestionRow>, UpgradeCategory>((
+      ref,
+      category,
+    ) {
+      return ref
+          .watch(customUpgradeSuggestionsDaoProvider)
+          .watchForCategory(category);
+    });
 
 final notificationPreferencesStreamProvider =
     StreamProvider<NotificationPreference>((ref) {
-  return ref.watch(notificationPreferencesDaoProvider).watchPreferences();
-});
+      return ref.watch(notificationPreferencesDaoProvider).watchPreferences();
+    });
 
 // ---------- Domain services ----------
 
@@ -101,13 +103,15 @@ final villageServiceProvider = Provider<VillageService>((ref) {
   return const VillageService();
 });
 
-final upgradeLifecycleServiceProvider =
-    Provider<UpgradeLifecycleService>((ref) {
+final upgradeLifecycleServiceProvider = Provider<UpgradeLifecycleService>((
+  ref,
+) {
   return const UpgradeLifecycleService();
 });
 
-final notificationPlanServiceProvider =
-    Provider<NotificationPlanService>((ref) {
+final notificationPlanServiceProvider = Provider<NotificationPlanService>((
+  ref,
+) {
   return const NotificationPlanService();
 });
 

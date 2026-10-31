@@ -12,9 +12,10 @@ import 'package:clash_command/features/levels/presentation/add_level_sheet.dart'
 import 'package:clash_command/features/villages/application/villages_notifier.dart';
 
 class LevelsScreen extends ConsumerStatefulWidget {
-  const LevelsScreen({super.key, this.initialVillageId});
+  const LevelsScreen({super.key, this.initialVillageId, this.onHome});
 
   final String? initialVillageId;
+  final VoidCallback? onHome;
 
   @override
   ConsumerState<LevelsScreen> createState() => _LevelsScreenState();
@@ -56,7 +57,10 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
   }
 
   void _showEditLevel(
-      BuildContext context, Village village, VillageItemLevel item) {
+    BuildContext context,
+    Village village,
+    VillageItemLevel item,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -64,10 +68,7 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => AddLevelSheet(
-        village: village,
-        item: item,
-      ),
+      builder: (_) => AddLevelSheet(village: village, item: item),
     );
   }
 
@@ -80,7 +81,7 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (villages) {
         if (villages.isEmpty) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
               child: Text(
                 'No villages found. Create a village first.',
@@ -100,49 +101,32 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
           orElse: () => villages.first,
         );
 
-        final levelsAsync =
-            ref.watch(villageItemLevelsStreamProvider(selectedVillage.id));
+        final levelsAsync = ref.watch(
+          villageItemLevelsStreamProvider(selectedVillage.id),
+        );
 
         return Scaffold(
           appBar: AppBar(
-            title: villages.length <= 1
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Village Levels'),
-                      Text(
-                        selectedVillage.name,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+            leading: widget.onHome != null
+                ? IconButton(
+                    icon: const Icon(Icons.home_outlined),
+                    tooltip: 'Dashboard',
+                    onPressed: widget.onHome,
                   )
-                : DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedVillageId,
-                      dropdownColor: AppColors.surfaceVariant,
-                      icon: const Icon(Icons.arrow_drop_down,
-                          color: AppColors.accent),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                      onChanged: (id) {
-                        if (id != null) {
-                          setState(() => _selectedVillageId = id);
-                        }
-                      },
-                      items: villages.map((v) {
-                        return DropdownMenuItem(
-                          value: v.id,
-                          child: Text('Levels · ${v.name}'),
-                        );
-                      }).toList(),
-                    ),
+                : null,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Village Levels'),
+                Text(
+                  selectedVillage.name,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
                   ),
+                ),
+              ],
+            ),
           ),
           body: Column(
             children: [
@@ -163,8 +147,10 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                             },
                           )
                         : null,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     isDense: true,
                   ),
                   onChanged: (val) =>
@@ -175,7 +161,10 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
               // Category filters
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
                     FilterChip(
@@ -188,27 +177,31 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                     ),
                     const SizedBox(width: 8),
                     ...UpgradeCategory.values
-                        .where((c) =>
-                            c == c.primaryCategory &&
-                            c != UpgradeCategory.other)
+                        .where(
+                          (c) =>
+                              c == c.primaryCategory &&
+                              c != UpgradeCategory.other,
+                        )
                         .map((cat) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          selected: _selectedCategory == cat,
-                          label: Text(cat.displayName),
-                          onSelected: (_) => setState(() {
-                            _selectedCategory = cat;
-                            // Reconcile item type if needed
-                            final valid = LevelItemType.typesForCategory(cat);
-                            if (_selectedItemType != null &&
-                                !valid.contains(_selectedItemType)) {
-                              _selectedItemType = null;
-                            }
-                          }),
-                        ),
-                      );
-                    }),
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              selected: _selectedCategory == cat,
+                              label: Text(cat.displayName),
+                              onSelected: (_) => setState(() {
+                                _selectedCategory = cat;
+                                // Reconcile item type if needed
+                                final valid = LevelItemType.typesForCategory(
+                                  cat,
+                                );
+                                if (_selectedItemType != null &&
+                                    !valid.contains(_selectedItemType)) {
+                                  _selectedItemType = null;
+                                }
+                              }),
+                            ),
+                          );
+                        }),
                   ],
                 ),
               ),
@@ -231,8 +224,10 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
 
                   return SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         FilterChip(
@@ -256,8 +251,11 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                               ),
                               selected: isSelected,
                               label: Text(type),
-                              onSelected: (_) => setState(() =>
-                                  _selectedItemType = isSelected ? null : type),
+                              onSelected: (_) => setState(
+                                () => _selectedItemType = isSelected
+                                    ? null
+                                    : type,
+                              ),
                             ),
                           );
                         }),
@@ -282,14 +280,16 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                     }
                     if (_selectedItemType != null) {
                       filtered = filtered
-                          .where((it) =>
-                              it.effectiveItemType == _selectedItemType)
+                          .where(
+                            (it) => it.effectiveItemType == _selectedItemType,
+                          )
                           .toList();
                     }
                     if (_searchQuery.isNotEmpty) {
                       filtered = filtered.where((it) {
-                        final matchName =
-                            it.itemName.toLowerCase().contains(_searchQuery);
+                        final matchName = it.itemName.toLowerCase().contains(
+                          _searchQuery,
+                        );
                         final matchType = it.effectiveItemType
                             .toLowerCase()
                             .contains(_searchQuery);
@@ -304,7 +304,7 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.format_list_numbered_outlined,
                                 size: 48,
                                 color: AppColors.textMuted,
@@ -316,7 +316,7 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                                         _searchQuery.isNotEmpty
                                     ? 'No matching tracked items'
                                     : 'No levels recorded yet',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textSecondary,
@@ -330,7 +330,7 @@ class _LevelsScreenState extends ConsumerState<LevelsScreen> {
                                     ? 'Try adjusting your type filter or search query.'
                                     : 'Track your buildings, heroes, and troop research levels for this village.',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textMuted,
                                 ),
@@ -454,12 +454,13 @@ class _LevelItemCard extends ConsumerWidget {
                   color: AppColors.accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: AppColors.accent.withValues(alpha: 0.3)),
+                    color: AppColors.accent.withValues(alpha: 0.3),
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   '${item.currentLevel}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: AppColors.accent,
@@ -477,7 +478,7 @@ class _LevelItemCard extends ConsumerWidget {
                       item.itemName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
@@ -489,7 +490,9 @@ class _LevelItemCard extends ConsumerWidget {
                         // Concise Type Pill
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.surfaceVariant,
                             borderRadius: BorderRadius.circular(4),
@@ -505,7 +508,7 @@ class _LevelItemCard extends ConsumerWidget {
                               const SizedBox(width: 4),
                               Text(
                                 typeLabel,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textSecondary,
@@ -520,7 +523,7 @@ class _LevelItemCard extends ConsumerWidget {
                             item.updatedAtUtc,
                             displayPrefs.dateFormat,
                           ),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 11,
                           ),
@@ -548,8 +551,11 @@ class _LevelItemCard extends ConsumerWidget {
 
               // Context menu (edit / delete)
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert,
-                    size: 18, color: AppColors.textSecondary),
+                icon: Icon(
+                  Icons.more_vert,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
                 color: AppColors.surfaceVariant,
                 onSelected: (val) {
                   if (val == 'edit') {
@@ -559,26 +565,34 @@ class _LevelItemCard extends ConsumerWidget {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit_outlined,
-                            size: 16, color: AppColors.accent),
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 16,
+                          color: AppColors.accent,
+                        ),
                         SizedBox(width: 8),
                         Text('Edit item'),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline,
-                            size: 16, color: AppColors.error),
+                        Icon(
+                          Icons.delete_outline,
+                          size: 16,
+                          color: AppColors.error,
+                        ),
                         SizedBox(width: 8),
-                        Text('Delete record',
-                            style: TextStyle(color: AppColors.error)),
+                        Text(
+                          'Delete record',
+                          style: TextStyle(color: AppColors.error),
+                        ),
                       ],
                     ),
                   ),

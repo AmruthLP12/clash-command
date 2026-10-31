@@ -95,17 +95,22 @@ void main() {
         villagesDaoProvider.overrideWithValue(FakeVillagesDao(villages)),
         upgradesDaoProvider.overrideWithValue(FakeUpgradesDao(upgrades)),
         historyEventsDaoProvider.overrideWithValue(FakeHistoryEventsDao()),
-        notificationPreferencesDaoProvider
-            .overrideWithValue(FakeNotificationPreferencesDao()),
-        notificationServiceProvider
-            .overrideWithValue(FakeNotificationService()),
-        upgradeTimerServiceProvider
-            .overrideWithValue(const UpgradeTimerService()),
+        notificationPreferencesDaoProvider.overrideWithValue(
+          FakeNotificationPreferencesDao(),
+        ),
+        notificationServiceProvider.overrideWithValue(
+          FakeNotificationService(),
+        ),
+        upgradeTimerServiceProvider.overrideWithValue(
+          const UpgradeTimerService(),
+        ),
         villageServiceProvider.overrideWithValue(const VillageService()),
-        upgradeLifecycleServiceProvider
-            .overrideWithValue(const UpgradeLifecycleService()),
-        notificationPlanServiceProvider
-            .overrideWithValue(const NotificationPlanService()),
+        upgradeLifecycleServiceProvider.overrideWithValue(
+          const UpgradeLifecycleService(),
+        ),
+        notificationPlanServiceProvider.overrideWithValue(
+          const NotificationPlanService(),
+        ),
       ],
       child: MaterialApp(
         theme: buildAppTheme(),
@@ -115,8 +120,9 @@ void main() {
   }
 
   group('Upgrade Screen Navigation & Filtering Hierarchy', () {
-    testWidgets('shows Village Realm switcher and defaults to Home Village',
-        (tester) async {
+    testWidgets('shows Village Realm switcher and defaults to Home Village', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildAppWithScope(
           villages: [testVillage],
@@ -131,115 +137,123 @@ void main() {
       expect(find.text('Laboratory'), findsOneWidget);
     });
 
-    testWidgets('switching to Builder Base updates category options to Builder & Star Laboratory',
-        (tester) async {
-      await tester.pumpWidget(
-        buildAppWithScope(
-          villages: [testVillage],
-          upgrades: [homeBuilderUpgrade, bbStarLabUpgrade],
-        ),
-      );
-      await tester.pumpAndSettle();
+    testWidgets(
+      'switching to Builder Base updates category options to Builder & Star Laboratory',
+      (tester) async {
+        await tester.pumpWidget(
+          buildAppWithScope(
+            villages: [testVillage],
+            upgrades: [homeBuilderUpgrade, bbStarLabUpgrade],
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Tap Builder Base
-      await tester.tap(find.text('Builder Base'));
-      await tester.pumpAndSettle();
+        // Tap Builder Base
+        await tester.tap(find.text('Builder Base'));
+        await tester.pumpAndSettle();
 
-      // Should now show Builder Base categories
-      expect(find.text('Builder'), findsOneWidget);
-      expect(find.text('Star Laboratory'), findsOneWidget);
-      expect(find.text('Laboratory'), findsNothing);
-    });
+        // Should now show Builder Base categories
+        expect(find.text('Builder'), findsOneWidget);
+        expect(find.text('Star Laboratory'), findsOneWidget);
+        expect(find.text('Laboratory'), findsNothing);
+      },
+    );
 
-    testWidgets('filters upgrades by selected category without mixing categories',
-        (tester) async {
-      await tester.pumpWidget(
-        buildAppWithScope(
-          villages: [testVillage],
-          upgrades: [
-            homeBuilderUpgrade,
-            homeLabUpgrade,
-            bbBuilderUpgrade,
-            bbStarLabUpgrade,
-          ],
-        ),
-      );
-      await tester.pumpAndSettle();
+    testWidgets(
+      'filters upgrades by selected category without mixing categories',
+      (tester) async {
+        await tester.pumpWidget(
+          buildAppWithScope(
+            villages: [testVillage],
+            upgrades: [
+              homeBuilderUpgrade,
+              homeLabUpgrade,
+              bbBuilderUpgrade,
+              bbStarLabUpgrade,
+            ],
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Initially in Home Village -> Builder: only Archer Tower visible
-      expect(find.text('Archer Tower · Lv. 68'), findsOneWidget);
-      expect(find.text('P.E.K.K.A · Lv. 11'), findsNothing);
-      expect(find.text('Double Cannon · Lv. 10'), findsNothing);
-      expect(find.text('Raged Barbarian · Lv. 20'), findsNothing);
+        // Initially in Home Village -> Builder: only Archer Tower visible
+        expect(find.text('Archer Tower · Lv. 68'), findsOneWidget);
+        expect(find.text('P.E.K.K.A · Lv. 11'), findsNothing);
+        expect(find.text('Double Cannon · Lv. 10'), findsNothing);
+        expect(find.text('Raged Barbarian · Lv. 20'), findsNothing);
 
-      // Switch to Laboratory
-      await tester.tap(find.text('Laboratory'));
-      await tester.pumpAndSettle();
+        // Switch to Laboratory
+        await tester.tap(find.text('Laboratory'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('P.E.K.K.A · Lv. 11'), findsOneWidget);
-      expect(find.text('Archer Tower · Lv. 68'), findsNothing);
+        expect(find.text('P.E.K.K.A · Lv. 11'), findsOneWidget);
+        expect(find.text('Archer Tower · Lv. 68'), findsNothing);
 
-      // Switch to Builder Base
-      await tester.tap(find.text('Builder Base'));
-      await tester.pumpAndSettle();
+        // Switch to Builder Base
+        await tester.tap(find.text('Builder Base'));
+        await tester.pumpAndSettle();
 
-      // In Builder Base -> Builder: Double Cannon visible
-      expect(find.text('Double Cannon · Lv. 10'), findsOneWidget);
-      expect(find.text('Raged Barbarian · Lv. 20'), findsNothing);
+        // In Builder Base -> Builder: Double Cannon visible
+        expect(find.text('Double Cannon · Lv. 10'), findsOneWidget);
+        expect(find.text('Raged Barbarian · Lv. 20'), findsNothing);
 
-      // Switch to Star Laboratory
-      await tester.tap(find.text('Star Laboratory'));
-      await tester.pumpAndSettle();
+        // Switch to Star Laboratory
+        await tester.tap(find.text('Star Laboratory'));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Raged Barbarian · Lv. 20'), findsOneWidget);
-      expect(find.text('Double Cannon · Lv. 10'), findsNothing);
-    });
+        expect(find.text('Raged Barbarian · Lv. 20'), findsOneWidget);
+        expect(find.text('Double Cannon · Lv. 10'), findsNothing);
+      },
+    );
   });
 
   group('Add Upgrade Form & Level Entry Improvements', () {
-    testWidgets('preserves complete multi-digit destination level values (67, 68, 100)',
-        (tester) async {
-      await tester.pumpWidget(
-        buildAppWithScope(
-          villages: [testVillage],
-          home: Scaffold(
-            body: AddUpgradeSheet(village: testVillage),
+    testWidgets(
+      'preserves complete multi-digit destination level values (67, 68, 100)',
+      (tester) async {
+        await tester.pumpWidget(
+          buildAppWithScope(
+            villages: [testVillage],
+            home: Scaffold(body: AddUpgradeSheet(village: testVillage)),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final levelFinder = find.widgetWithText(TextFormField, 'Upgrade to level');
-      expect(levelFinder, findsOneWidget);
+        final levelFinder = find.widgetWithText(
+          TextFormField,
+          'Upgrade to level',
+        );
+        expect(levelFinder, findsOneWidget);
 
-      // Enter 67
-      await tester.enterText(levelFinder, '67');
-      await tester.pump();
-      expect(find.text('67'), findsOneWidget);
+        // Enter 67
+        await tester.enterText(levelFinder, '67');
+        await tester.pump();
+        expect(find.text('67'), findsOneWidget);
 
-      // Change to 68
-      await tester.enterText(levelFinder, '68');
-      await tester.pump();
-      expect(find.text('68'), findsOneWidget);
+        // Change to 68
+        await tester.enterText(levelFinder, '68');
+        await tester.pump();
+        expect(find.text('68'), findsOneWidget);
 
-      // Change to 100
-      await tester.enterText(levelFinder, '100');
-      await tester.pump();
-      expect(find.text('100'), findsOneWidget);
-    });
+        // Change to 100
+        await tester.enterText(levelFinder, '100');
+        await tester.pump();
+        expect(find.text('100'), findsOneWidget);
+      },
+    );
 
     testWidgets('allows leaving destination level empty', (tester) async {
       await tester.pumpWidget(
         buildAppWithScope(
           villages: [testVillage],
-          home: Scaffold(
-            body: AddUpgradeSheet(village: testVillage),
-          ),
+          home: Scaffold(body: AddUpgradeSheet(village: testVillage)),
         ),
       );
       await tester.pumpAndSettle();
 
-      final levelFinder = find.widgetWithText(TextFormField, 'Upgrade to level');
+      final levelFinder = find.widgetWithText(
+        TextFormField,
+        'Upgrade to level',
+      );
       expect(levelFinder, findsOneWidget);
 
       // Leave empty
@@ -251,19 +265,21 @@ void main() {
       expect(form.key, isNotNull);
     });
 
-    testWidgets('validates positive integers for destination level',
-        (tester) async {
+    testWidgets('validates positive integers for destination level', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildAppWithScope(
           villages: [testVillage],
-          home: Scaffold(
-            body: AddUpgradeSheet(village: testVillage),
-          ),
+          home: Scaffold(body: AddUpgradeSheet(village: testVillage)),
         ),
       );
       await tester.pumpAndSettle();
 
-      final levelFinder = find.widgetWithText(TextFormField, 'Upgrade to level');
+      final levelFinder = find.widgetWithText(
+        TextFormField,
+        'Upgrade to level',
+      );
       await tester.enterText(levelFinder, '0');
       await tester.pump();
 
@@ -275,26 +291,26 @@ void main() {
       expect(find.text('Must be a positive integer'), findsOneWidget);
     });
 
-    testWidgets('renders cleanly without RenderFlex overflow even with keyboard insets',
-        (tester) async {
-      // Simulate small Android screen (e.g. 360 x 640)
-      tester.view.physicalSize = const Size(360, 640);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
+    testWidgets(
+      'renders cleanly without RenderFlex overflow even with keyboard insets',
+      (tester) async {
+        // Simulate small Android screen (e.g. 360 x 640)
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
 
-      await tester.pumpWidget(
-        buildAppWithScope(
-          villages: [testVillage],
-          home: Scaffold(
-            body: AddUpgradeSheet(village: testVillage),
+        await tester.pumpWidget(
+          buildAppWithScope(
+            villages: [testVillage],
+            home: Scaffold(body: AddUpgradeSheet(village: testVillage)),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // No overflow should occur
-      expect(tester.takeException(), isNull);
-    });
+        // No overflow should occur
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 
   group('Upgrade Model displayNameWithLevel formatting', () {

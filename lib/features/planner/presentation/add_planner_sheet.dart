@@ -69,26 +69,31 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     if (durSec != null && durSec > 0) {
       final dur = Duration(seconds: durSec);
       _daysController = TextEditingController(
-          text: dur.inDays > 0 ? '${dur.inDays}' : '');
+        text: dur.inDays > 0 ? '${dur.inDays}' : '',
+      );
       _hoursController = TextEditingController(
-          text: dur.inHours.remainder(24) > 0
-              ? '${dur.inHours.remainder(24)}'
-              : '');
+        text: dur.inHours.remainder(24) > 0
+            ? '${dur.inHours.remainder(24)}'
+            : '',
+      );
       _minutesController = TextEditingController(
-          text: dur.inMinutes.remainder(60) > 0
-              ? '${dur.inMinutes.remainder(60)}'
-              : '');
+        text: dur.inMinutes.remainder(60) > 0
+            ? '${dur.inMinutes.remainder(60)}'
+            : '',
+      );
     } else {
       _daysController = TextEditingController();
       _hoursController = TextEditingController();
       _minutesController = TextEditingController();
     }
 
-    _category = it?.category.primaryCategory ??
+    _category =
+        it?.category.primaryCategory ??
         widget.initialCategory?.primaryCategory ??
         UpgradeCategory.homeBuilder;
 
-    _realm = (_category == UpgradeCategory.builderBaseBuilder ||
+    _realm =
+        (_category == UpgradeCategory.builderBaseBuilder ||
             _category == UpgradeCategory.builderBaseStarLab)
         ? VillageRealm.builderBase
         : VillageRealm.homeVillage;
@@ -148,7 +153,8 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     if (_category == cat) return;
     setState(() {
       _category = cat;
-      _realm = (cat == UpgradeCategory.builderBaseBuilder ||
+      _realm =
+          (cat == UpgradeCategory.builderBaseBuilder ||
               cat == UpgradeCategory.builderBaseStarLab)
           ? VillageRealm.builderBase
           : VillageRealm.homeVillage;
@@ -166,9 +172,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     final targetCat = item.category.primaryCategory;
     final targetRealm =
         (targetCat == UpgradeCategory.builderBaseBuilder ||
-                targetCat == UpgradeCategory.builderBaseStarLab)
-            ? VillageRealm.builderBase
-            : VillageRealm.homeVillage;
+            targetCat == UpgradeCategory.builderBaseStarLab)
+        ? VillageRealm.builderBase
+        : VillageRealm.homeVillage;
     setState(() {
       _category = targetCat;
       _realm = targetRealm;
@@ -182,8 +188,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
     try {
       final name = _nameController.text.trim();
       final levelText = _levelController.text.trim();
-      final targetLevel =
-          levelText.isNotEmpty ? int.tryParse(levelText) : null;
+      final targetLevel = levelText.isNotEmpty ? int.tryParse(levelText) : null;
       final notes = _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim();
@@ -200,7 +205,12 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
       final amtText = _resourceAmountController.text.trim();
       final resourceAmount = amtText.isNotEmpty ? int.tryParse(amtText) : null;
       final resources = (resourceAmount != null && resourceAmount > 0)
-          ? [PlannerResource(type: _selectedResourceType, amount: resourceAmount)]
+          ? [
+              PlannerResource(
+                type: _selectedResourceType,
+                amount: resourceAmount,
+              ),
+            ]
           : <PlannerResource>[];
 
       if (widget.isEditing) {
@@ -247,8 +257,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final customSuggestionsAsync =
-        ref.watch(customUpgradeSuggestionsStreamProvider(_category));
+    final customSuggestionsAsync = ref.watch(
+      customUpgradeSuggestionsStreamProvider(_category),
+    );
     final customNames = (customSuggestionsAsync.valueOrNull ?? [])
         .map((e) => e.name)
         .toList();
@@ -286,7 +297,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                               ? 'Edit planned upgrade'
                               : 'Plan upgrade — ${widget.village.name}',
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
@@ -346,29 +357,33 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                     onSelected: _onCatalogItemSelected,
                     fieldViewBuilder:
                         (context, controller, focusNode, onFieldSubmitted) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: InputDecoration(
-                          labelText: 'Upgrade name *',
-                          hintText: 'e.g. Archer Tower, Town Hall, Barbarian',
-                          prefixIcon:
-                              const Icon(Icons.shield_outlined, size: 20),
-                          suffixIcon: controller.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, size: 18),
-                                  onPressed: () {
-                                    controller.clear();
-                                    setState(() {});
-                                  },
-                                )
-                              : null,
-                        ),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                        textCapitalization: TextCapitalization.words,
-                      );
-                    },
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: 'Upgrade name *',
+                              hintText:
+                                  'e.g. Archer Tower, Town Hall, Barbarian',
+                              prefixIcon: const Icon(
+                                Icons.shield_outlined,
+                                size: 20,
+                              ),
+                              suffixIcon: controller.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear, size: 18),
+                                      onPressed: () {
+                                        controller.clear();
+                                        setState(() {});
+                                      },
+                                    )
+                                  : null,
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
+                            textCapitalization: TextCapitalization.words,
+                          );
+                        },
                     optionsViewBuilder: (context, onSelected, options) {
                       return Align(
                         alignment: Alignment.topLeft,
@@ -391,7 +406,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                                   dense: true,
                                   title: Text(
                                     opt.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.textPrimary,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
@@ -401,7 +416,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                                     opt.isCustom
                                         ? 'Custom · ${_category.displayName}'
                                         : '${opt.type}${opt.maxLevel != null ? ' · Max Lv. ${opt.maxLevel}' : ''}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: AppColors.textSecondary,
                                       fontSize: 11,
                                     ),
@@ -452,8 +467,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                           initialValue: _priority,
                           decoration: const InputDecoration(
                             labelText: 'Priority',
-                            prefixIcon:
-                                Icon(Icons.flag_outlined, size: 20),
+                            prefixIcon: Icon(Icons.flag_outlined, size: 20),
                           ),
                           items: const [
                             DropdownMenuItem(
@@ -464,10 +478,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                               value: 'Medium',
                               child: Text('Medium'),
                             ),
-                            DropdownMenuItem(
-                              value: 'Low',
-                              child: Text('Low'),
-                            ),
+                            DropdownMenuItem(value: 'Low', child: Text('Low')),
                           ],
                           onChanged: (val) {
                             if (val != null) setState(() => _priority = val);
@@ -479,7 +490,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                   const SizedBox(height: 12),
 
                   // Estimated Duration (Days, Hours, Minutes)
-                  const Text(
+                  Text(
                     'Estimated Duration (optional)',
                     style: TextStyle(
                       fontSize: 13,
@@ -497,7 +508,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                             labelText: 'Days',
                             hintText: '0',
                             contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                           ),
                           keyboardType: TextInputType.number,
                         ),
@@ -510,7 +523,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                             labelText: 'Hours',
                             hintText: '0',
                             contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                           ),
                           keyboardType: TextInputType.number,
                         ),
@@ -523,7 +538,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                             labelText: 'Minutes',
                             hintText: '0',
                             contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                           ),
                           keyboardType: TextInputType.number,
                         ),
@@ -533,7 +550,7 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                   const SizedBox(height: 14),
 
                   // Required Resources (optional)
-                  const Text(
+                  Text(
                     'Required Resources (optional)',
                     style: TextStyle(
                       fontSize: 13,
@@ -548,14 +565,17 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                         flex: 5,
                         child: DropdownButtonFormField<String>(
                           key: ValueKey('res_$_selectedResourceType'),
-                          initialValue: resourceTypes.contains(_selectedResourceType)
+                          initialValue:
+                              resourceTypes.contains(_selectedResourceType)
                               ? _selectedResourceType
                               : resourceTypes.first,
                           isExpanded: true,
                           decoration: const InputDecoration(
                             labelText: 'Resource',
                             contentPadding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
+                              horizontal: 10,
+                              vertical: 10,
+                            ),
                           ),
                           items: resourceTypes.map((type) {
                             return DropdownMenuItem(
@@ -583,7 +603,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                             labelText: 'Amount',
                             hintText: 'e.g. 5000000',
                             contentPadding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 10),
+                              horizontal: 10,
+                              vertical: 10,
+                            ),
                           ),
                           keyboardType: TextInputType.number,
                         ),
@@ -618,9 +640,9 @@ class _AddPlannerSheetState extends ConsumerState<AddPlannerSheet> {
                                 color: Colors.black,
                               ),
                             )
-                          : Text(widget.isEditing
-                              ? 'Save plan'
-                              : 'Add to planner'),
+                          : Text(
+                              widget.isEditing ? 'Save plan' : 'Add to planner',
+                            ),
                     ),
                   ),
                 ],
@@ -721,8 +743,7 @@ class _CategoryPill extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected ? Colors.black : AppColors.textPrimary,
                   ),
                 ),

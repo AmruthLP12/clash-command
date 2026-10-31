@@ -19,7 +19,8 @@ class AppSupportLinks {
 
   /// Direct PayPal donation / tip jar link (e.g. 'https://paypal.me/yourusername').
   /// Leave empty if not configured; the UI will indicate that support is not yet configured.
-  static const String paypalDonationUrl = 'https://www.paypal.com/paypalme/amruthlp';
+  static const String paypalDonationUrl =
+      'https://www.paypal.com/paypalme/amruthlp';
 
   /// Optional bundled image asset path for a donation or payment QR code
   /// (e.g. 'assets/branding/support_qr.png').
@@ -29,4 +30,3 @@ class AppSupportLinks {
   /// Optional textual payload (e.g. UPI ID or payment destination) for display.
   static const String qrPayload = '9739337301@jupiteraxis';
 }
-

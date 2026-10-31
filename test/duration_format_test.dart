@@ -25,8 +25,7 @@ void main() {
 
     test('formats days, hours, and minutes', () {
       expect(
-        formatDuration(
-            const Duration(days: 1, hours: 4, minutes: 15)),
+        formatDuration(const Duration(days: 1, hours: 4, minutes: 15)),
         '1d 4h 15m',
       );
     });
@@ -63,28 +62,37 @@ void main() {
       );
     });
 
-    test('returns "Completed" for negative duration (never shows negative time)', () {
-      expect(formatRemaining(const Duration(seconds: -10)), 'Completed');
-      expect(
-        formatRemaining(const Duration(seconds: -60), completedLabel: 'Ready to collect'),
-        'Ready to collect',
-      );
-    });
+    test(
+      'returns "Completed" for negative duration (never shows negative time)',
+      () {
+        expect(formatRemaining(const Duration(seconds: -10)), 'Completed');
+        expect(
+          formatRemaining(
+            const Duration(seconds: -60),
+            completedLabel: 'Ready to collect',
+          ),
+          'Ready to collect',
+        );
+      },
+    );
 
-    test('formats MM:SS countdown when strictly less than 5 minutes (< 300s)', () {
-      // 4m 59s = 299s
-      expect(formatRemaining(const Duration(seconds: 299)), '04:59');
-      // 2m 37s = 157s
-      expect(formatRemaining(const Duration(seconds: 157)), '02:37');
-      // 1m = 60s
-      expect(formatRemaining(const Duration(seconds: 60)), '01:00');
-      // 45s
-      expect(formatRemaining(const Duration(seconds: 45)), '00:45');
-      // 9s
-      expect(formatRemaining(const Duration(seconds: 9)), '00:09');
-      // 1s
-      expect(formatRemaining(const Duration(seconds: 1)), '00:01');
-    });
+    test(
+      'formats MM:SS countdown when strictly less than 5 minutes (< 300s)',
+      () {
+        // 4m 59s = 299s
+        expect(formatRemaining(const Duration(seconds: 299)), '04:59');
+        // 2m 37s = 157s
+        expect(formatRemaining(const Duration(seconds: 157)), '02:37');
+        // 1m = 60s
+        expect(formatRemaining(const Duration(seconds: 60)), '01:00');
+        // 45s
+        expect(formatRemaining(const Duration(seconds: 45)), '00:45');
+        // 9s
+        expect(formatRemaining(const Duration(seconds: 9)), '00:09');
+        // 1s
+        expect(formatRemaining(const Duration(seconds: 1)), '00:01');
+      },
+    );
 
     test('formats standard duration when 5 minutes or more (>= 300s)', () {
       // Exactly 5 minutes (300s)

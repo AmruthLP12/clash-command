@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'package:clash_command/domain/models/upgrade.dart';
 import 'package:clash_command/domain/models/upgrade_status.dart';
+
 import '../app_database.dart';
 import '../tables/upgrades_table.dart';
 
@@ -20,25 +21,22 @@ class UpgradesDao extends DatabaseAccessor<AppDatabase>
                 u.villageId.equals(villageId) &
                 u.status.equals(UpgradeStatus.active.name),
           )
-          ..orderBy([
-            (u) => OrderingTerm.asc(u.expectedCompletionAtUtc),
-          ]))
+          ..orderBy([(u) => OrderingTerm.asc(u.expectedCompletionAtUtc)]))
         .watch()
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   /// Gets active upgrades for a given village, ordered by soonest first.
   Future<List<Upgrade>> getActiveForVillage(String villageId) async {
-    final rows = await (select(upgrades)
-          ..where(
-            (u) =>
-                u.villageId.equals(villageId) &
-                u.status.equals(UpgradeStatus.active.name),
-          )
-          ..orderBy([
-            (u) => OrderingTerm.asc(u.expectedCompletionAtUtc),
-          ]))
-        .get();
+    final rows =
+        await (select(upgrades)
+              ..where(
+                (u) =>
+                    u.villageId.equals(villageId) &
+                    u.status.equals(UpgradeStatus.active.name),
+              )
+              ..orderBy([(u) => OrderingTerm.asc(u.expectedCompletionAtUtc)]))
+            .get();
     return rows.map((r) => r.toDomain()).toList();
   }
 
@@ -46,9 +44,7 @@ class UpgradesDao extends DatabaseAccessor<AppDatabase>
   Stream<List<Upgrade>> watchAllActive() {
     return (select(upgrades)
           ..where((u) => u.status.equals(UpgradeStatus.active.name))
-          ..orderBy([
-            (u) => OrderingTerm.asc(u.expectedCompletionAtUtc),
-          ]))
+          ..orderBy([(u) => OrderingTerm.asc(u.expectedCompletionAtUtc)]))
         .watch()
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
@@ -57,17 +53,16 @@ class UpgradesDao extends DatabaseAccessor<AppDatabase>
   Stream<List<Upgrade>> watchAllForVillage(String villageId) {
     return (select(upgrades)
           ..where((u) => u.villageId.equals(villageId))
-          ..orderBy([
-            (u) => OrderingTerm.desc(u.expectedCompletionAtUtc),
-          ]))
+          ..orderBy([(u) => OrderingTerm.desc(u.expectedCompletionAtUtc)]))
         .watch()
         .map((rows) => rows.map((r) => r.toDomain()).toList());
   }
 
   /// Fetches a single upgrade by ID.
   Future<Upgrade?> findById(String id) async {
-    final row = await (select(upgrades)..where((u) => u.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      upgrades,
+    )..where((u) => u.id.equals(id))).getSingleOrNull();
     return row?.toDomain();
   }
 
@@ -83,9 +78,9 @@ class UpgradesDao extends DatabaseAccessor<AppDatabase>
 
   /// Returns all active upgrades — used for notification reconciliation.
   Future<List<Upgrade>> getAllActive() async {
-    final rows = await (select(upgrades)
-          ..where((u) => u.status.equals(UpgradeStatus.active.name)))
-        .get();
+    final rows = await (select(
+      upgrades,
+    )..where((u) => u.status.equals(UpgradeStatus.active.name))).get();
     return rows.map((r) => r.toDomain()).toList();
   }
 }

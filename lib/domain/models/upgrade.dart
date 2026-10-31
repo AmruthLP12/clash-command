@@ -92,16 +92,19 @@ class Upgrade {
       name: name ?? this.name,
       category: category ?? this.category,
       slotKey: clearSlotKey ? null : (slotKey ?? this.slotKey),
-      catalogItemId:
-          clearCatalogItemId ? null : (catalogItemId ?? this.catalogItemId),
-      durationSeconds:
-          clearDurationSeconds ? null : (durationSeconds ?? this.durationSeconds),
+      catalogItemId: clearCatalogItemId
+          ? null
+          : (catalogItemId ?? this.catalogItemId),
+      durationSeconds: clearDurationSeconds
+          ? null
+          : (durationSeconds ?? this.durationSeconds),
       startedAtUtc: startedAtUtc ?? this.startedAtUtc,
       expectedCompletionAtUtc:
           expectedCompletionAtUtc ?? this.expectedCompletionAtUtc,
       status: status ?? this.status,
-      completedAtUtc:
-          clearCompletedAt ? null : (completedAtUtc ?? this.completedAtUtc),
+      completedAtUtc: clearCompletedAt
+          ? null
+          : (completedAtUtc ?? this.completedAtUtc),
       notificationRevision: notificationRevision ?? this.notificationRevision,
       notes: clearNotes ? null : (notes ?? this.notes),
       fromLevel: clearFromLevel ? null : (fromLevel ?? this.fromLevel),

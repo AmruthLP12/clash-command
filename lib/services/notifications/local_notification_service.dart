@@ -37,19 +37,17 @@ class LocalNotificationService implements NotificationService {
   @override
   Future<bool> requestPermission() async {
     try {
-      final android =
-          _plugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android != null) {
         final granted = await android.requestNotificationsPermission();
         return granted ?? false;
       }
       return false;
     } catch (e) {
-      developer.log(
-        'requestPermission failed: $e',
-        name: 'notifications',
-      );
+      developer.log('requestPermission failed: $e', name: 'notifications');
       return false;
     }
   }
@@ -57,9 +55,10 @@ class LocalNotificationService implements NotificationService {
   @override
   Future<bool> hasPermission() async {
     try {
-      final android =
-          _plugin.resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android != null) {
         // areNotificationsEnabled is available from FLN 9+
         return await android.areNotificationsEnabled() ?? false;
@@ -137,7 +136,10 @@ class LocalNotificationService implements NotificationService {
   }
 
   @override
-  Future<void> cancelForUpgrade(String upgradeId, {int maxPreAlerts = 10}) async {
+  Future<void> cancelForUpgrade(
+    String upgradeId, {
+    int maxPreAlerts = 10,
+  }) async {
     const planService = NotificationPlanService();
     final ids = planService.idsForUpgrade(
       upgradeId,
@@ -158,8 +160,10 @@ class LocalNotificationService implements NotificationService {
   @override
   Future<bool> canScheduleExactAlarms() async {
     try {
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android != null) {
         return await android.canScheduleExactNotifications() ?? false;
       }
@@ -172,8 +176,10 @@ class LocalNotificationService implements NotificationService {
   @override
   Future<bool> requestExactAlarmsPermission() async {
     try {
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android != null) {
         final result = await android.requestExactAlarmsPermission();
         return result ?? false;

@@ -41,7 +41,8 @@ class NotificationReconciler {
       // Load preferences if available
       bool completionEnabled = true;
       bool preAlertsEnabled = true;
-      List<int> reminderOffsets = NotificationPlanService.defaultReminderOffsets;
+      List<int> reminderOffsets =
+          NotificationPlanService.defaultReminderOffsets;
 
       if (preferencesDao != null) {
         try {
@@ -49,7 +50,8 @@ class NotificationReconciler {
           completionEnabled = prefs.completionEnabled;
           preAlertsEnabled = prefs.preAlertsEnabled;
           try {
-            final decoded = jsonDecode(prefs.reminderOffsetMinutesJson) as List<dynamic>;
+            final decoded =
+                jsonDecode(prefs.reminderOffsetMinutesJson) as List<dynamic>;
             reminderOffsets = decoded.map((e) => e as int).toList();
           } catch (_) {}
         } catch (_) {}
@@ -83,7 +85,10 @@ class NotificationReconciler {
       }
 
       await notificationService.reconcile(allPlans, allIds);
-      developer.log('Notification reconciliation complete', name: 'notifications');
+      developer.log(
+        'Notification reconciliation complete',
+        name: 'notifications',
+      );
     } catch (e) {
       // Reconciliation failures must not crash the app or block timers
       developer.log(

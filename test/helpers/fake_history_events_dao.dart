@@ -27,4 +27,3 @@ class FakeHistoryEventsDao implements HistoryEventsDao {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
-

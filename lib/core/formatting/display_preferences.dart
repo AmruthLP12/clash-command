@@ -95,6 +95,5 @@ class DisplayPreferencesNotifier extends StateNotifier<DisplayPreferences> {
 
 final displayPreferencesProvider =
     StateNotifierProvider<DisplayPreferencesNotifier, DisplayPreferences>(
-  (ref) => DisplayPreferencesNotifier(),
-);
-
+      (ref) => DisplayPreferencesNotifier(),
+    );

@@ -13,10 +13,8 @@ class TownHallConstants {
   static const int maxSupportedLevel = 18;
 
   /// List of all supported Town Hall levels in ascending order.
-  static List<int> get availableLevels => List.generate(
-        maxSupportedLevel - minLevel + 1,
-        (i) => minLevel + i,
-      );
+  static List<int> get availableLevels =>
+      List.generate(maxSupportedLevel - minLevel + 1, (i) => minLevel + i);
 
   /// Validates whether a Town Hall level is within the supported range.
   static bool isValidLevel(int? level) {
@@ -32,14 +30,11 @@ class BuilderHallConstants {
   static const int minLevel = 1;
   static const int maxSupportedLevel = 10;
 
-  static List<int> get availableLevels => List.generate(
-        maxSupportedLevel - minLevel + 1,
-        (i) => minLevel + i,
-      );
+  static List<int> get availableLevels =>
+      List.generate(maxSupportedLevel - minLevel + 1, (i) => minLevel + i);
 
   static bool isValidLevel(int? level) {
     if (level == null) return false;
     return level >= minLevel && level <= maxSupportedLevel;
   }
 }
-

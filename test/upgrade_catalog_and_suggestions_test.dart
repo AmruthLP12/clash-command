@@ -31,25 +31,28 @@ void main() {
   });
 
   group('2. Four Required Upgrade Categories and Suggestion Isolation', () {
-    test('provides all 4 distinct primary categories with proper terminology', () {
-      expect(UpgradeCategory.primaryCategories.length, 4);
-      expect(
-        UpgradeCategory.homeBuilder.displayName,
-        'Home Village — Builder',
-      );
-      expect(
-        UpgradeCategory.homeLab.displayName,
-        'Home Village — Laboratory',
-      );
-      expect(
-        UpgradeCategory.builderBaseBuilder.displayName,
-        'Builder Base — Builder',
-      );
-      expect(
-        UpgradeCategory.builderBaseStarLab.displayName,
-        'Builder Base — Star Laboratory',
-      );
-    });
+    test(
+      'provides all 4 distinct primary categories with proper terminology',
+      () {
+        expect(UpgradeCategory.primaryCategories.length, 4);
+        expect(
+          UpgradeCategory.homeBuilder.displayName,
+          'Home Village — Builder',
+        );
+        expect(
+          UpgradeCategory.homeLab.displayName,
+          'Home Village — Laboratory',
+        );
+        expect(
+          UpgradeCategory.builderBaseBuilder.displayName,
+          'Builder Base — Builder',
+        );
+        expect(
+          UpgradeCategory.builderBaseStarLab.displayName,
+          'Builder Base — Star Laboratory',
+        );
+      },
+    );
 
     test('suggestions are strictly partitioned by facility and category', () {
       // Home Village Builder suggestions must contain buildings/defenses, but NEVER lab troops
@@ -57,14 +60,8 @@ void main() {
         query: '',
         category: UpgradeCategory.homeBuilder,
       );
-      expect(
-        homeBuilderItems.any((i) => i.name == 'Archer Tower'),
-        isTrue,
-      );
-      expect(
-        homeBuilderItems.any((i) => i.name == 'Town Hall'),
-        isTrue,
-      );
+      expect(homeBuilderItems.any((i) => i.name == 'Archer Tower'), isTrue);
+      expect(homeBuilderItems.any((i) => i.name == 'Town Hall'), isTrue);
       expect(
         homeBuilderItems.any((i) => i.name == 'P.E.K.K.A'),
         isFalse, // Troop belongs to Home Lab
@@ -154,7 +151,10 @@ void main() {
       );
       expect(results.any((i) => i.name == 'Custom Wall Trap'), isTrue);
       expect(results.any((i) => i.name == 'Custom Defense'), isTrue);
-      expect(results.firstWhere((i) => i.name == 'Custom Defense').isCustom, isTrue);
+      expect(
+        results.firstWhere((i) => i.name == 'Custom Defense').isCustom,
+        isTrue,
+      );
     });
 
     test('deduplicates custom suggestions against built-in catalogue case-insensitively', () {
@@ -164,7 +164,9 @@ void main() {
         customNames: ['Archer Tower', 'archer tower', '   ARCHER TOWER   '],
       );
       // Should only contain the single built-in Archer Tower
-      final matches = results.where((i) => i.name.toLowerCase() == 'archer tower');
+      final matches = results.where(
+        (i) => i.name.toLowerCase() == 'archer tower',
+      );
       expect(matches.length, 1);
       expect(matches.first.isCustom, isFalse);
     });
@@ -188,22 +190,25 @@ void main() {
       expect(upgrade.displayNameWithLevel, 'Army Camp');
     });
 
-    test('formats compact title when both fromLevel and toLevel are supplied', () {
-      final upgrade = Upgrade(
-        id: 'u2',
-        villageId: 'v1',
-        name: 'Archer Tower',
-        category: UpgradeCategory.homeBuilder,
-        startedAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
-        expectedCompletionAtUtc: DateTime.utc(2026, 10, 24, 10, 0),
-        status: UpgradeStatus.active,
-        fromLevel: 18,
-        toLevel: 19,
-        createdAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
-        updatedAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
-      );
-      expect(upgrade.displayNameWithLevel, 'Archer Tower · Lv. 18 → 19');
-    });
+    test(
+      'formats compact title when both fromLevel and toLevel are supplied',
+      () {
+        final upgrade = Upgrade(
+          id: 'u2',
+          villageId: 'v1',
+          name: 'Archer Tower',
+          category: UpgradeCategory.homeBuilder,
+          startedAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
+          expectedCompletionAtUtc: DateTime.utc(2026, 10, 24, 10, 0),
+          status: UpgradeStatus.active,
+          fromLevel: 18,
+          toLevel: 19,
+          createdAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
+          updatedAtUtc: DateTime.utc(2026, 10, 23, 10, 0),
+        );
+        expect(upgrade.displayNameWithLevel, 'Archer Tower · Lv. 18 → 19');
+      },
+    );
 
     test('formats title appropriately when only toLevel is supplied', () {
       final upgrade = Upgrade(
@@ -238,7 +243,10 @@ void main() {
     });
 
     test('suggests next valid To Level from From Level', () {
-      final item = UpgradeCatalog.find('Archer Tower', UpgradeCategory.homeBuilder);
+      final item = UpgradeCatalog.find(
+        'Archer Tower',
+        UpgradeCategory.homeBuilder,
+      );
       expect(item, isNotNull);
       expect(item!.suggestToLevel(18), 19);
       expect(item.suggestToLevel(null), 2);

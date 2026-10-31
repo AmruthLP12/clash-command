@@ -47,8 +47,9 @@ class Village {
     return Village(
       id: id ?? this.id,
       name: name ?? this.name,
-      townHallLevel:
-          clearTownHallLevel ? null : (townHallLevel ?? this.townHallLevel),
+      townHallLevel: clearTownHallLevel
+          ? null
+          : (townHallLevel ?? this.townHallLevel),
       builderHallLevel: clearBuilderHallLevel
           ? null
           : (builderHallLevel ?? this.builderHallLevel),

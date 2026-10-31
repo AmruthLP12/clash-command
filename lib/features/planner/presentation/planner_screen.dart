@@ -12,9 +12,10 @@ import 'package:clash_command/features/upgrades/presentation/add_upgrade_sheet.d
 import 'package:clash_command/features/villages/application/villages_notifier.dart';
 
 class PlannerScreen extends ConsumerStatefulWidget {
-  const PlannerScreen({super.key, this.initialVillageId});
+  const PlannerScreen({super.key, this.initialVillageId, this.onHome});
 
   final String? initialVillageId;
+  final VoidCallback? onHome;
 
   @override
   ConsumerState<PlannerScreen> createState() => _PlannerScreenState();
@@ -78,10 +79,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => AddPlannerSheet(
-        village: village,
-        initialCategory: _selectedCategory,
-      ),
+      builder: (_) =>
+          AddPlannerSheet(village: village, initialCategory: _selectedCategory),
     );
   }
 
@@ -93,10 +92,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => AddPlannerSheet(
-        village: village,
-        item: item,
-      ),
+      builder: (_) => AddPlannerSheet(village: village, item: item),
     );
   }
 
@@ -140,7 +136,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Filter Planned Upgrades',
                           style: TextStyle(
                             fontSize: 18,
@@ -161,7 +157,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     const SizedBox(height: 12),
 
                     // Priority
-                    const Text(
+                    Text(
                       'Priority',
                       style: TextStyle(
                         fontSize: 13,
@@ -186,7 +182,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                             label: Text(p),
                             selected: _priorityFilter == p,
                             onSelected: (selected) {
-                              setState(() => _priorityFilter = selected ? p : null);
+                              setState(
+                                () => _priorityFilter = selected ? p : null,
+                              );
                               setModalState(() {});
                             },
                           ),
@@ -195,7 +193,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     const SizedBox(height: 12),
 
                     // Duration range
-                    const Text(
+                    Text(
                       'Duration',
                       style: TextStyle(
                         fontSize: 13,
@@ -252,7 +250,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     const SizedBox(height: 12),
 
                     // Resource type
-                    const Text(
+                    Text(
                       'Required Resource',
                       style: TextStyle(
                         fontSize: 13,
@@ -284,7 +282,8 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                             selected: _resourceTypeFilter == res,
                             onSelected: (s) {
                               setState(
-                                  () => _resourceTypeFilter = s ? res : null);
+                                () => _resourceTypeFilter = s ? res : null,
+                              );
                               setModalState(() {});
                             },
                           ),
@@ -330,7 +329,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (villages) {
         if (villages.isEmpty) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
               child: Text(
                 'No villages found. Create a village first.',
@@ -350,49 +349,32 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
           orElse: () => villages.first,
         );
 
-        final itemsAsync =
-            ref.watch(plannerItemsForVillageProvider(selectedVillage.id));
+        final itemsAsync = ref.watch(
+          plannerItemsForVillageProvider(selectedVillage.id),
+        );
 
         return Scaffold(
           appBar: AppBar(
-            title: villages.length <= 1
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Upgrade Planner'),
-                      Text(
-                        selectedVillage.name,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
+            leading: widget.onHome != null
+                ? IconButton(
+                    icon: const Icon(Icons.home_outlined),
+                    tooltip: 'Dashboard',
+                    onPressed: widget.onHome,
                   )
-                : DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedVillageId,
-                      dropdownColor: AppColors.surfaceVariant,
-                      icon: const Icon(Icons.arrow_drop_down,
-                          color: AppColors.accent),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                      onChanged: (id) {
-                        if (id != null) {
-                          setState(() => _selectedVillageId = id);
-                        }
-                      },
-                      items: villages.map((v) {
-                        return DropdownMenuItem(
-                          value: v.id,
-                          child: Text('Planner · ${v.name}'),
-                        );
-                      }).toList(),
-                    ),
+                : null,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Upgrade Planner'),
+                Text(
+                  selectedVillage.name,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
                   ),
+                ),
+              ],
+            ),
             actions: [
               IconButton(
                 icon: Badge(
@@ -424,8 +406,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                             },
                           )
                         : null,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                   onChanged: (q) => setState(() => _searchQuery = q),
                 ),
@@ -434,7 +418,10 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
               // Filter row: Status chips + Category chips + Clear All
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
                     // Status chips
@@ -481,20 +468,22 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     ),
                     const SizedBox(width: 6),
                     ...UpgradeCategory.values
-                        .where((c) =>
-                            c == c.primaryCategory &&
-                            c != UpgradeCategory.other)
+                        .where(
+                          (c) =>
+                              c == c.primaryCategory &&
+                              c != UpgradeCategory.other,
+                        )
                         .map((cat) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: FilterChip(
-                          selected: _selectedCategory == cat,
-                          label: Text(cat.displayName),
-                          onSelected: (_) =>
-                              setState(() => _selectedCategory = cat),
-                        ),
-                      );
-                    }),
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: FilterChip(
+                              selected: _selectedCategory == cat,
+                              label: Text(cat.displayName),
+                              onSelected: (_) =>
+                                  setState(() => _selectedCategory = cat),
+                            ),
+                          );
+                        }),
 
                     if (_activeFiltersCount > 0) ...[
                       const SizedBox(width: 6),
@@ -519,18 +508,20 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                     final filtered = items.where((it) {
                       // Search query
                       if (_searchQuery.trim().isNotEmpty) {
-                        if (!it.name
-                            .toLowerCase()
-                            .contains(_searchQuery.trim().toLowerCase())) {
+                        if (!it.name.toLowerCase().contains(
+                          _searchQuery.trim().toLowerCase(),
+                        )) {
                           return false;
                         }
                       }
 
                       // Status
-                      if (_statusFilter == 'planned' && it.status != 'planned') {
+                      if (_statusFilter == 'planned' &&
+                          it.status != 'planned') {
                         return false;
                       }
-                      if (_statusFilter == 'started' && it.status != 'started') {
+                      if (_statusFilter == 'started' &&
+                          it.status != 'started') {
                         return false;
                       }
                       if (_statusFilter == 'completed' &&
@@ -577,8 +568,9 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
 
                       // Resource type
                       if (_resourceTypeFilter != null) {
-                        if (!it.resources
-                            .any((r) => r.type == _resourceTypeFilter)) {
+                        if (!it.resources.any(
+                          (r) => r.type == _resourceTypeFilter,
+                        )) {
                           return false;
                         }
                       }
@@ -598,7 +590,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.event_note_outlined,
                                 size: 48,
                                 color: AppColors.textMuted,
@@ -608,7 +600,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                                 _activeFiltersCount > 0
                                     ? 'No upgrades match current filters'
                                     : 'No planned upgrades found',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textSecondary,
@@ -620,7 +612,7 @@ class _PlannerScreenState extends ConsumerState<PlannerScreen> {
                                     ? 'Try resetting your search or filter options.'
                                     : 'Plan future building and troop research ahead of time.',
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textMuted,
                                 ),
@@ -730,11 +722,7 @@ class _PlannerItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Reorder drag indicator
-            const Icon(
-              Icons.drag_indicator,
-              color: AppColors.textMuted,
-              size: 20,
-            ),
+            Icon(Icons.drag_indicator, color: AppColors.textMuted, size: 20),
             const SizedBox(width: 10),
 
             // Item content
@@ -748,7 +736,9 @@ class _PlannerItemCard extends StatelessWidget {
                       if (item.isNext) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           margin: const EdgeInsets.only(right: 6),
                           decoration: BoxDecoration(
                             color: AppColors.active,
@@ -795,7 +785,7 @@ class _PlannerItemCard extends StatelessWidget {
                         child: Text(
                           item.category.displayName,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,
                           ),
@@ -806,7 +796,9 @@ class _PlannerItemCard extends StatelessWidget {
                       // Priority pill
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: priorityColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
@@ -825,13 +817,16 @@ class _PlannerItemCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color:
-                                AppColors.accentLight.withValues(alpha: 0.15),
+                            color: AppColors.accentLight.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Started',
                             style: TextStyle(
                               color: AppColors.accentLight,
@@ -856,7 +851,9 @@ class _PlannerItemCard extends StatelessWidget {
                         if (item.durationSeconds != null)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.surfaceVariant,
                               borderRadius: BorderRadius.circular(4),
@@ -864,12 +861,15 @@ class _PlannerItemCard extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.timer_outlined,
-                                    size: 12, color: AppColors.textSecondary),
+                                Icon(
+                                  Icons.timer_outlined,
+                                  size: 12,
+                                  color: AppColors.textSecondary,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   formatSeconds(item.durationSeconds!),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.textPrimary,
@@ -891,7 +891,7 @@ class _PlannerItemCard extends StatelessWidget {
                       item.notes!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textMuted,
                         fontStyle: FontStyle.italic,
@@ -909,8 +909,10 @@ class _PlannerItemCard extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.black,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   visualDensity: VisualDensity.compact,
                 ),
                 onPressed: onStart,
@@ -921,8 +923,11 @@ class _PlannerItemCard extends StatelessWidget {
 
             // Actions dropdown menu
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert,
-                  size: 20, color: AppColors.textSecondary),
+              icon: Icon(
+                Icons.more_vert,
+                size: 20,
+                color: AppColors.textSecondary,
+              ),
               color: AppColors.surfaceVariant,
               onSelected: (val) {
                 switch (val) {
@@ -948,18 +953,21 @@ class _PlannerItemCard extends StatelessWidget {
               },
               itemBuilder: (context) => [
                 if (item.status == 'planned') ...[
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'start',
                     child: Row(
                       children: [
-                        Icon(Icons.play_arrow,
-                            size: 18, color: AppColors.accent),
+                        Icon(
+                          Icons.play_arrow,
+                          size: 18,
+                          color: AppColors.accent,
+                        ),
                         SizedBox(width: 8),
                         Text('Start upgrade'),
                       ],
                     ),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'next',
                     child: Row(
                       children: [
@@ -970,31 +978,37 @@ class _PlannerItemCard extends StatelessWidget {
                     ),
                   ),
                 ],
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(Icons.edit_outlined,
-                          size: 18, color: AppColors.accent),
+                      Icon(
+                        Icons.edit_outlined,
+                        size: 18,
+                        color: AppColors.accent,
+                      ),
                       SizedBox(width: 8),
                       Text('Edit plan'),
                     ],
                   ),
                 ),
                 if (item.status != 'completed')
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'complete',
                     child: Row(
                       children: [
-                        Icon(Icons.check_circle_outline,
-                            size: 18, color: AppColors.active),
+                        Icon(
+                          Icons.check_circle_outline,
+                          size: 18,
+                          color: AppColors.active,
+                        ),
                         SizedBox(width: 8),
                         Text('Mark completed'),
                       ],
                     ),
                   )
                 else
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'uncomplete',
                     child: Row(
                       children: [
@@ -1005,15 +1019,20 @@ class _PlannerItemCard extends StatelessWidget {
                     ),
                   ),
                 const PopupMenuDivider(),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete_outline,
-                          size: 18, color: AppColors.error),
+                      Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: AppColors.error,
+                      ),
                       SizedBox(width: 8),
-                      Text('Delete plan',
-                          style: TextStyle(color: AppColors.error)),
+                      Text(
+                        'Delete plan',
+                        style: TextStyle(color: AppColors.error),
+                      ),
                     ],
                   ),
                 ),

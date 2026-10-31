@@ -14,11 +14,9 @@ class FakeVillagesDao implements VillagesDao {
   Future<List<Village>> getAll() async => _villages;
 
   @override
-  Future<Village?> findById(String id) async =>
-      _villages.cast<Village?>().firstWhere(
-            (v) => v?.id == id,
-            orElse: () => null,
-          );
+  Future<Village?> findById(String id) async => _villages
+      .cast<Village?>()
+      .firstWhere((v) => v?.id == id, orElse: () => null);
 
   @override
   Future<void> upsert(Village village) async {}

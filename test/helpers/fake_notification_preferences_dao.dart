@@ -14,12 +14,12 @@ class FakeNotificationPreferencesDao implements NotificationPreferencesDao {
   String offsetsJson;
 
   NotificationPreference get _current => NotificationPreference(
-        id: 1,
-        completionEnabled: completionEnabled,
-        preAlertsEnabled: preAlertsEnabled,
-        reminderOffsetMinutesJson: offsetsJson,
-        updatedAtUtc: DateTime.utc(2026, 1, 1),
-      );
+    id: 1,
+    completionEnabled: completionEnabled,
+    preAlertsEnabled: preAlertsEnabled,
+    reminderOffsetMinutesJson: offsetsJson,
+    updatedAtUtc: DateTime.utc(2026, 1, 1),
+  );
 
   @override
   Stream<NotificationPreference> watchPreferences() => Stream.value(_current);
@@ -43,4 +43,3 @@ class FakeNotificationPreferencesDao implements NotificationPreferencesDao {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
-

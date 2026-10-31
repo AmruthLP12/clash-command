@@ -20,36 +20,60 @@ void main() {
 
   group('TH17 Hero Max Levels & Catalogue Data', () {
     test('Hero max levels match TH17 release caps', () {
-      final bk = UpgradeCatalog.find('Barbarian King', UpgradeCategory.homeBuilder);
+      final bk = UpgradeCatalog.find(
+        'Barbarian King',
+        UpgradeCategory.homeBuilder,
+      );
       expect(bk, isNotNull);
       expect(bk!.maxLevel, 100);
 
-      final aq = UpgradeCatalog.find('Archer Queen', UpgradeCategory.homeBuilder);
+      final aq = UpgradeCatalog.find(
+        'Archer Queen',
+        UpgradeCategory.homeBuilder,
+      );
       expect(aq, isNotNull);
       expect(aq!.maxLevel, 100);
 
-      final gw = UpgradeCatalog.find('Grand Warden', UpgradeCategory.homeBuilder);
+      final gw = UpgradeCatalog.find(
+        'Grand Warden',
+        UpgradeCategory.homeBuilder,
+      );
       expect(gw, isNotNull);
       expect(gw!.maxLevel, 75);
 
-      final rc = UpgradeCatalog.find('Royal Champion', UpgradeCategory.homeBuilder);
+      final rc = UpgradeCatalog.find(
+        'Royal Champion',
+        UpgradeCategory.homeBuilder,
+      );
       expect(rc, isNotNull);
       expect(rc!.maxLevel, 50);
 
-      final mp = UpgradeCatalog.find('Minion Prince', UpgradeCategory.homeBuilder);
+      final mp = UpgradeCatalog.find(
+        'Minion Prince',
+        UpgradeCategory.homeBuilder,
+      );
       expect(mp, isNotNull);
       expect(mp!.maxLevel, 90);
 
-      final dd = UpgradeCatalog.find('Dragon Duke', UpgradeCategory.homeBuilder);
+      final dd = UpgradeCatalog.find(
+        'Dragon Duke',
+        UpgradeCategory.homeBuilder,
+      );
       expect(dd, isNotNull);
       expect(dd!.maxLevel, 20);
       expect(dd.minTownHall, 17);
 
-      final bm = UpgradeCatalog.find('Battle Machine', UpgradeCategory.builderBaseBuilder);
+      final bm = UpgradeCatalog.find(
+        'Battle Machine',
+        UpgradeCategory.builderBaseBuilder,
+      );
       expect(bm, isNotNull);
       expect(bm!.maxLevel, 35);
 
-      final bc = UpgradeCatalog.find('Battle Copter', UpgradeCategory.builderBaseBuilder);
+      final bc = UpgradeCatalog.find(
+        'Battle Copter',
+        UpgradeCategory.builderBaseBuilder,
+      );
       expect(bc, isNotNull);
       expect(bc!.maxLevel, 35);
     });
@@ -72,9 +96,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       db = AppDatabase.forTesting(NativeDatabase.memory());
       container = ProviderContainer(
-        overrides: [
-          appDatabaseProvider.overrideWithValue(db),
-        ],
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
       );
     });
 
@@ -83,14 +105,14 @@ void main() {
       await db.close();
     });
 
-    testWidgets('Duration fields start empty (not prefilled with 0)', (tester) async {
+    testWidgets('Duration fields start empty (not prefilled with 0)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
           child: MaterialApp(
-            home: Scaffold(
-              body: AddUpgradeSheet(village: testVillage),
-            ),
+            home: Scaffold(body: AddUpgradeSheet(village: testVillage)),
           ),
         ),
       );
@@ -113,38 +135,41 @@ void main() {
       expect(minWidget.controller!.text, isEmpty);
     });
 
-    testWidgets('initialDurationSeconds transfers duration from Planner to Upgrade Sheet', (tester) async {
-      // 2 days, 14 hours, 30 minutes = 2 * 86400 + 14 * 3600 + 30 * 60 = 172800 + 50400 + 1800 = 225000 seconds
-      const durSec = 225000;
+    testWidgets(
+      'initialDurationSeconds transfers duration from Planner to Upgrade Sheet',
+      (tester) async {
+        // 2 days, 14 hours, 30 minutes = 2 * 86400 + 14 * 3600 + 30 * 60 = 172800 + 50400 + 1800 = 225000 seconds
+        const durSec = 225000;
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            home: Scaffold(
-              body: AddUpgradeSheet(
-                village: testVillage,
-                initialDurationSeconds: durSec,
-                initialName: 'Giga Inferno',
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              home: Scaffold(
+                body: AddUpgradeSheet(
+                  village: testVillage,
+                  initialDurationSeconds: durSec,
+                  initialName: 'Giga Inferno',
+                ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final daysField = find.widgetWithText(TextFormField, 'Days');
-      final hoursField = find.widgetWithText(TextFormField, 'Hours');
-      final minField = find.widgetWithText(TextFormField, 'Min');
+        final daysField = find.widgetWithText(TextFormField, 'Days');
+        final hoursField = find.widgetWithText(TextFormField, 'Hours');
+        final minField = find.widgetWithText(TextFormField, 'Min');
 
-      final daysWidget = tester.widget<TextFormField>(daysField);
-      final hoursWidget = tester.widget<TextFormField>(hoursField);
-      final minWidget = tester.widget<TextFormField>(minField);
+        final daysWidget = tester.widget<TextFormField>(daysField);
+        final hoursWidget = tester.widget<TextFormField>(hoursField);
+        final minWidget = tester.widget<TextFormField>(minField);
 
-      expect(daysWidget.controller!.text, '2');
-      expect(hoursWidget.controller!.text, '14');
-      expect(minWidget.controller!.text, '30');
-    });
+        expect(daysWidget.controller!.text, '2');
+        expect(hoursWidget.controller!.text, '14');
+        expect(minWidget.controller!.text, '30');
+      },
+    );
 
     testWidgets('Validation fails when duration is 0 or empty', (tester) async {
       await tester.pumpWidget(
@@ -167,7 +192,10 @@ void main() {
       await tester.tap(trackBtn);
       await tester.pumpAndSettle();
 
-      expect(find.text('Duration is required (must be greater than zero).'), findsOneWidget);
+      expect(
+        find.text('Duration is required (must be greater than zero).'),
+        findsOneWidget,
+      );
     });
   });
 
@@ -188,9 +216,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       db = AppDatabase.forTesting(NativeDatabase.memory());
       container = ProviderContainer(
-        overrides: [
-          appDatabaseProvider.overrideWithValue(db),
-        ],
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
       );
     });
 
@@ -199,33 +225,34 @@ void main() {
       await db.close();
     });
 
-    testWidgets('AddPlannerSheet provides single resource selector + amount without + button', (tester) async {
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: MaterialApp(
-            home: Scaffold(
-              body: AddPlannerSheet(village: testVillage),
+    testWidgets(
+      'AddPlannerSheet provides single resource selector + amount without + button',
+      (tester) async {
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: MaterialApp(
+              home: Scaffold(body: AddPlannerSheet(village: testVillage)),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Required Resources (optional)'), findsOneWidget);
-      expect(find.widgetWithText(TextFormField, 'Amount'), findsOneWidget);
-      // No '+' button icon or chip wrap
-      expect(find.byTooltip('Add resource'), findsNothing);
-    });
+        expect(find.text('Required Resources (optional)'), findsOneWidget);
+        expect(find.widgetWithText(TextFormField, 'Amount'), findsOneWidget);
+        // No '+' button icon or chip wrap
+        expect(find.byTooltip('Add resource'), findsNothing);
+      },
+    );
 
-    testWidgets('AddPlannerSheet saves single resource directly on submit', (tester) async {
+    testWidgets('AddPlannerSheet saves single resource directly on submit', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
           child: MaterialApp(
-            home: Scaffold(
-              body: AddPlannerSheet(village: testVillage),
-            ),
+            home: Scaffold(body: AddPlannerSheet(village: testVillage)),
           ),
         ),
       );
@@ -245,7 +272,9 @@ void main() {
       await tester.tap(saveBtn);
       await tester.pumpAndSettle();
 
-      final rows = await (db.select(db.plannerItems)..where((t) => t.villageId.equals('v-test'))).get();
+      final rows = await (db.select(
+        db.plannerItems,
+      )..where((t) => t.villageId.equals('v-test'))).get();
       expect(rows, hasLength(1));
       expect(rows.first.name, 'Eagle Artillery');
       expect(rows.first.resourcesJson, contains('Gold'));
@@ -258,7 +287,9 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    testWidgets('AudioService default state: music OFF, SFX ON', (tester) async {
+    testWidgets('AudioService default state: music OFF, SFX ON', (
+      tester,
+    ) async {
       final service = AudioService(enableNativePlayback: false);
       expect(service.musicEnabled, isFalse);
       expect(service.sfxEnabled, isTrue);
@@ -291,13 +322,13 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       db = AppDatabase.forTesting(NativeDatabase.memory());
       container = ProviderContainer(
-        overrides: [
-          appDatabaseProvider.overrideWithValue(db),
-        ],
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
       );
 
       // Add two villages
-      await db.into(db.villages).insert(
+      await db
+          .into(db.villages)
+          .insert(
             VillagesCompanion.insert(
               id: 'v1',
               name: 'Main Base',
@@ -308,7 +339,9 @@ void main() {
               updatedAtUtc: DateTime.utc(2026, 1, 1),
             ),
           );
-      await db.into(db.villages).insert(
+      await db
+          .into(db.villages)
+          .insert(
             VillagesCompanion.insert(
               id: 'v2',
               name: 'Second Base',
@@ -326,35 +359,39 @@ void main() {
       await db.close();
     });
 
-    testWidgets('Dashboard has 4 navbar destinations (Dashboard, Planner, Levels, Settings)', (tester) async {
+    testWidgets(
+      'Dashboard has 4 navbar destinations (Dashboard, Planner, Levels, Settings)',
+      (tester) async {
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(home: DashboardScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final navBar = find.byType(NavigationBar);
+        expect(navBar, findsOneWidget);
+
+        expect(find.text('Dashboard'), findsOneWidget);
+        expect(find.text('Planner'), findsOneWidget);
+        expect(find.text('Levels'), findsOneWidget);
+        expect(find.text('Settings'), findsOneWidget);
+        // History should NOT be in bottom nav
+        expect(
+          find.widgetWithText(NavigationDestination, 'History'),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets('Dashboard does not show duplicate village profile chips', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
-            home: DashboardScreen(),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      final navBar = find.byType(NavigationBar);
-      expect(navBar, findsOneWidget);
-
-      expect(find.text('Dashboard'), findsOneWidget);
-      expect(find.text('Planner'), findsOneWidget);
-      expect(find.text('Levels'), findsOneWidget);
-      expect(find.text('Settings'), findsOneWidget);
-      // History should NOT be in bottom nav
-      expect(find.widgetWithText(NavigationDestination, 'History'), findsNothing);
-    });
-
-    testWidgets('Dashboard does not show duplicate village profile chips', (tester) async {
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: const MaterialApp(
-            home: DashboardScreen(),
-          ),
+          child: const MaterialApp(home: DashboardScreen()),
         ),
       );
       await tester.pumpAndSettle();

@@ -52,59 +52,65 @@ void main() {
   });
 
   group('Upgrade Editing and Timing', () {
-    test('Editing upgrade name and builder does not alter original timestamps', () {
-      final upgrade = Upgrade(
-        id: 'up-1',
-        villageId: 'v1',
-        name: 'Archer Queen Level 70',
-        category: UpgradeCategory.hero,
-        slotKey: 'Builder 1',
-        notes: 'Need for CWL',
-        startedAtUtc: now,
-        expectedCompletionAtUtc: now.add(const Duration(days: 7)),
-        status: UpgradeStatus.active,
-        createdAtUtc: now,
-        updatedAtUtc: now,
-      );
+    test(
+      'Editing upgrade name and builder does not alter original timestamps',
+      () {
+        final upgrade = Upgrade(
+          id: 'up-1',
+          villageId: 'v1',
+          name: 'Archer Queen Level 70',
+          category: UpgradeCategory.hero,
+          slotKey: 'Builder 1',
+          notes: 'Need for CWL',
+          startedAtUtc: now,
+          expectedCompletionAtUtc: now.add(const Duration(days: 7)),
+          status: UpgradeStatus.active,
+          createdAtUtc: now,
+          updatedAtUtc: now,
+        );
 
-      final edited = upgrade.copyWith(
-        name: 'Archer Queen Level 71',
-        slotKey: 'Master Builder',
-        notes: 'Using Hero Potion',
-      );
+        final edited = upgrade.copyWith(
+          name: 'Archer Queen Level 71',
+          slotKey: 'Master Builder',
+          notes: 'Using Hero Potion',
+        );
 
-      // Name and slot updated
-      expect(edited.name, 'Archer Queen Level 71');
-      expect(edited.slotKey, 'Master Builder');
-      expect(edited.notes, 'Using Hero Potion');
+        // Name and slot updated
+        expect(edited.name, 'Archer Queen Level 71');
+        expect(edited.slotKey, 'Master Builder');
+        expect(edited.notes, 'Using Hero Potion');
 
-      // Original start time and expected completion time preserved exactly
-      expect(edited.startedAtUtc, upgrade.startedAtUtc);
-      expect(edited.expectedCompletionAtUtc, upgrade.expectedCompletionAtUtc);
-    });
+        // Original start time and expected completion time preserved exactly
+        expect(edited.startedAtUtc, upgrade.startedAtUtc);
+        expect(edited.expectedCompletionAtUtc, upgrade.expectedCompletionAtUtc);
+      },
+    );
 
-    test('Upgrade timer calculation works with user-defined remaining duration', () {
-      const timerService = UpgradeTimerService();
-      final startTime = now.subtract(const Duration(hours: 4));
-      final expectedEnd = startTime.add(const Duration(hours: 12));
+    test(
+      'Upgrade timer calculation works with user-defined remaining duration',
+      () {
+        const timerService = UpgradeTimerService();
+        final startTime = now.subtract(const Duration(hours: 4));
+        final expectedEnd = startTime.add(const Duration(hours: 12));
 
-      final upgrade = Upgrade(
-        id: 'up-2',
-        villageId: 'v1',
-        name: 'Custom Defense Weapon',
-        category: UpgradeCategory.defense,
-        startedAtUtc: startTime,
-        expectedCompletionAtUtc: expectedEnd,
-        status: UpgradeStatus.active,
-        createdAtUtc: startTime,
-        updatedAtUtc: startTime,
-      );
+        final upgrade = Upgrade(
+          id: 'up-2',
+          villageId: 'v1',
+          name: 'Custom Defense Weapon',
+          category: UpgradeCategory.defense,
+          startedAtUtc: startTime,
+          expectedCompletionAtUtc: expectedEnd,
+          status: UpgradeStatus.active,
+          createdAtUtc: startTime,
+          updatedAtUtc: startTime,
+        );
 
-      final remaining = timerService.remainingTime(now, upgrade);
-      // 12 hours total - 4 hours elapsed = 8 hours remaining
-      expect(remaining.inHours, 8);
-      expect(timerService.isPastDue(now, upgrade), isFalse);
-    });
+        final remaining = timerService.remainingTime(now, upgrade);
+        // 12 hours total - 4 hours elapsed = 8 hours remaining
+        expect(remaining.inHours, 8);
+        expect(timerService.isPastDue(now, upgrade), isFalse);
+      },
+    );
   });
 
   group('History Events Logging', () {
@@ -127,4 +133,3 @@ void main() {
     });
   });
 }
-

@@ -52,8 +52,9 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
       // 1-second ticker when strictly less than 5 minutes remain
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
         if (!mounted) return;
-        final curRemaining =
-            widget.upgrade.expectedCompletionAtUtc.difference(DateTime.now().toUtc());
+        final curRemaining = widget.upgrade.expectedCompletionAtUtc.difference(
+          DateTime.now().toUtc(),
+        );
         setState(() => _now = DateTime.now().toUtc());
         if (curRemaining.inSeconds <= 0) {
           _ticker?.cancel();
@@ -76,7 +77,8 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
   @override
   void didUpdateWidget(UpgradeDetailSheet oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.upgrade.expectedCompletionAtUtc != widget.upgrade.expectedCompletionAtUtc ||
+    if (oldWidget.upgrade.expectedCompletionAtUtc !=
+            widget.upgrade.expectedCompletionAtUtc ||
         oldWidget.upgrade.status != widget.upgrade.status) {
       _now = DateTime.now().toUtc();
       _scheduleTick();
@@ -97,8 +99,9 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
     const timerService = UpgradeTimerService();
     final remaining = timerService.remainingTime(_now, upgrade);
     final isPastDue = timerService.isPastDue(_now, upgrade);
-    final totalDuration =
-        upgrade.expectedCompletionAtUtc.difference(upgrade.startedAtUtc);
+    final totalDuration = upgrade.expectedCompletionAtUtc.difference(
+      upgrade.startedAtUtc,
+    );
     final elapsed = _now.difference(upgrade.startedAtUtc);
     final progress = totalDuration.inSeconds > 0
         ? (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0)
@@ -113,7 +116,7 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
       expand: false,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
@@ -144,7 +147,7 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                       children: [
                         Text(
                           upgrade.displayNameWithLevel,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
@@ -166,29 +169,33 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                               ),
                               child: Text(
                                 upgrade.category.displayName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
                             ),
-                            if (upgrade.fromLevel != null || upgrade.toLevel != null)
+                            if (upgrade.fromLevel != null ||
+                                upgrade.toLevel != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accent.withValues(alpha: 0.15),
+                                  color: AppColors.accent.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  upgrade.fromLevel != null && upgrade.toLevel != null
+                                  upgrade.fromLevel != null &&
+                                          upgrade.toLevel != null
                                       ? 'Lv. ${upgrade.fromLevel} → ${upgrade.toLevel}'
                                       : (upgrade.toLevel != null
-                                          ? 'Lv. ${upgrade.toLevel}'
-                                          : 'From Lv. ${upgrade.fromLevel}'),
-                                  style: const TextStyle(
+                                            ? 'Lv. ${upgrade.toLevel}'
+                                            : 'From Lv. ${upgrade.fromLevel}'),
+                                  style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.accent,
                                     fontWeight: FontWeight.w600,
@@ -202,12 +209,14 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accent.withValues(alpha: 0.2),
+                                  color: AppColors.accent.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   upgrade.slotKey!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.accent,
                                     fontWeight: FontWeight.w600,
@@ -237,7 +246,7 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'Remaining time',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
@@ -247,11 +256,16 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                             Text(
                               isPastDue
                                   ? 'Ready to collect'
-                                  : formatRemaining(remaining, completedLabel: 'Ready to collect'),
+                                  : formatRemaining(
+                                      remaining,
+                                      completedLabel: 'Ready to collect',
+                                    ),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
-                                color: isPastDue ? AppColors.pastDue : AppColors.active,
+                                color: isPastDue
+                                    ? AppColors.pastDue
+                                    : AppColors.active,
                               ),
                             ),
                           ],
@@ -260,7 +274,9 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                         LinearProgressIndicator(
                           value: isPastDue ? 1.0 : progress,
                           backgroundColor: AppColors.surfaceVariant,
-                          color: isPastDue ? AppColors.pastDue : AppColors.accent,
+                          color: isPastDue
+                              ? AppColors.pastDue
+                              : AppColors.accent,
                           minHeight: 8,
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -269,9 +285,12 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Started:',
-                            style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                            ),
                           ),
                           Text(
                             DateTimeFormat.shortDateTime(
@@ -279,7 +298,10 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                               dateFormat: displayPrefs.dateFormat,
                               timeFormat: displayPrefs.timeFormat,
                             ),
-                            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
@@ -287,17 +309,23 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Text(
                             'Expected completion:',
-                            style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                            ),
                           ),
                           Text(
-                            DateTimeFormat.shortDateTime(
+                            DateTimeFormat.relativeCompletionDateTime(
                               upgrade.expectedCompletionAtUtc,
                               dateFormat: displayPrefs.dateFormat,
                               timeFormat: displayPrefs.timeFormat,
                             ),
-                            style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
@@ -306,9 +334,12 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'Completed at:',
-                              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                              style: TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                              ),
                             ),
                             Text(
                               DateTimeFormat.shortDateTime(
@@ -316,7 +347,10 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                                 dateFormat: displayPrefs.dateFormat,
                                 timeFormat: displayPrefs.timeFormat,
                               ),
-                              style: const TextStyle(color: AppColors.active, fontSize: 12),
+                              style: TextStyle(
+                                color: AppColors.active,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -329,7 +363,7 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
               // Notes section if present
               if (upgrade.notes != null && upgrade.notes!.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Notes',
                   style: TextStyle(
                     fontSize: 13,
@@ -347,7 +381,10 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                   ),
                   child: Text(
                     upgrade.notes!,
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
@@ -355,15 +392,12 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
               // Current Level Tracker Integration
               if ((upgrade.toLevel ?? upgrade.fromLevel) != null) ...[
                 const SizedBox(height: 16),
-                _VillageLevelCard(
-                  upgrade: upgrade,
-                  village: village,
-                ),
+                _VillageLevelCard(upgrade: upgrade, village: village),
               ],
               const SizedBox(height: 20),
 
               // Visible Action Controls
-              const Text(
+              Text(
                 'Actions',
                 style: TextStyle(
                   fontSize: 13,
@@ -381,7 +415,10 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.active,
                         foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                       ),
                       onPressed: () async {
                         Navigator.pop(context);
@@ -400,7 +437,9 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                                 upgrade.name,
                               );
                           if (existing == null) {
-                            await ref.read(villageItemLevelsDaoProvider).upsert(
+                            await ref
+                                .read(villageItemLevelsDaoProvider)
+                                .upsert(
                                   VillageItemLevel(
                                     id: const IdGenerator().newId(),
                                     villageId: upgrade.villageId,
@@ -411,7 +450,9 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                                   ),
                                 );
                           } else if (existing.currentLevel < destLevel) {
-                            await ref.read(villageItemLevelsDaoProvider).upsert(
+                            await ref
+                                .read(villageItemLevelsDaoProvider)
+                                .upsert(
                                   existing.copyWith(
                                     currentLevel: destLevel,
                                     updatedAtUtc: DateTime.now().toUtc(),
@@ -426,8 +467,11 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.accent,
-                        side: const BorderSide(color: AppColors.accent),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        side: BorderSide(color: AppColors.accent),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                       ),
                       onPressed: () {
                         Navigator.pop(context);
@@ -436,7 +480,9 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                           isScrollControlled: true,
                           backgroundColor: AppColors.surface,
                           shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
                           ),
                           builder: (_) => AddUpgradeSheet(
                             village: village,
@@ -450,8 +496,11 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                     OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.pastDue,
-                        side: const BorderSide(color: AppColors.pastDue),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        side: BorderSide(color: AppColors.pastDue),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                       ),
                       onPressed: () async {
                         Navigator.pop(context);
@@ -468,7 +517,10 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                       ),
                       onPressed: () async {
                         Navigator.pop(context);
@@ -477,7 +529,9 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                             .read(upgradesNotifierProvider.notifier)
                             .reopenUpgrade(
                               upgrade,
-                              DateTime.now().toUtc().add(const Duration(days: 1)),
+                              DateTime.now().toUtc().add(
+                                const Duration(days: 1),
+                              ),
                             );
                       },
                       icon: const Icon(Icons.refresh, size: 18),
@@ -487,8 +541,11 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.error,
-                      side: const BorderSide(color: AppColors.error),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      side: BorderSide(color: AppColors.error),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                     ),
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
@@ -505,7 +562,9 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(context, true),
-                              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.error,
+                              ),
                               child: const Text('Delete'),
                             ),
                           ],
@@ -526,7 +585,7 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
               const SizedBox(height: 24),
 
               // Activity History
-              const Text(
+              Text(
                 'Activity History',
                 style: TextStyle(
                   fontSize: 16,
@@ -544,15 +603,18 @@ class _UpgradeDetailSheetState extends ConsumerState<UpgradeDetailSheet> {
                 ),
                 error: (e, _) => Text(
                   'Could not load history: $e',
-                  style: const TextStyle(color: AppColors.textMuted),
+                  style: TextStyle(color: AppColors.textMuted),
                 ),
                 data: (events) {
                   if (events.isEmpty) {
-                    return const Padding(
+                    return Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Text(
                         'No history events recorded yet.',
-                        style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 13,
+                        ),
                       ),
                     );
                   }
@@ -641,10 +703,7 @@ class _HistoryEventTile extends ConsumerWidget {
               children: [
                 Text(
                   event.description,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
                 ),
                 Text(
                   DateTimeFormat.shortDateTime(
@@ -652,10 +711,7 @@ class _HistoryEventTile extends ConsumerWidget {
                     dateFormat: displayPrefs.dateFormat,
                     timeFormat: displayPrefs.timeFormat,
                   ),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textMuted,
-                  ),
+                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
                 ),
               ],
             ),
@@ -703,10 +759,7 @@ class _HistoryEventTile extends ConsumerWidget {
 }
 
 class _VillageLevelCard extends ConsumerStatefulWidget {
-  const _VillageLevelCard({
-    required this.upgrade,
-    required this.village,
-  });
+  const _VillageLevelCard({required this.upgrade, required this.village});
 
   final Upgrade upgrade;
   final Village village;
@@ -724,7 +777,9 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
     if (destLevel == null) return const SizedBox.shrink();
 
     return FutureBuilder<VillageItemLevel?>(
-      future: ref.read(villageItemLevelsDaoProvider).findByItem(
+      future: ref
+          .read(villageItemLevelsDaoProvider)
+          .findByItem(
             widget.upgrade.villageId,
             widget.upgrade.category,
             widget.upgrade.name,
@@ -745,9 +800,13 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.format_list_numbered, size: 18, color: AppColors.accent),
+                  Icon(
+                    Icons.format_list_numbered,
+                    size: 18,
+                    color: AppColors.accent,
+                  ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'Village Progress Tracker',
                     style: TextStyle(
                       fontSize: 13,
@@ -759,16 +818,19 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
                   if (record != null)
                     Text(
                       'Current: Lv. ${record.currentLevel}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: AppColors.accent,
                       ),
                     )
                   else
-                    const Text(
+                    Text(
                       'Not recorded',
-                      style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                 ],
               ),
@@ -779,21 +841,29 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
                     Expanded(
                       child: Text(
                         'Track ${widget.upgrade.name} at Lv. $destLevel in ${widget.village.name} levels?',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                       ),
                       onPressed: _updating
                           ? null
                           : () async {
                               setState(() => _updating = true);
                               try {
-                                await ref.read(villageItemLevelsDaoProvider).upsert(
+                                await ref
+                                    .read(villageItemLevelsDaoProvider)
+                                    .upsert(
                                       VillageItemLevel(
                                         id: const IdGenerator().newId(),
                                         villageId: widget.upgrade.villageId,
@@ -808,7 +878,10 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
                                 if (mounted) setState(() => _updating = false);
                               }
                             },
-                      child: const Text('Record Lv.', style: TextStyle(fontSize: 11)),
+                      child: const Text(
+                        'Record Lv.',
+                        style: TextStyle(fontSize: 11),
+                      ),
                     ),
                   ],
                 ),
@@ -818,7 +891,10 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
                     Expanded(
                       child: Text(
                         'Update tracker from Lv. ${record.currentLevel} → Lv. $destLevel?',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -827,14 +903,19 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
                         visualDensity: VisualDensity.compact,
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                       ),
                       onPressed: _updating
                           ? null
                           : () async {
                               setState(() => _updating = true);
                               try {
-                                await ref.read(villageItemLevelsDaoProvider).upsert(
+                                await ref
+                                    .read(villageItemLevelsDaoProvider)
+                                    .upsert(
                                       record.copyWith(
                                         currentLevel: destLevel,
                                         updatedAtUtc: DateTime.now().toUtc(),
@@ -845,18 +926,21 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
                                 if (mounted) setState(() => _updating = false);
                               }
                             },
-                      child: Text('Update to Lv. $destLevel', style: const TextStyle(fontSize: 11)),
+                      child: Text(
+                        'Update to Lv. $destLevel',
+                        style: const TextStyle(fontSize: 11),
+                      ),
                     ),
                   ],
                 ),
               ] else ...[
                 Row(
                   children: [
-                    const Icon(Icons.check_circle, size: 16, color: AppColors.active),
+                    Icon(Icons.check_circle, size: 16, color: AppColors.active),
                     const SizedBox(width: 6),
                     Text(
                       'Recorded in levels (Lv. ${record.currentLevel})',
-                      style: const TextStyle(fontSize: 12, color: AppColors.active),
+                      style: TextStyle(fontSize: 12, color: AppColors.active),
                     ),
                   ],
                 ),
@@ -868,4 +952,3 @@ class _VillageLevelCardState extends ConsumerState<_VillageLevelCard> {
     );
   }
 }
-

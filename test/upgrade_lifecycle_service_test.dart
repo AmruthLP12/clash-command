@@ -9,24 +9,25 @@ void main() {
   final now = DateTime.utc(2026, 10, 19, 12, 0, 0);
 
   Upgrade makeActive({String id = 'u1'}) => Upgrade(
-        id: id,
-        villageId: 'v1',
-        name: 'Test',
-        category: UpgradeCategory.building,
-        startedAtUtc: now.subtract(const Duration(hours: 1)),
-        expectedCompletionAtUtc: now.add(const Duration(hours: 2)),
-        status: UpgradeStatus.active,
-        notificationRevision: 0,
-        createdAtUtc: now,
-        updatedAtUtc: now,
-      );
+    id: id,
+    villageId: 'v1',
+    name: 'Test',
+    category: UpgradeCategory.building,
+    startedAtUtc: now.subtract(const Duration(hours: 1)),
+    expectedCompletionAtUtc: now.add(const Duration(hours: 2)),
+    status: UpgradeStatus.active,
+    notificationRevision: 0,
+    createdAtUtc: now,
+    updatedAtUtc: now,
+  );
 
   Upgrade makeCompleted() => makeActive().copyWith(
-        status: UpgradeStatus.completed,
-        completedAtUtc: now.subtract(const Duration(minutes: 10)),
-      );
+    status: UpgradeStatus.completed,
+    completedAtUtc: now.subtract(const Duration(minutes: 10)),
+  );
 
-  Upgrade makeCancelled() => makeActive().copyWith(status: UpgradeStatus.cancelled);
+  Upgrade makeCancelled() =>
+      makeActive().copyWith(status: UpgradeStatus.cancelled);
 
   group('UpgradeLifecycleService.complete', () {
     test('transitions active → completed', () {

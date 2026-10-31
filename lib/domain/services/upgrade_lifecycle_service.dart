@@ -103,9 +103,7 @@ class UpgradeLifecycleService {
   ) {
     if (upgrade.status != UpgradeStatus.active) {
       return Result.failure(
-        ValidationFailure(
-          'Can only edit the timer on an active upgrade.',
-        ),
+        ValidationFailure('Can only edit the timer on an active upgrade.'),
       );
     }
     if (newExpectedCompletionAtUtc.isBefore(now)) {

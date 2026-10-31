@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:clash_command/app/providers.dart';
+import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/app/theme/app_theme.dart';
+import 'package:clash_command/core/theme/theme_preferences.dart';
 import 'package:clash_command/features/villages/presentation/village_profiles_screen.dart';
 
 void main() {
@@ -17,7 +19,7 @@ void main() {
     ),
   );
 
-  // Initialize non-blocking background services after the first frame renders
+  // Initialize background services deferred after the app shell renders
   WidgetsBinding.instance.addPostFrameCallback((_) {
     _initBackgroundServices(container);
   });
@@ -25,8 +27,8 @@ void main() {
 
 Future<void> _initBackgroundServices(ProviderContainer container) async {
   try {
-    // Eagerly instantiate audio service so settings and listeners are loaded
-    container.read(audioServiceProvider);
+    // Defer heavy reconciliation and sync to keep initial launch immediate
+    await Future<void>.delayed(const Duration(seconds: 2));
 
     // Initialize notifications
     await container.read(notificationServiceProvider).initialize();
@@ -41,15 +43,24 @@ Future<void> _initBackgroundServices(ProviderContainer container) async {
   }
 }
 
-class ClashCommandApp extends StatelessWidget {
+class ClashCommandApp extends ConsumerWidget {
   const ClashCommandApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themePref = ref.watch(themePreferencesProvider);
+
     return MaterialApp(
       title: 'Clash Command',
       debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
+      theme: buildLightTheme(),
+      darkTheme: buildDarkTheme(),
+      themeMode: themePref.themeMode,
+      builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        AppColors.setLight(!isDark);
+        return child ?? const SizedBox.shrink();
+      },
       home: const VillageProfilesScreen(),
     );
   }

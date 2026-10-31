@@ -1,4 +1,5 @@
 import 'dart:developer' as developer;
+
 import 'package:home_widget/home_widget.dart';
 
 import '../../database/daos/upgrades_dao.dart';
@@ -39,8 +40,9 @@ class HomeWidgetSyncService {
         targetVillage = villages.first;
       }
 
-      final activeUpgrades =
-          await upgradesDao.getActiveForVillage(targetVillage.id);
+      final activeUpgrades = await upgradesDao.getActiveForVillage(
+        targetVillage.id,
+      );
       final now = DateTime.now().toUtc();
 
       // Find nearest upcoming completion
@@ -67,7 +69,10 @@ class HomeWidgetSyncService {
       // Builder stats
       final totalBuilders = targetVillage.builderCapacity;
       final busyBuilders = activeUpgrades.length;
-      final availableBuilders = (totalBuilders - busyBuilders).clamp(0, totalBuilders);
+      final availableBuilders = (totalBuilders - busyBuilders).clamp(
+        0,
+        totalBuilders,
+      );
 
       // Builder occupancy summary text
       final occupancyLines = <String>[];
@@ -83,8 +88,14 @@ class HomeWidgetSyncService {
           : occupancyLines.join('\n');
 
       // Save to SharedPreferences for Android widgets
-      await HomeWidget.saveWidgetData<String>('village_name', targetVillage.name);
-      await HomeWidget.saveWidgetData<int>('active_count', activeUpgrades.length);
+      await HomeWidget.saveWidgetData<String>(
+        'village_name',
+        targetVillage.name,
+      );
+      await HomeWidget.saveWidgetData<int>(
+        'active_count',
+        activeUpgrades.length,
+      );
       await HomeWidget.saveWidgetData<bool>('has_upgrades', hasActive);
       await HomeWidget.saveWidgetData<String>(
         'nearest_name',
@@ -100,8 +111,14 @@ class HomeWidgetSyncService {
       // Builder widget data
       await HomeWidget.saveWidgetData<int>('total_builders', totalBuilders);
       await HomeWidget.saveWidgetData<int>('busy_builders', busyBuilders);
-      await HomeWidget.saveWidgetData<int>('available_builders', availableBuilders);
-      await HomeWidget.saveWidgetData<String>('builder_occupancy_text', occupancyText);
+      await HomeWidget.saveWidgetData<int>(
+        'available_builders',
+        availableBuilders,
+      );
+      await HomeWidget.saveWidgetData<String>(
+        'builder_occupancy_text',
+        occupancyText,
+      );
       await HomeWidget.saveWidgetData<bool>('has_builders', totalBuilders > 0);
 
       // Update both widgets on Android
@@ -128,7 +145,10 @@ class HomeWidgetSyncService {
       await HomeWidget.saveWidgetData<String>('village_name', 'No Village');
       await HomeWidget.saveWidgetData<int>('active_count', 0);
       await HomeWidget.saveWidgetData<bool>('has_upgrades', false);
-      await HomeWidget.saveWidgetData<String>('nearest_name', 'No active upgrades');
+      await HomeWidget.saveWidgetData<String>(
+        'nearest_name',
+        'No active upgrades',
+      );
       await HomeWidget.saveWidgetData<String>('nearest_category', '');
       await HomeWidget.saveWidgetData<String>('nearest_time', '');
       await HomeWidget.saveWidgetData<int>('nearest_progress', 0);

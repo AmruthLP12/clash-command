@@ -80,10 +80,7 @@ void main() {
 
     test('returns 50 halfway through duration', () {
       final mid = start.add(const Duration(hours: 1));
-      expect(
-        HomeWidgetSyncService.computeProgressPercent(start, end, mid),
-        50,
-      );
+      expect(HomeWidgetSyncService.computeProgressPercent(start, end, mid), 50);
     });
 
     test('returns 100 when now is equal to or past completion', () {
@@ -107,4 +104,3 @@ void main() {
     });
   });
 }
-

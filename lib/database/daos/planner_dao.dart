@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'package:clash_command/domain/models/planner_item.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
+
 import '../app_database.dart';
 import '../tables/planner_items_table.dart';
 
@@ -25,19 +26,19 @@ class PlannerDao extends DatabaseAccessor<AppDatabase> with _$PlannerDaoMixin {
 
   /// Watches all planned items across all villages.
   Stream<List<PlannerItem>> watchAll() {
-    return (select(plannerItems)
-          ..orderBy([
-            (t) => OrderingTerm.asc(t.sortOrder),
-            (t) => OrderingTerm.asc(t.createdAtUtc),
-          ]))
+    return (select(plannerItems)..orderBy([
+          (t) => OrderingTerm.asc(t.sortOrder),
+          (t) => OrderingTerm.asc(t.createdAtUtc),
+        ]))
         .watch()
         .map((rows) => rows.map(_toDomain).toList());
   }
 
   /// Fetches a single planner item by ID.
   Future<PlannerItem?> findById(String id) async {
-    final row = await (select(plannerItems)..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      plannerItems,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row != null ? _toDomain(row) : null;
   }
 
@@ -68,13 +69,12 @@ class PlannerDao extends DatabaseAccessor<AppDatabase> with _$PlannerDaoMixin {
 
     await transaction(() async {
       // Clear isNext for all items in this village with the same category
-      await (update(plannerItems)
-            ..where((t) =>
+      await (update(plannerItems)..where(
+            (t) =>
                 t.villageId.equals(villageId) &
-                t.category.equals(target.category.name)))
-          .write(
-        const PlannerItemsCompanion(isNext: Value(false)),
-      );
+                t.category.equals(target.category.name),
+          ))
+          .write(const PlannerItemsCompanion(isNext: Value(false)));
 
       // Set target isNext
       await (update(plannerItems)..where((t) => t.id.equals(itemId))).write(
@@ -90,7 +90,9 @@ class PlannerDao extends DatabaseAccessor<AppDatabase> with _$PlannerDaoMixin {
   Future<void> reorder(String villageId, List<String> orderedIds) async {
     await transaction(() async {
       for (var i = 0; i < orderedIds.length; i++) {
-        await (update(plannerItems)..where((t) => t.id.equals(orderedIds[i]))).write(
+        await (update(
+          plannerItems,
+        )..where((t) => t.id.equals(orderedIds[i]))).write(
           PlannerItemsCompanion(
             sortOrder: Value(i),
             updatedAtUtc: Value(DateTime.now().toUtc()),
@@ -138,4 +140,3 @@ class PlannerDao extends DatabaseAccessor<AppDatabase> with _$PlannerDaoMixin {
     );
   }
 }
-

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import 'package:clash_command/domain/models/village.dart';
+
 import '../app_database.dart';
 import '../tables/villages_table.dart';
 
@@ -25,8 +26,9 @@ class VillagesDao extends DatabaseAccessor<AppDatabase>
 
   /// Fetches a single village by ID, or null if not found.
   Future<Village?> findById(String id) async {
-    final row = await (select(villages)..where((v) => v.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (select(
+      villages,
+    )..where((v) => v.id.equals(id))).getSingleOrNull();
     return row?.toDomain();
   }
 

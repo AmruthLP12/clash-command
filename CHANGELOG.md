@@ -4,6 +4,36 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-10-31
+
+### Added
+- **Profile Card Editing & Bottom-Right FAB**:
+  - Added an Edit button on every village card in `VillageProfilesScreen` opening `AddVillageSheet(village: village)` to edit name, Town Hall level, Builder Hall level, builder capacity, and notes without duplicate entries.
+  - Moved Add Village action to a bottom-right `FloatingActionButton.extended` with gold accent styling, removing the old header button and avoiding duplicate add actions.
+- **Dynamic Light & Dark Themes**:
+  - Implemented `ThemePreferencesNotifier` with System Default, Dark Mode (default), and Light Mode options persisted in `SharedPreferences` (`pref_theme_mode`).
+  - Implemented `buildLightTheme()` and `buildDarkTheme()` in `app_theme.dart` with high-contrast surfaces, readable text, and gold accents.
+  - Upgraded `AppColors` with dynamic getters and palette switching (`setLight`) adapting all existing color references across the app.
+  - Added Appearance & Theme configuration card in Settings with `SegmentedButton`.
+- **Relative Completion Dates (Today & Tomorrow)**:
+  - Added `DateTimeFormat.relativeCompletionDateTime` formatting completions as `Today, <time>` or `Tomorrow, <time>`, and formatted calendar dates for later days.
+  - Integrated into `UpgradeCard`, `UpgradeDetailSheet`, and Dashboard Next upgrade indicator. Accurately accounts for midnight transitions using local calendar day comparisons.
+- **Back vs Home Navigation Semantics**:
+  - Distinguished genuine Back actions (`Navigator.maybePop`) from Home navigation (`Icons.home_outlined`).
+  - Added `PopScope` on `DashboardScreen`: system back on Planner, Levels, or Settings tabs returns to tab 0 (Dashboard). System back on Dashboard returns to profile selection.
+  - Added leading Home button on internal tabs returning directly to the active village Dashboard.
+
+### Changed & Fixed
+- **Scoped Internal Tabs Strictly to Selected Village**:
+  - Removed all `DropdownButton` village switchers from Planner and Levels screens. All internal tabs strictly scope data to the active profile chosen at app launch.
+  - Replaced headers with clean, static titles and active village subtitles.
+- **Startup Latency Elimination**:
+  - Eliminated all eager `AudioPlayer` channel creation at startup; audio player pool is now instantiated lazily on demand.
+  - Deferred background notification reconciliation, exact alarm init, and widget sync by 2 seconds off the critical launch path.
+- **Refined Audio Experience**:
+  - Constrained audio playback strictly to meaningful actions: opening a profile (`playVillageSwitch`), starting an upgrade (`playUpgradeStart`), adding a plan (`playItemAdd`), adding a level entry (`playItemAdd`), and saving a village (`playConfirm`).
+  - Removed all sound effects from bottom navigation tab clicks, screen opening, Back/Home buttons, scrolling, and typing.
+
 ## [1.0.7] - 2026-10-31
 
 ### Added

@@ -80,4 +80,3 @@ class HistoryEvent {
   String toString() =>
       'HistoryEvent(id: $id, type: ${eventType.name}, desc: $description)';
 }
-

@@ -55,9 +55,9 @@ class HistoryEventsDao extends DatabaseAccessor<AppDatabase>
 
   /// Delete all events for a village.
   Future<void> deleteForVillage(String villageId) {
-    return (delete(historyEvents)
-          ..where((t) => t.villageId.equals(villageId)))
-        .go();
+    return (delete(
+      historyEvents,
+    )..where((t) => t.villageId.equals(villageId))).go();
   }
 
   HistoryEvent _toDomain(HistoryEventRow row) {
@@ -73,4 +73,3 @@ class HistoryEventsDao extends DatabaseAccessor<AppDatabase>
     );
   }
 }
-

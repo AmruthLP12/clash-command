@@ -66,18 +66,18 @@ void main() {
         historyEventsDaoProvider.overrideWithValue(fakeHistoryDao),
         notificationPreferencesDaoProvider.overrideWithValue(fakePrefsDao),
         notificationServiceProvider.overrideWithValue(fakeNotifService),
-        upgradeTimerServiceProvider
-            .overrideWithValue(const UpgradeTimerService()),
+        upgradeTimerServiceProvider.overrideWithValue(
+          const UpgradeTimerService(),
+        ),
         villageServiceProvider.overrideWithValue(const VillageService()),
-        upgradeLifecycleServiceProvider
-            .overrideWithValue(const UpgradeLifecycleService()),
-        notificationPlanServiceProvider
-            .overrideWithValue(const NotificationPlanService()),
+        upgradeLifecycleServiceProvider.overrideWithValue(
+          const UpgradeLifecycleService(),
+        ),
+        notificationPlanServiceProvider.overrideWithValue(
+          const NotificationPlanService(),
+        ),
       ],
-      child: MaterialApp(
-        theme: buildAppTheme(),
-        home: const DashboardScreen(),
-      ),
+      child: MaterialApp(theme: buildAppTheme(), home: const DashboardScreen()),
     );
   }
 
@@ -90,8 +90,9 @@ void main() {
     expect(find.text('No villages yet'), findsOneWidget);
   });
 
-  testWidgets('shows village name in switcher when a village exists',
-      (tester) async {
+  testWidgets('shows village name in switcher when a village exists', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildTestApp(villages: [fakeVillage]));
     await tester.pump();
     await tester.pump();
@@ -99,8 +100,9 @@ void main() {
     expect(find.text('North Village'), findsWidgets);
   });
 
-  testWidgets('shows empty upgrade state when no active upgrades',
-      (tester) async {
+  testWidgets('shows empty upgrade state when no active upgrades', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       buildTestApp(villages: [fakeVillage], upgrades: []),
     );
@@ -110,8 +112,9 @@ void main() {
     expect(find.text('No active upgrades'), findsOneWidget);
   });
 
-  testWidgets('shows upgrade card when an active upgrade exists',
-      (tester) async {
+  testWidgets('shows upgrade card when an active upgrade exists', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       buildTestApp(villages: [fakeVillage], upgrades: [fakeUpgrade]),
     );

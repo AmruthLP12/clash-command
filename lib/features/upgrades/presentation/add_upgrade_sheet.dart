@@ -80,11 +80,13 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
     );
     _levelFocusNode = FocusNode();
 
-    _category = up?.category.primaryCategory ??
+    _category =
+        up?.category.primaryCategory ??
         widget.initialCategory?.primaryCategory ??
         UpgradeCategory.homeBuilder;
 
-    _realm = (_category == UpgradeCategory.builderBaseBuilder ||
+    _realm =
+        (_category == UpgradeCategory.builderBaseBuilder ||
             _category == UpgradeCategory.builderBaseStarLab)
         ? VillageRealm.builderBase
         : VillageRealm.homeVillage;
@@ -101,7 +103,9 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
       final minutes = _initialRemaining.inMinutes % 60;
       _daysController = TextEditingController(text: days > 0 ? '$days' : '');
       _hoursController = TextEditingController(text: hours > 0 ? '$hours' : '');
-      _minutesController = TextEditingController(text: minutes > 0 ? '$minutes' : '');
+      _minutesController = TextEditingController(
+        text: minutes > 0 ? '$minutes' : '',
+      );
     } else if (widget.initialDurationSeconds != null &&
         widget.initialDurationSeconds! > 0) {
       final totalSec = widget.initialDurationSeconds!;
@@ -110,7 +114,9 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
       final minutes = (totalSec % 3600) ~/ 60;
       _daysController = TextEditingController(text: days > 0 ? '$days' : '');
       _hoursController = TextEditingController(text: hours > 0 ? '$hours' : '');
-      _minutesController = TextEditingController(text: minutes > 0 ? '$minutes' : '');
+      _minutesController = TextEditingController(
+        text: minutes > 0 ? '$minutes' : '',
+      );
     } else {
       _daysController = TextEditingController();
       _hoursController = TextEditingController();
@@ -172,7 +178,9 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
     if (!_formKey.currentState!.validate()) return;
     if (!_durationValid) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Duration is required (must be greater than zero).')),
+        const SnackBar(
+          content: Text('Duration is required (must be greater than zero).'),
+        ),
       );
       return;
     }
@@ -198,7 +206,9 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
           newExpectedCompletion = now.add(_duration);
         }
 
-        await ref.read(upgradesNotifierProvider.notifier).editUpgradeDetails(
+        await ref
+            .read(upgradesNotifierProvider.notifier)
+            .editUpgradeDetails(
               up,
               name: name,
               category: _category,
@@ -212,7 +222,9 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
             );
         ref.read(audioServiceProvider).playConfirm();
       } else {
-        await ref.read(upgradesNotifierProvider.notifier).startUpgrade(
+        await ref
+            .read(upgradesNotifierProvider.notifier)
+            .startUpgrade(
               villageId: widget.village.id,
               name: name,
               category: _category,
@@ -237,8 +249,9 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
   @override
   Widget build(BuildContext context) {
     // Watch custom suggestions for this category
-    final customSuggestionsAsync =
-        ref.watch(customUpgradeSuggestionsStreamProvider(_category));
+    final customSuggestionsAsync = ref.watch(
+      customUpgradeSuggestionsStreamProvider(_category),
+    );
     final customNames = (customSuggestionsAsync.valueOrNull ?? [])
         .map((e) => e.name)
         .toList();
@@ -271,7 +284,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                               ? 'Edit upgrade'
                               : 'Track upgrade — ${widget.village.name}',
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
@@ -331,30 +344,33 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                     onSelected: _onCatalogItemSelected,
                     fieldViewBuilder:
                         (context, controller, focusNode, onFieldSubmitted) {
-                      return TextFormField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: InputDecoration(
-                          labelText: 'Upgrade name *',
-                          hintText: 'e.g. Archer Tower, P.E.K.K.A',
-                          prefixIcon:
-                              const Icon(Icons.arrow_upward_outlined, size: 20),
-                          suffixIcon: controller.text.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear, size: 18),
-                                  onPressed: () {
-                                    controller.clear();
-                                    setState(() {});
-                                  },
-                                )
-                              : null,
-                        ),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                        textCapitalization: TextCapitalization.words,
-                        onFieldSubmitted: (v) => onFieldSubmitted(),
-                      );
-                    },
+                          return TextFormField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              labelText: 'Upgrade name *',
+                              hintText: 'e.g. Archer Tower, P.E.K.K.A',
+                              prefixIcon: const Icon(
+                                Icons.arrow_upward_outlined,
+                                size: 20,
+                              ),
+                              suffixIcon: controller.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear, size: 18),
+                                      onPressed: () {
+                                        controller.clear();
+                                        setState(() {});
+                                      },
+                                    )
+                                  : null,
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty)
+                                ? 'Required'
+                                : null,
+                            textCapitalization: TextCapitalization.words,
+                            onFieldSubmitted: (v) => onFieldSubmitted(),
+                          );
+                        },
                     optionsViewBuilder: (context, onSelected, options) {
                       return Align(
                         alignment: Alignment.topLeft,
@@ -372,7 +388,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                               shrinkWrap: true,
                               itemCount: options.length,
                               separatorBuilder: (context, index) =>
-                                  const Divider(height: 1, color: AppColors.surface),
+                                  Divider(height: 1, color: AppColors.surface),
                               itemBuilder: (context, index) {
                                 final item = options.elementAt(index);
                                 return InkWell(
@@ -391,7 +407,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                                             children: [
                                               Text(
                                                 item.name,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontWeight: FontWeight.w600,
                                                   fontSize: 14,
                                                   color: AppColors.textPrimary,
@@ -400,11 +416,14 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                                               if (item.subtitle.isNotEmpty)
                                                 Padding(
                                                   padding:
-                                                      const EdgeInsets.only(top: 2),
+                                                      const EdgeInsets.only(
+                                                        top: 2,
+                                                      ),
                                                   child: Text(
                                                     item.subtitle,
-                                                    style: const TextStyle(
-                                                      color: AppColors.textSecondary,
+                                                    style: TextStyle(
+                                                      color: AppColors
+                                                          .textSecondary,
                                                       fontSize: 11,
                                                     ),
                                                   ),
@@ -423,7 +442,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),
-                                            child: const Text(
+                                            child: Text(
                                               'Custom',
                                               style: TextStyle(
                                                 fontSize: 10,
@@ -457,12 +476,17 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) return null;
                       final n = int.tryParse(v.trim());
-                      if (n == null || n <= 0) return 'Must be a positive integer';
+                      if (n == null || n <= 0) {
+                        return 'Must be a positive integer';
+                      }
 
                       // Check verified catalogue max level if item matches a built-in entry
                       final name = _nameController.text.trim();
                       if (name.isNotEmpty) {
-                        final catalogItem = UpgradeCatalog.find(name, _category);
+                        final catalogItem = UpgradeCatalog.find(
+                          name,
+                          _category,
+                        );
                         if (catalogItem != null &&
                             !catalogItem.isCustom &&
                             catalogItem.maxLevel != null) {
@@ -479,7 +503,7 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                   // Duration row
                   Text(
                     widget.isEditing ? 'Remaining duration *' : 'Duration *',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
                     ),
@@ -526,19 +550,21 @@ class _AddUpgradeSheetState extends ConsumerState<AddUpgradeSheet> {
                   Wrap(
                     spacing: 6,
                     runSpacing: 4,
-                    children: List.generate(
-                      widget.village.builderCapacity,
-                      (i) {
-                        final label = 'Builder ${i + 1}';
-                        return ActionChip(
-                          label: Text(label, style: const TextStyle(fontSize: 11)),
-                          backgroundColor: AppColors.surfaceVariant,
-                          onPressed: () {
-                            setState(() => _slotController.text = label);
-                          },
-                        );
-                      },
-                    ),
+                    children: List.generate(widget.village.builderCapacity, (
+                      i,
+                    ) {
+                      final label = 'Builder ${i + 1}';
+                      return ActionChip(
+                        label: Text(
+                          label,
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        backgroundColor: AppColors.surfaceVariant,
+                        onPressed: () {
+                          setState(() => _slotController.text = label);
+                        },
+                      );
+                    }),
                   ),
                   const SizedBox(height: 12),
 
@@ -708,10 +734,7 @@ class _DurationField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.number,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: '0',
-      ),
+      decoration: InputDecoration(labelText: label, hintText: '0'),
       validator: (v) {
         if (v == null || v.trim().isEmpty) return null;
         final n = int.tryParse(v.trim());

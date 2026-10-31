@@ -11,8 +11,8 @@ import 'package:clash_command/domain/services/upgrade_timer_service.dart';
 /// Provides a stream of active upgrades for a specific village.
 final activeUpgradesForVillageProvider =
     StreamProvider.family<List<Upgrade>, String>((ref, villageId) {
-  return ref.watch(upgradesDaoProvider).watchActiveForVillage(villageId);
-});
+      return ref.watch(upgradesDaoProvider).watchActiveForVillage(villageId);
+    });
 
 /// Provides a stream of all active upgrades across all villages.
 final allActiveUpgradesProvider = StreamProvider<List<Upgrade>>((ref) {
@@ -20,22 +20,24 @@ final allActiveUpgradesProvider = StreamProvider<List<Upgrade>>((ref) {
 });
 
 /// Provides all upgrades (history) for a specific village.
-final upgradeHistoryProvider =
-    StreamProvider.family<List<Upgrade>, String>((ref, villageId) {
+final upgradeHistoryProvider = StreamProvider.family<List<Upgrade>, String>((
+  ref,
+  villageId,
+) {
   return ref.watch(upgradesDaoProvider).watchAllForVillage(villageId);
 });
 
 /// Provides a stream of history events for a specific village.
 final villageHistoryEventsProvider =
     StreamProvider.family<List<HistoryEvent>, String>((ref, villageId) {
-  return ref.watch(historyEventsDaoProvider).watchForVillage(villageId);
-});
+      return ref.watch(historyEventsDaoProvider).watchForVillage(villageId);
+    });
 
 /// Provides a stream of history events for a specific upgrade.
 final upgradeHistoryEventsProvider =
     StreamProvider.family<List<HistoryEvent>, String>((ref, upgradeId) {
-  return ref.watch(historyEventsDaoProvider).watchForUpgrade(upgradeId);
-});
+      return ref.watch(historyEventsDaoProvider).watchForUpgrade(upgradeId);
+    });
 
 /// Provides a stream of all history events.
 final allHistoryEventsProvider = StreamProvider<List<HistoryEvent>>((ref) {
@@ -92,7 +94,9 @@ class UpgradesNotifier extends AsyncNotifier<void> {
     // Record history event
     final village = await ref.read(villagesDaoProvider).findById(villageId);
     final displayName = upgrade.displayNameWithLevel;
-    await ref.read(historyEventsDaoProvider).insertEvent(
+    await ref
+        .read(historyEventsDaoProvider)
+        .insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: id,
@@ -151,10 +155,13 @@ class UpgradesNotifier extends AsyncNotifier<void> {
         .read(homeWidgetSyncServiceProvider)
         .syncWidgets(specificVillageId: upgrade.villageId);
 
-    final village =
-        await ref.read(villagesDaoProvider).findById(upgrade.villageId);
+    final village = await ref
+        .read(villagesDaoProvider)
+        .findById(upgrade.villageId);
     final displayName = upgrade.displayNameWithLevel;
-    await ref.read(historyEventsDaoProvider).insertEvent(
+    await ref
+        .read(historyEventsDaoProvider)
+        .insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
@@ -181,10 +188,13 @@ class UpgradesNotifier extends AsyncNotifier<void> {
         .read(homeWidgetSyncServiceProvider)
         .syncWidgets(specificVillageId: upgrade.villageId);
 
-    final village =
-        await ref.read(villagesDaoProvider).findById(upgrade.villageId);
+    final village = await ref
+        .read(villagesDaoProvider)
+        .findById(upgrade.villageId);
     final displayName = upgrade.displayNameWithLevel;
-    await ref.read(historyEventsDaoProvider).insertEvent(
+    await ref
+        .read(historyEventsDaoProvider)
+        .insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
@@ -219,9 +229,12 @@ class UpgradesNotifier extends AsyncNotifier<void> {
         .read(homeWidgetSyncServiceProvider)
         .syncWidgets(specificVillageId: upgrade.villageId);
 
-    final village =
-        await ref.read(villagesDaoProvider).findById(upgrade.villageId);
-    await ref.read(historyEventsDaoProvider).insertEvent(
+    final village = await ref
+        .read(villagesDaoProvider)
+        .findById(upgrade.villageId);
+    await ref
+        .read(historyEventsDaoProvider)
+        .insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
@@ -257,10 +270,13 @@ class UpgradesNotifier extends AsyncNotifier<void> {
         .read(homeWidgetSyncServiceProvider)
         .syncWidgets(specificVillageId: upgrade.villageId);
 
-    final village =
-        await ref.read(villagesDaoProvider).findById(upgrade.villageId);
+    final village = await ref
+        .read(villagesDaoProvider)
+        .findById(upgrade.villageId);
     final displayName = upgrade.displayNameWithLevel;
-    await ref.read(historyEventsDaoProvider).insertEvent(
+    await ref
+        .read(historyEventsDaoProvider)
+        .insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
@@ -331,10 +347,13 @@ class UpgradesNotifier extends AsyncNotifier<void> {
         .read(homeWidgetSyncServiceProvider)
         .syncWidgets(specificVillageId: upgrade.villageId);
 
-    final village =
-        await ref.read(villagesDaoProvider).findById(upgrade.villageId);
+    final village = await ref
+        .read(villagesDaoProvider)
+        .findById(upgrade.villageId);
     final displayName = updated.displayNameWithLevel;
-    await ref.read(historyEventsDaoProvider).insertEvent(
+    await ref
+        .read(historyEventsDaoProvider)
+        .insertEvent(
           HistoryEvent(
             id: const IdGenerator().newId(),
             upgradeId: upgrade.id,
@@ -358,9 +377,12 @@ class UpgradesNotifier extends AsyncNotifier<void> {
       await ref
           .read(homeWidgetSyncServiceProvider)
           .syncWidgets(specificVillageId: upgrade.villageId);
-      final village =
-          await ref.read(villagesDaoProvider).findById(upgrade.villageId);
-      await ref.read(historyEventsDaoProvider).insertEvent(
+      final village = await ref
+          .read(villagesDaoProvider)
+          .findById(upgrade.villageId);
+      await ref
+          .read(historyEventsDaoProvider)
+          .insertEvent(
             HistoryEvent(
               id: const IdGenerator().newId(),
               upgradeId: id,
@@ -376,5 +398,6 @@ class UpgradesNotifier extends AsyncNotifier<void> {
   }
 }
 
-final upgradesNotifierProvider =
-    AsyncNotifierProvider<UpgradesNotifier, void>(UpgradesNotifier.new);
+final upgradesNotifierProvider = AsyncNotifierProvider<UpgradesNotifier, void>(
+  UpgradesNotifier.new,
+);

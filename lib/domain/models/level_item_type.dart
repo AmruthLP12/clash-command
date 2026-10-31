@@ -21,34 +21,13 @@ class LevelItemType {
   static List<String> typesForCategory(UpgradeCategory category) {
     switch (category.primaryCategory) {
       case UpgradeCategory.homeBuilder:
-        return const [
-          buildings,
-          defences,
-          traps,
-          heroes,
-          heroPets,
-          other,
-        ];
+        return const [buildings, defences, traps, heroes, heroPets, other];
       case UpgradeCategory.homeLab:
-        return const [
-          troops,
-          spells,
-          siegeMachines,
-          other,
-        ];
+        return const [troops, spells, siegeMachines, other];
       case UpgradeCategory.builderBaseBuilder:
-        return const [
-          buildings,
-          defences,
-          traps,
-          heroes,
-          other,
-        ];
+        return const [buildings, defences, traps, heroes, other];
       case UpgradeCategory.builderBaseStarLab:
-        return const [
-          troops,
-          other,
-        ];
+        return const [troops, other];
       default:
         return const [other];
     }
@@ -166,4 +145,3 @@ class LevelItemType {
     }
   }
 }
-

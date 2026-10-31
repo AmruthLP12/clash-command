@@ -4,10 +4,7 @@ import 'upgrade_category.dart';
 
 /// Resource requirement for a planned upgrade.
 class PlannerResource {
-  const PlannerResource({
-    required this.type,
-    required this.amount,
-  });
+  const PlannerResource({required this.type, required this.amount});
 
   /// Name of the resource (e.g. 'Gold', 'Elixir', 'Dark Elixir', 'Builder Gold', 'Builder Elixir').
   final String type;
@@ -15,10 +12,7 @@ class PlannerResource {
   /// Required resource amount.
   final int amount;
 
-  Map<String, dynamic> toJson() => {
-        'type': type,
-        'amount': amount,
-      };
+  Map<String, dynamic> toJson() => {'type': type, 'amount': amount};
 
   factory PlannerResource.fromJson(Map<String, dynamic> json) =>
       PlannerResource(
@@ -138,8 +132,7 @@ class PlannerItem {
       villageId: villageId ?? this.villageId,
       category: category ?? this.category,
       name: name ?? this.name,
-      targetLevel:
-          clearTargetLevel ? null : (targetLevel ?? this.targetLevel),
+      targetLevel: clearTargetLevel ? null : (targetLevel ?? this.targetLevel),
       priority: priority ?? this.priority,
       notes: clearNotes ? null : (notes ?? this.notes),
       sortOrder: sortOrder ?? this.sortOrder,

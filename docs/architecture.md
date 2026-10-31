@@ -421,3 +421,28 @@ Native Android home-screen widgets are implemented using `home_widget` (AppWidge
 
 ### SFX player pooling
 - Multi-instance round-robin audio player pool in `AudioService` with `AndroidAudioFocus.none` context preventing latency, clipped audio, or dropped chimes on rapid successive taps.
+
+## 15. Navigation hierarchy, themes & startup optimization
+
+### Profile editing and bottom-right FAB
+- `VillageProfilesScreen` serves as the central hub for profile management: each profile card includes an inline Edit action (`Icons.edit_outlined`) launching `AddVillageSheet(village: village)` to update name, Town Hall level, Builder Hall level, builder capacity, and notes directly on the existing SQLite record without duplicating data.
+- The Add Village action is positioned as a bottom-right `FloatingActionButton.extended`, aligning with the design pattern used in the Upgrade and Planner screens while eliminating redundant header buttons.
+
+### Scoped internal tabs
+- Internal tabs (`PlannerScreen` and `LevelsScreen`) strictly scope all queries and data presentation to the village selected on the opening screen. Profile switch dropdowns are completely removed from internal screens to prevent context confusion.
+
+### Back vs Home navigation & PopScope
+- Explicit separation between Back navigation (`Navigator.maybePop` / Android system back) and Home navigation (`Icons.home_outlined`).
+- `DashboardScreen` wraps its view hierarchy with `PopScope`: system back invocations on non-zero tabs (Planner, Levels, Settings) return to Tab 0 (Dashboard) instead of exiting the village context. Back on Tab 0 returns cleanly to `VillageProfilesScreen`.
+
+### Startup performance and lazy audio
+- Background services (notification reconciliation, exact alarm checks, home widget synchronization) are deferred by 2 seconds off the critical launch frame.
+- Audio player instances are created lazily upon first audio playback demand rather than eagerly constructing method channels during boot, delivering instantaneous sub-second profile screen rendering.
+
+### Dynamic Material 3 themes
+- Appearance options: System Default, Dark Mode (default), and Light Mode managed by `themePreferencesProvider` and stored in `SharedPreferences` (`pref_theme_mode`).
+- `AppColors` dynamically toggles between high-contrast light and dark palettes via `setLight(bool)`, seamlessly supporting existing design token references.
+- Dedicated `buildLightTheme()` and `buildDarkTheme()` provide Material 3 compliance.
+
+### Relative completion date formatting
+- `DateTimeFormat.relativeCompletionDateTime` formats upgrade completion targets into intuitive relative human-readable representations: `Today, <time>`, `Tomorrow, <time>`, or localized calendar dates for later days, with accurate handling for near-midnight transitions across day boundaries.

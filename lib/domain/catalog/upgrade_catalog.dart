@@ -1053,7 +1053,8 @@ class UpgradeCatalog {
   }) {
     final cleanQuery = query.trim().toLowerCase();
     final targetCategory = category.primaryCategory;
-    final isBuilderBase = targetCategory == UpgradeCategory.builderBaseBuilder ||
+    final isBuilderBase =
+        targetCategory == UpgradeCategory.builderBaseBuilder ||
         targetCategory == UpgradeCategory.builderBaseStarLab;
 
     // 1. Filter built-in items for this specific primary category
@@ -1066,13 +1067,16 @@ class UpgradeCatalog {
         itemType.trim().isNotEmpty &&
         itemType != LevelItemType.other) {
       categoryItems = categoryItems
-          .where((item) => LevelItemType.matchesCatalogType(itemType, item.type))
+          .where(
+            (item) => LevelItemType.matchesCatalogType(itemType, item.type),
+          )
           .toList();
     }
 
     // 2. Append custom user suggestions
-    final builtInLowerNames =
-        categoryItems.map((e) => e.name.toLowerCase()).toSet();
+    final builtInLowerNames = categoryItems
+        .map((e) => e.name.toLowerCase())
+        .toSet();
     final customItems = <UpgradeCatalogItem>[];
 
     for (final customName in customNames) {
@@ -1152,4 +1156,3 @@ class UpgradeCatalog {
     return matching;
   }
 }
-
