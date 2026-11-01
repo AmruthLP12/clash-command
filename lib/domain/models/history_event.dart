@@ -10,7 +10,8 @@ enum HistoryEventType {
   villageCreated,
   villageEdited,
   villageArchived,
-  villageDeleted;
+  villageDeleted,
+  villageImported;
 
   String get displayName {
     switch (this) {
@@ -36,6 +37,8 @@ enum HistoryEventType {
         return 'Village Archived';
       case villageDeleted:
         return 'Village Deleted';
+      case villageImported:
+        return 'Village Data Imported';
     }
   }
 

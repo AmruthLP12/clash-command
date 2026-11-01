@@ -3872,6 +3872,27 @@ class $VillageItemLevelsTable extends VillageItemLevels
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _dataIdMeta = const VerificationMeta('dataId');
+  @override
+  late final GeneratedColumn<int> dataId = GeneratedColumn<int>(
+    'data_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _updatedAtUtcMeta = const VerificationMeta(
     'updatedAtUtc',
   );
@@ -3891,6 +3912,8 @@ class $VillageItemLevelsTable extends VillageItemLevels
     itemType,
     itemName,
     currentLevel,
+    quantity,
+    dataId,
     updatedAtUtc,
   ];
   @override
@@ -3951,6 +3974,18 @@ class $VillageItemLevelsTable extends VillageItemLevels
     } else if (isInserting) {
       context.missing(_currentLevelMeta);
     }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
+    if (data.containsKey('data_id')) {
+      context.handle(
+        _dataIdMeta,
+        dataId.isAcceptableOrUnknown(data['data_id']!, _dataIdMeta),
+      );
+    }
     if (data.containsKey('updated_at_utc')) {
       context.handle(
         _updatedAtUtcMeta,
@@ -3969,7 +4004,7 @@ class $VillageItemLevelsTable extends VillageItemLevels
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
   List<Set<GeneratedColumn>> get uniqueKeys => [
-    {villageId, category, itemName},
+    {villageId, category, itemName, currentLevel},
   ];
   @override
   VillageItemLevelRow map(Map<String, dynamic> data, {String? tablePrefix}) {
@@ -3999,6 +4034,14 @@ class $VillageItemLevelsTable extends VillageItemLevels
         DriftSqlType.int,
         data['${effectivePrefix}current_level'],
       )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity'],
+      )!,
+      dataId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}data_id'],
+      ),
       updatedAtUtc: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at_utc'],
@@ -4020,6 +4063,8 @@ class VillageItemLevelRow extends DataClass
   final String? itemType;
   final String itemName;
   final int currentLevel;
+  final int quantity;
+  final int? dataId;
   final DateTime updatedAtUtc;
   const VillageItemLevelRow({
     required this.id,
@@ -4028,6 +4073,8 @@ class VillageItemLevelRow extends DataClass
     this.itemType,
     required this.itemName,
     required this.currentLevel,
+    required this.quantity,
+    this.dataId,
     required this.updatedAtUtc,
   });
   @override
@@ -4041,6 +4088,10 @@ class VillageItemLevelRow extends DataClass
     }
     map['item_name'] = Variable<String>(itemName);
     map['current_level'] = Variable<int>(currentLevel);
+    map['quantity'] = Variable<int>(quantity);
+    if (!nullToAbsent || dataId != null) {
+      map['data_id'] = Variable<int>(dataId);
+    }
     map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc);
     return map;
   }
@@ -4055,6 +4106,10 @@ class VillageItemLevelRow extends DataClass
           : Value(itemType),
       itemName: Value(itemName),
       currentLevel: Value(currentLevel),
+      quantity: Value(quantity),
+      dataId: dataId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dataId),
       updatedAtUtc: Value(updatedAtUtc),
     );
   }
@@ -4071,6 +4126,8 @@ class VillageItemLevelRow extends DataClass
       itemType: serializer.fromJson<String?>(json['itemType']),
       itemName: serializer.fromJson<String>(json['itemName']),
       currentLevel: serializer.fromJson<int>(json['currentLevel']),
+      quantity: serializer.fromJson<int>(json['quantity']),
+      dataId: serializer.fromJson<int?>(json['dataId']),
       updatedAtUtc: serializer.fromJson<DateTime>(json['updatedAtUtc']),
     );
   }
@@ -4084,6 +4141,8 @@ class VillageItemLevelRow extends DataClass
       'itemType': serializer.toJson<String?>(itemType),
       'itemName': serializer.toJson<String>(itemName),
       'currentLevel': serializer.toJson<int>(currentLevel),
+      'quantity': serializer.toJson<int>(quantity),
+      'dataId': serializer.toJson<int?>(dataId),
       'updatedAtUtc': serializer.toJson<DateTime>(updatedAtUtc),
     };
   }
@@ -4095,6 +4154,8 @@ class VillageItemLevelRow extends DataClass
     Value<String?> itemType = const Value.absent(),
     String? itemName,
     int? currentLevel,
+    int? quantity,
+    Value<int?> dataId = const Value.absent(),
     DateTime? updatedAtUtc,
   }) => VillageItemLevelRow(
     id: id ?? this.id,
@@ -4103,6 +4164,8 @@ class VillageItemLevelRow extends DataClass
     itemType: itemType.present ? itemType.value : this.itemType,
     itemName: itemName ?? this.itemName,
     currentLevel: currentLevel ?? this.currentLevel,
+    quantity: quantity ?? this.quantity,
+    dataId: dataId.present ? dataId.value : this.dataId,
     updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
   );
   VillageItemLevelRow copyWithCompanion(VillageItemLevelsCompanion data) {
@@ -4115,6 +4178,8 @@ class VillageItemLevelRow extends DataClass
       currentLevel: data.currentLevel.present
           ? data.currentLevel.value
           : this.currentLevel,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      dataId: data.dataId.present ? data.dataId.value : this.dataId,
       updatedAtUtc: data.updatedAtUtc.present
           ? data.updatedAtUtc.value
           : this.updatedAtUtc,
@@ -4130,6 +4195,8 @@ class VillageItemLevelRow extends DataClass
           ..write('itemType: $itemType, ')
           ..write('itemName: $itemName, ')
           ..write('currentLevel: $currentLevel, ')
+          ..write('quantity: $quantity, ')
+          ..write('dataId: $dataId, ')
           ..write('updatedAtUtc: $updatedAtUtc')
           ..write(')'))
         .toString();
@@ -4143,6 +4210,8 @@ class VillageItemLevelRow extends DataClass
     itemType,
     itemName,
     currentLevel,
+    quantity,
+    dataId,
     updatedAtUtc,
   );
   @override
@@ -4155,6 +4224,8 @@ class VillageItemLevelRow extends DataClass
           other.itemType == this.itemType &&
           other.itemName == this.itemName &&
           other.currentLevel == this.currentLevel &&
+          other.quantity == this.quantity &&
+          other.dataId == this.dataId &&
           other.updatedAtUtc == this.updatedAtUtc);
 }
 
@@ -4165,6 +4236,8 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
   final Value<String?> itemType;
   final Value<String> itemName;
   final Value<int> currentLevel;
+  final Value<int> quantity;
+  final Value<int?> dataId;
   final Value<DateTime> updatedAtUtc;
   final Value<int> rowid;
   const VillageItemLevelsCompanion({
@@ -4174,6 +4247,8 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     this.itemType = const Value.absent(),
     this.itemName = const Value.absent(),
     this.currentLevel = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.dataId = const Value.absent(),
     this.updatedAtUtc = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -4184,6 +4259,8 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     this.itemType = const Value.absent(),
     required String itemName,
     required int currentLevel,
+    this.quantity = const Value.absent(),
+    this.dataId = const Value.absent(),
     required DateTime updatedAtUtc,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -4199,6 +4276,8 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     Expression<String>? itemType,
     Expression<String>? itemName,
     Expression<int>? currentLevel,
+    Expression<int>? quantity,
+    Expression<int>? dataId,
     Expression<DateTime>? updatedAtUtc,
     Expression<int>? rowid,
   }) {
@@ -4209,6 +4288,8 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
       if (itemType != null) 'item_type': itemType,
       if (itemName != null) 'item_name': itemName,
       if (currentLevel != null) 'current_level': currentLevel,
+      if (quantity != null) 'quantity': quantity,
+      if (dataId != null) 'data_id': dataId,
       if (updatedAtUtc != null) 'updated_at_utc': updatedAtUtc,
       if (rowid != null) 'rowid': rowid,
     });
@@ -4221,6 +4302,8 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     Value<String?>? itemType,
     Value<String>? itemName,
     Value<int>? currentLevel,
+    Value<int>? quantity,
+    Value<int?>? dataId,
     Value<DateTime>? updatedAtUtc,
     Value<int>? rowid,
   }) {
@@ -4231,6 +4314,8 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
       itemType: itemType ?? this.itemType,
       itemName: itemName ?? this.itemName,
       currentLevel: currentLevel ?? this.currentLevel,
+      quantity: quantity ?? this.quantity,
+      dataId: dataId ?? this.dataId,
       updatedAtUtc: updatedAtUtc ?? this.updatedAtUtc,
       rowid: rowid ?? this.rowid,
     );
@@ -4257,6 +4342,12 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
     if (currentLevel.present) {
       map['current_level'] = Variable<int>(currentLevel.value);
     }
+    if (quantity.present) {
+      map['quantity'] = Variable<int>(quantity.value);
+    }
+    if (dataId.present) {
+      map['data_id'] = Variable<int>(dataId.value);
+    }
     if (updatedAtUtc.present) {
       map['updated_at_utc'] = Variable<DateTime>(updatedAtUtc.value);
     }
@@ -4275,7 +4366,713 @@ class VillageItemLevelsCompanion extends UpdateCompanion<VillageItemLevelRow> {
           ..write('itemType: $itemType, ')
           ..write('itemName: $itemName, ')
           ..write('currentLevel: $currentLevel, ')
+          ..write('quantity: $quantity, ')
+          ..write('dataId: $dataId, ')
           ..write('updatedAtUtc: $updatedAtUtc, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $VillageImportsTable extends VillageImports
+    with TableInfo<$VillageImportsTable, VillageImportRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VillageImportsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _villageIdMeta = const VerificationMeta(
+    'villageId',
+  );
+  @override
+  late final GeneratedColumn<String> villageId = GeneratedColumn<String>(
+    'village_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES villages (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _villageTagMeta = const VerificationMeta(
+    'villageTag',
+  );
+  @override
+  late final GeneratedColumn<String> villageTag = GeneratedColumn<String>(
+    'village_tag',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 50,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _snapshotTimestampMeta = const VerificationMeta(
+    'snapshotTimestamp',
+  );
+  @override
+  late final GeneratedColumn<int> snapshotTimestamp = GeneratedColumn<int>(
+    'snapshot_timestamp',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _importedAtUtcMeta = const VerificationMeta(
+    'importedAtUtc',
+  );
+  @override
+  late final GeneratedColumn<DateTime> importedAtUtc =
+      GeneratedColumn<DateTime>(
+        'imported_at_utc',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _importedRecordCountMeta =
+      const VerificationMeta('importedRecordCount');
+  @override
+  late final GeneratedColumn<int> importedRecordCount = GeneratedColumn<int>(
+    'imported_record_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _skippedRecordCountMeta =
+      const VerificationMeta('skippedRecordCount');
+  @override
+  late final GeneratedColumn<int> skippedRecordCount = GeneratedColumn<int>(
+    'skipped_record_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _activeUpgradesCountMeta =
+      const VerificationMeta('activeUpgradesCount');
+  @override
+  late final GeneratedColumn<int> activeUpgradesCount = GeneratedColumn<int>(
+    'active_upgrades_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _importModeMeta = const VerificationMeta(
+    'importMode',
+  );
+  @override
+  late final GeneratedColumn<String> importMode = GeneratedColumn<String>(
+    'import_mode',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 20,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _resultMeta = const VerificationMeta('result');
+  @override
+  late final GeneratedColumn<String> result = GeneratedColumn<String>(
+    'result',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 20,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _summaryJsonMeta = const VerificationMeta(
+    'summaryJson',
+  );
+  @override
+  late final GeneratedColumn<String> summaryJson = GeneratedColumn<String>(
+    'summary_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    villageId,
+    villageTag,
+    snapshotTimestamp,
+    importedAtUtc,
+    importedRecordCount,
+    skippedRecordCount,
+    activeUpgradesCount,
+    importMode,
+    result,
+    summaryJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'village_imports';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VillageImportRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('village_id')) {
+      context.handle(
+        _villageIdMeta,
+        villageId.isAcceptableOrUnknown(data['village_id']!, _villageIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_villageIdMeta);
+    }
+    if (data.containsKey('village_tag')) {
+      context.handle(
+        _villageTagMeta,
+        villageTag.isAcceptableOrUnknown(data['village_tag']!, _villageTagMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_villageTagMeta);
+    }
+    if (data.containsKey('snapshot_timestamp')) {
+      context.handle(
+        _snapshotTimestampMeta,
+        snapshotTimestamp.isAcceptableOrUnknown(
+          data['snapshot_timestamp']!,
+          _snapshotTimestampMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotTimestampMeta);
+    }
+    if (data.containsKey('imported_at_utc')) {
+      context.handle(
+        _importedAtUtcMeta,
+        importedAtUtc.isAcceptableOrUnknown(
+          data['imported_at_utc']!,
+          _importedAtUtcMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_importedAtUtcMeta);
+    }
+    if (data.containsKey('imported_record_count')) {
+      context.handle(
+        _importedRecordCountMeta,
+        importedRecordCount.isAcceptableOrUnknown(
+          data['imported_record_count']!,
+          _importedRecordCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('skipped_record_count')) {
+      context.handle(
+        _skippedRecordCountMeta,
+        skippedRecordCount.isAcceptableOrUnknown(
+          data['skipped_record_count']!,
+          _skippedRecordCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('active_upgrades_count')) {
+      context.handle(
+        _activeUpgradesCountMeta,
+        activeUpgradesCount.isAcceptableOrUnknown(
+          data['active_upgrades_count']!,
+          _activeUpgradesCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('import_mode')) {
+      context.handle(
+        _importModeMeta,
+        importMode.isAcceptableOrUnknown(data['import_mode']!, _importModeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_importModeMeta);
+    }
+    if (data.containsKey('result')) {
+      context.handle(
+        _resultMeta,
+        result.isAcceptableOrUnknown(data['result']!, _resultMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_resultMeta);
+    }
+    if (data.containsKey('summary_json')) {
+      context.handle(
+        _summaryJsonMeta,
+        summaryJson.isAcceptableOrUnknown(
+          data['summary_json']!,
+          _summaryJsonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  VillageImportRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VillageImportRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      villageId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}village_id'],
+      )!,
+      villageTag: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}village_tag'],
+      )!,
+      snapshotTimestamp: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}snapshot_timestamp'],
+      )!,
+      importedAtUtc: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}imported_at_utc'],
+      )!,
+      importedRecordCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}imported_record_count'],
+      )!,
+      skippedRecordCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}skipped_record_count'],
+      )!,
+      activeUpgradesCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}active_upgrades_count'],
+      )!,
+      importMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}import_mode'],
+      )!,
+      result: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result'],
+      )!,
+      summaryJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}summary_json'],
+      ),
+    );
+  }
+
+  @override
+  $VillageImportsTable createAlias(String alias) {
+    return $VillageImportsTable(attachedDatabase, alias);
+  }
+}
+
+class VillageImportRow extends DataClass
+    implements Insertable<VillageImportRow> {
+  final String id;
+  final String villageId;
+  final String villageTag;
+  final int snapshotTimestamp;
+  final DateTime importedAtUtc;
+  final int importedRecordCount;
+  final int skippedRecordCount;
+  final int activeUpgradesCount;
+  final String importMode;
+  final String result;
+  final String? summaryJson;
+  const VillageImportRow({
+    required this.id,
+    required this.villageId,
+    required this.villageTag,
+    required this.snapshotTimestamp,
+    required this.importedAtUtc,
+    required this.importedRecordCount,
+    required this.skippedRecordCount,
+    required this.activeUpgradesCount,
+    required this.importMode,
+    required this.result,
+    this.summaryJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['village_id'] = Variable<String>(villageId);
+    map['village_tag'] = Variable<String>(villageTag);
+    map['snapshot_timestamp'] = Variable<int>(snapshotTimestamp);
+    map['imported_at_utc'] = Variable<DateTime>(importedAtUtc);
+    map['imported_record_count'] = Variable<int>(importedRecordCount);
+    map['skipped_record_count'] = Variable<int>(skippedRecordCount);
+    map['active_upgrades_count'] = Variable<int>(activeUpgradesCount);
+    map['import_mode'] = Variable<String>(importMode);
+    map['result'] = Variable<String>(result);
+    if (!nullToAbsent || summaryJson != null) {
+      map['summary_json'] = Variable<String>(summaryJson);
+    }
+    return map;
+  }
+
+  VillageImportsCompanion toCompanion(bool nullToAbsent) {
+    return VillageImportsCompanion(
+      id: Value(id),
+      villageId: Value(villageId),
+      villageTag: Value(villageTag),
+      snapshotTimestamp: Value(snapshotTimestamp),
+      importedAtUtc: Value(importedAtUtc),
+      importedRecordCount: Value(importedRecordCount),
+      skippedRecordCount: Value(skippedRecordCount),
+      activeUpgradesCount: Value(activeUpgradesCount),
+      importMode: Value(importMode),
+      result: Value(result),
+      summaryJson: summaryJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(summaryJson),
+    );
+  }
+
+  factory VillageImportRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VillageImportRow(
+      id: serializer.fromJson<String>(json['id']),
+      villageId: serializer.fromJson<String>(json['villageId']),
+      villageTag: serializer.fromJson<String>(json['villageTag']),
+      snapshotTimestamp: serializer.fromJson<int>(json['snapshotTimestamp']),
+      importedAtUtc: serializer.fromJson<DateTime>(json['importedAtUtc']),
+      importedRecordCount: serializer.fromJson<int>(
+        json['importedRecordCount'],
+      ),
+      skippedRecordCount: serializer.fromJson<int>(json['skippedRecordCount']),
+      activeUpgradesCount: serializer.fromJson<int>(
+        json['activeUpgradesCount'],
+      ),
+      importMode: serializer.fromJson<String>(json['importMode']),
+      result: serializer.fromJson<String>(json['result']),
+      summaryJson: serializer.fromJson<String?>(json['summaryJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'villageId': serializer.toJson<String>(villageId),
+      'villageTag': serializer.toJson<String>(villageTag),
+      'snapshotTimestamp': serializer.toJson<int>(snapshotTimestamp),
+      'importedAtUtc': serializer.toJson<DateTime>(importedAtUtc),
+      'importedRecordCount': serializer.toJson<int>(importedRecordCount),
+      'skippedRecordCount': serializer.toJson<int>(skippedRecordCount),
+      'activeUpgradesCount': serializer.toJson<int>(activeUpgradesCount),
+      'importMode': serializer.toJson<String>(importMode),
+      'result': serializer.toJson<String>(result),
+      'summaryJson': serializer.toJson<String?>(summaryJson),
+    };
+  }
+
+  VillageImportRow copyWith({
+    String? id,
+    String? villageId,
+    String? villageTag,
+    int? snapshotTimestamp,
+    DateTime? importedAtUtc,
+    int? importedRecordCount,
+    int? skippedRecordCount,
+    int? activeUpgradesCount,
+    String? importMode,
+    String? result,
+    Value<String?> summaryJson = const Value.absent(),
+  }) => VillageImportRow(
+    id: id ?? this.id,
+    villageId: villageId ?? this.villageId,
+    villageTag: villageTag ?? this.villageTag,
+    snapshotTimestamp: snapshotTimestamp ?? this.snapshotTimestamp,
+    importedAtUtc: importedAtUtc ?? this.importedAtUtc,
+    importedRecordCount: importedRecordCount ?? this.importedRecordCount,
+    skippedRecordCount: skippedRecordCount ?? this.skippedRecordCount,
+    activeUpgradesCount: activeUpgradesCount ?? this.activeUpgradesCount,
+    importMode: importMode ?? this.importMode,
+    result: result ?? this.result,
+    summaryJson: summaryJson.present ? summaryJson.value : this.summaryJson,
+  );
+  VillageImportRow copyWithCompanion(VillageImportsCompanion data) {
+    return VillageImportRow(
+      id: data.id.present ? data.id.value : this.id,
+      villageId: data.villageId.present ? data.villageId.value : this.villageId,
+      villageTag: data.villageTag.present
+          ? data.villageTag.value
+          : this.villageTag,
+      snapshotTimestamp: data.snapshotTimestamp.present
+          ? data.snapshotTimestamp.value
+          : this.snapshotTimestamp,
+      importedAtUtc: data.importedAtUtc.present
+          ? data.importedAtUtc.value
+          : this.importedAtUtc,
+      importedRecordCount: data.importedRecordCount.present
+          ? data.importedRecordCount.value
+          : this.importedRecordCount,
+      skippedRecordCount: data.skippedRecordCount.present
+          ? data.skippedRecordCount.value
+          : this.skippedRecordCount,
+      activeUpgradesCount: data.activeUpgradesCount.present
+          ? data.activeUpgradesCount.value
+          : this.activeUpgradesCount,
+      importMode: data.importMode.present
+          ? data.importMode.value
+          : this.importMode,
+      result: data.result.present ? data.result.value : this.result,
+      summaryJson: data.summaryJson.present
+          ? data.summaryJson.value
+          : this.summaryJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VillageImportRow(')
+          ..write('id: $id, ')
+          ..write('villageId: $villageId, ')
+          ..write('villageTag: $villageTag, ')
+          ..write('snapshotTimestamp: $snapshotTimestamp, ')
+          ..write('importedAtUtc: $importedAtUtc, ')
+          ..write('importedRecordCount: $importedRecordCount, ')
+          ..write('skippedRecordCount: $skippedRecordCount, ')
+          ..write('activeUpgradesCount: $activeUpgradesCount, ')
+          ..write('importMode: $importMode, ')
+          ..write('result: $result, ')
+          ..write('summaryJson: $summaryJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    villageId,
+    villageTag,
+    snapshotTimestamp,
+    importedAtUtc,
+    importedRecordCount,
+    skippedRecordCount,
+    activeUpgradesCount,
+    importMode,
+    result,
+    summaryJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VillageImportRow &&
+          other.id == this.id &&
+          other.villageId == this.villageId &&
+          other.villageTag == this.villageTag &&
+          other.snapshotTimestamp == this.snapshotTimestamp &&
+          other.importedAtUtc == this.importedAtUtc &&
+          other.importedRecordCount == this.importedRecordCount &&
+          other.skippedRecordCount == this.skippedRecordCount &&
+          other.activeUpgradesCount == this.activeUpgradesCount &&
+          other.importMode == this.importMode &&
+          other.result == this.result &&
+          other.summaryJson == this.summaryJson);
+}
+
+class VillageImportsCompanion extends UpdateCompanion<VillageImportRow> {
+  final Value<String> id;
+  final Value<String> villageId;
+  final Value<String> villageTag;
+  final Value<int> snapshotTimestamp;
+  final Value<DateTime> importedAtUtc;
+  final Value<int> importedRecordCount;
+  final Value<int> skippedRecordCount;
+  final Value<int> activeUpgradesCount;
+  final Value<String> importMode;
+  final Value<String> result;
+  final Value<String?> summaryJson;
+  final Value<int> rowid;
+  const VillageImportsCompanion({
+    this.id = const Value.absent(),
+    this.villageId = const Value.absent(),
+    this.villageTag = const Value.absent(),
+    this.snapshotTimestamp = const Value.absent(),
+    this.importedAtUtc = const Value.absent(),
+    this.importedRecordCount = const Value.absent(),
+    this.skippedRecordCount = const Value.absent(),
+    this.activeUpgradesCount = const Value.absent(),
+    this.importMode = const Value.absent(),
+    this.result = const Value.absent(),
+    this.summaryJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  VillageImportsCompanion.insert({
+    required String id,
+    required String villageId,
+    required String villageTag,
+    required int snapshotTimestamp,
+    required DateTime importedAtUtc,
+    this.importedRecordCount = const Value.absent(),
+    this.skippedRecordCount = const Value.absent(),
+    this.activeUpgradesCount = const Value.absent(),
+    required String importMode,
+    required String result,
+    this.summaryJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       villageId = Value(villageId),
+       villageTag = Value(villageTag),
+       snapshotTimestamp = Value(snapshotTimestamp),
+       importedAtUtc = Value(importedAtUtc),
+       importMode = Value(importMode),
+       result = Value(result);
+  static Insertable<VillageImportRow> custom({
+    Expression<String>? id,
+    Expression<String>? villageId,
+    Expression<String>? villageTag,
+    Expression<int>? snapshotTimestamp,
+    Expression<DateTime>? importedAtUtc,
+    Expression<int>? importedRecordCount,
+    Expression<int>? skippedRecordCount,
+    Expression<int>? activeUpgradesCount,
+    Expression<String>? importMode,
+    Expression<String>? result,
+    Expression<String>? summaryJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (villageId != null) 'village_id': villageId,
+      if (villageTag != null) 'village_tag': villageTag,
+      if (snapshotTimestamp != null) 'snapshot_timestamp': snapshotTimestamp,
+      if (importedAtUtc != null) 'imported_at_utc': importedAtUtc,
+      if (importedRecordCount != null)
+        'imported_record_count': importedRecordCount,
+      if (skippedRecordCount != null)
+        'skipped_record_count': skippedRecordCount,
+      if (activeUpgradesCount != null)
+        'active_upgrades_count': activeUpgradesCount,
+      if (importMode != null) 'import_mode': importMode,
+      if (result != null) 'result': result,
+      if (summaryJson != null) 'summary_json': summaryJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  VillageImportsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? villageId,
+    Value<String>? villageTag,
+    Value<int>? snapshotTimestamp,
+    Value<DateTime>? importedAtUtc,
+    Value<int>? importedRecordCount,
+    Value<int>? skippedRecordCount,
+    Value<int>? activeUpgradesCount,
+    Value<String>? importMode,
+    Value<String>? result,
+    Value<String?>? summaryJson,
+    Value<int>? rowid,
+  }) {
+    return VillageImportsCompanion(
+      id: id ?? this.id,
+      villageId: villageId ?? this.villageId,
+      villageTag: villageTag ?? this.villageTag,
+      snapshotTimestamp: snapshotTimestamp ?? this.snapshotTimestamp,
+      importedAtUtc: importedAtUtc ?? this.importedAtUtc,
+      importedRecordCount: importedRecordCount ?? this.importedRecordCount,
+      skippedRecordCount: skippedRecordCount ?? this.skippedRecordCount,
+      activeUpgradesCount: activeUpgradesCount ?? this.activeUpgradesCount,
+      importMode: importMode ?? this.importMode,
+      result: result ?? this.result,
+      summaryJson: summaryJson ?? this.summaryJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (villageId.present) {
+      map['village_id'] = Variable<String>(villageId.value);
+    }
+    if (villageTag.present) {
+      map['village_tag'] = Variable<String>(villageTag.value);
+    }
+    if (snapshotTimestamp.present) {
+      map['snapshot_timestamp'] = Variable<int>(snapshotTimestamp.value);
+    }
+    if (importedAtUtc.present) {
+      map['imported_at_utc'] = Variable<DateTime>(importedAtUtc.value);
+    }
+    if (importedRecordCount.present) {
+      map['imported_record_count'] = Variable<int>(importedRecordCount.value);
+    }
+    if (skippedRecordCount.present) {
+      map['skipped_record_count'] = Variable<int>(skippedRecordCount.value);
+    }
+    if (activeUpgradesCount.present) {
+      map['active_upgrades_count'] = Variable<int>(activeUpgradesCount.value);
+    }
+    if (importMode.present) {
+      map['import_mode'] = Variable<String>(importMode.value);
+    }
+    if (result.present) {
+      map['result'] = Variable<String>(result.value);
+    }
+    if (summaryJson.present) {
+      map['summary_json'] = Variable<String>(summaryJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VillageImportsCompanion(')
+          ..write('id: $id, ')
+          ..write('villageId: $villageId, ')
+          ..write('villageTag: $villageTag, ')
+          ..write('snapshotTimestamp: $snapshotTimestamp, ')
+          ..write('importedAtUtc: $importedAtUtc, ')
+          ..write('importedRecordCount: $importedRecordCount, ')
+          ..write('skippedRecordCount: $skippedRecordCount, ')
+          ..write('activeUpgradesCount: $activeUpgradesCount, ')
+          ..write('importMode: $importMode, ')
+          ..write('result: $result, ')
+          ..write('summaryJson: $summaryJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4295,6 +5092,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PlannerItemsTable plannerItems = $PlannerItemsTable(this);
   late final $VillageItemLevelsTable villageItemLevels =
       $VillageItemLevelsTable(this);
+  late final $VillageImportsTable villageImports = $VillageImportsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4307,6 +5105,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     customUpgradeSuggestions,
     plannerItems,
     villageItemLevels,
+    villageImports,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -4330,6 +5129,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('village_item_levels', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'villages',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('village_imports', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -4417,6 +5223,24 @@ final class $$VillagesTableReferences
     final cache = $_typedResult.readTableOrNull(
       _villageItemLevelsRefsTable($_db),
     );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$VillageImportsTable, List<VillageImportRow>>
+  _villageImportsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.villageImports,
+    aliasName: 'villages__id__village_imports__village_id',
+  );
+
+  $$VillageImportsTableProcessedTableManager get villageImportsRefs {
+    final manager = $$VillageImportsTableTableManager(
+      $_db,
+      $_db.villageImports,
+    ).filter((f) => f.villageId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_villageImportsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -4548,6 +5372,31 @@ class $$VillagesTableFilterComposer
           }) => $$VillageItemLevelsTableFilterComposer(
             $db: $db,
             $table: $db.villageItemLevels,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> villageImportsRefs(
+    Expression<bool> Function($$VillageImportsTableFilterComposer f) f,
+  ) {
+    final $$VillageImportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.villageImports,
+      getReferencedColumn: (t) => t.villageId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillageImportsTableFilterComposer(
+            $db: $db,
+            $table: $db.villageImports,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4744,6 +5593,31 @@ class $$VillagesTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> villageImportsRefs<T extends Object>(
+    Expression<T> Function($$VillageImportsTableAnnotationComposer a) f,
+  ) {
+    final $$VillageImportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.villageImports,
+      getReferencedColumn: (t) => t.villageId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillageImportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.villageImports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$VillagesTableTableManager
@@ -4763,6 +5637,7 @@ class $$VillagesTableTableManager
             bool upgradesRefs,
             bool plannerItemsRefs,
             bool villageItemLevelsRefs,
+            bool villageImportsRefs,
           })
         > {
   $$VillagesTableTableManager(_$AppDatabase db, $VillagesTable table)
@@ -4841,6 +5716,7 @@ class $$VillagesTableTableManager
                 upgradesRefs = false,
                 plannerItemsRefs = false,
                 villageItemLevelsRefs = false,
+                villageImportsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -4848,6 +5724,7 @@ class $$VillagesTableTableManager
                     if (upgradesRefs) db.upgrades,
                     if (plannerItemsRefs) db.plannerItems,
                     if (villageItemLevelsRefs) db.villageItemLevels,
+                    if (villageImportsRefs) db.villageImports,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -4915,6 +5792,27 @@ class $$VillagesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (villageImportsRefs)
+                        await $_getPrefetchedData<
+                          VillageRow,
+                          $VillagesTable,
+                          VillageImportRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$VillagesTableReferences
+                              ._villageImportsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$VillagesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).villageImportsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.villageId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -4939,6 +5837,7 @@ typedef $$VillagesTableProcessedTableManager =
         bool upgradesRefs,
         bool plannerItemsRefs,
         bool villageItemLevelsRefs,
+        bool villageImportsRefs,
       })
     >;
 typedef $$UpgradesTableCreateCompanionBuilder = UpgradesCompanion Function({
@@ -6744,6 +7643,8 @@ typedef $$VillageItemLevelsTableCreateCompanionBuilder =
       Value<String?> itemType,
       required String itemName,
       required int currentLevel,
+      Value<int> quantity,
+      Value<int?> dataId,
       required DateTime updatedAtUtc,
       Value<int> rowid,
     });
@@ -6755,6 +7656,8 @@ typedef $$VillageItemLevelsTableUpdateCompanionBuilder =
       Value<String?> itemType,
       Value<String> itemName,
       Value<int> currentLevel,
+      Value<int> quantity,
+      Value<int?> dataId,
       Value<DateTime> updatedAtUtc,
       Value<int> rowid,
     });
@@ -6824,6 +7727,16 @@ class $$VillageItemLevelsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dataId => $composableBuilder(
+    column: $table.dataId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get updatedAtUtc => $composableBuilder(
     column: $table.updatedAtUtc,
     builder: (column) => ColumnFilters(column),
@@ -6887,6 +7800,16 @@ class $$VillageItemLevelsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dataId => $composableBuilder(
+    column: $table.dataId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get updatedAtUtc => $composableBuilder(
     column: $table.updatedAtUtc,
     builder: (column) => ColumnOrderings(column),
@@ -6941,6 +7864,12 @@ class $$VillageItemLevelsTableAnnotationComposer
     column: $table.currentLevel,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<int> get dataId =>
+      $composableBuilder(column: $table.dataId, builder: (column) => column);
 
   GeneratedColumn<DateTime> get updatedAtUtc => $composableBuilder(
     column: $table.updatedAtUtc,
@@ -7010,6 +7939,8 @@ class $$VillageItemLevelsTableTableManager
                 Value<String?> itemType = const Value.absent(),
                 Value<String> itemName = const Value.absent(),
                 Value<int> currentLevel = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
+                Value<int?> dataId = const Value.absent(),
                 Value<DateTime> updatedAtUtc = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => VillageItemLevelsCompanion(
@@ -7019,6 +7950,8 @@ class $$VillageItemLevelsTableTableManager
                 itemType: itemType,
                 itemName: itemName,
                 currentLevel: currentLevel,
+                quantity: quantity,
+                dataId: dataId,
                 updatedAtUtc: updatedAtUtc,
                 rowid: rowid,
               ),
@@ -7030,6 +7963,8 @@ class $$VillageItemLevelsTableTableManager
                 Value<String?> itemType = const Value.absent(),
                 required String itemName,
                 required int currentLevel,
+                Value<int> quantity = const Value.absent(),
+                Value<int?> dataId = const Value.absent(),
                 required DateTime updatedAtUtc,
                 Value<int> rowid = const Value.absent(),
               }) => VillageItemLevelsCompanion.insert(
@@ -7039,6 +7974,8 @@ class $$VillageItemLevelsTableTableManager
                 itemType: itemType,
                 itemName: itemName,
                 currentLevel: currentLevel,
+                quantity: quantity,
+                dataId: dataId,
                 updatedAtUtc: updatedAtUtc,
                 rowid: rowid,
               ),
@@ -7109,6 +8046,458 @@ typedef $$VillageItemLevelsTableProcessedTableManager =
       VillageItemLevelRow,
       PrefetchHooks Function({bool villageId})
     >;
+typedef $$VillageImportsTableCreateCompanionBuilder =
+    VillageImportsCompanion Function({
+      required String id,
+      required String villageId,
+      required String villageTag,
+      required int snapshotTimestamp,
+      required DateTime importedAtUtc,
+      Value<int> importedRecordCount,
+      Value<int> skippedRecordCount,
+      Value<int> activeUpgradesCount,
+      required String importMode,
+      required String result,
+      Value<String?> summaryJson,
+      Value<int> rowid,
+    });
+typedef $$VillageImportsTableUpdateCompanionBuilder =
+    VillageImportsCompanion Function({
+      Value<String> id,
+      Value<String> villageId,
+      Value<String> villageTag,
+      Value<int> snapshotTimestamp,
+      Value<DateTime> importedAtUtc,
+      Value<int> importedRecordCount,
+      Value<int> skippedRecordCount,
+      Value<int> activeUpgradesCount,
+      Value<String> importMode,
+      Value<String> result,
+      Value<String?> summaryJson,
+      Value<int> rowid,
+    });
+
+final class $$VillageImportsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $VillageImportsTable, VillageImportRow> {
+  $$VillageImportsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $VillagesTable _villageIdTable(_$AppDatabase db) =>
+      db.villages.createAlias('village_imports__village_id__villages__id');
+
+  $$VillagesTableProcessedTableManager get villageId {
+    final $_column = $_itemColumn<String>('village_id')!;
+
+    final manager = $$VillagesTableTableManager(
+      $_db,
+      $_db.villages,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_villageIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$VillageImportsTableFilterComposer
+    extends Composer<_$AppDatabase, $VillageImportsTable> {
+  $$VillageImportsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get villageTag => $composableBuilder(
+    column: $table.villageTag,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get snapshotTimestamp => $composableBuilder(
+    column: $table.snapshotTimestamp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get importedAtUtc => $composableBuilder(
+    column: $table.importedAtUtc,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get importedRecordCount => $composableBuilder(
+    column: $table.importedRecordCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get skippedRecordCount => $composableBuilder(
+    column: $table.skippedRecordCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get activeUpgradesCount => $composableBuilder(
+    column: $table.activeUpgradesCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get importMode => $composableBuilder(
+    column: $table.importMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get result => $composableBuilder(
+    column: $table.result,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get summaryJson => $composableBuilder(
+    column: $table.summaryJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$VillagesTableFilterComposer get villageId {
+    final $$VillagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableFilterComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VillageImportsTableOrderingComposer
+    extends Composer<_$AppDatabase, $VillageImportsTable> {
+  $$VillageImportsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get villageTag => $composableBuilder(
+    column: $table.villageTag,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get snapshotTimestamp => $composableBuilder(
+    column: $table.snapshotTimestamp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get importedAtUtc => $composableBuilder(
+    column: $table.importedAtUtc,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get importedRecordCount => $composableBuilder(
+    column: $table.importedRecordCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get skippedRecordCount => $composableBuilder(
+    column: $table.skippedRecordCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get activeUpgradesCount => $composableBuilder(
+    column: $table.activeUpgradesCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get importMode => $composableBuilder(
+    column: $table.importMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get result => $composableBuilder(
+    column: $table.result,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get summaryJson => $composableBuilder(
+    column: $table.summaryJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$VillagesTableOrderingComposer get villageId {
+    final $$VillagesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableOrderingComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VillageImportsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $VillageImportsTable> {
+  $$VillageImportsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get villageTag => $composableBuilder(
+    column: $table.villageTag,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get snapshotTimestamp => $composableBuilder(
+    column: $table.snapshotTimestamp,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get importedAtUtc => $composableBuilder(
+    column: $table.importedAtUtc,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get importedRecordCount => $composableBuilder(
+    column: $table.importedRecordCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get skippedRecordCount => $composableBuilder(
+    column: $table.skippedRecordCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get activeUpgradesCount => $composableBuilder(
+    column: $table.activeUpgradesCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get importMode => $composableBuilder(
+    column: $table.importMode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get result =>
+      $composableBuilder(column: $table.result, builder: (column) => column);
+
+  GeneratedColumn<String> get summaryJson => $composableBuilder(
+    column: $table.summaryJson,
+    builder: (column) => column,
+  );
+
+  $$VillagesTableAnnotationComposer get villageId {
+    final $$VillagesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.villageId,
+      referencedTable: $db.villages,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$VillagesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.villages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$VillageImportsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $VillageImportsTable,
+          VillageImportRow,
+          $$VillageImportsTableFilterComposer,
+          $$VillageImportsTableOrderingComposer,
+          $$VillageImportsTableAnnotationComposer,
+          $$VillageImportsTableCreateCompanionBuilder,
+          $$VillageImportsTableUpdateCompanionBuilder,
+          (VillageImportRow, $$VillageImportsTableReferences),
+          VillageImportRow,
+          PrefetchHooks Function({bool villageId})
+        > {
+  $$VillageImportsTableTableManager(
+    _$AppDatabase db,
+    $VillageImportsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$VillageImportsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$VillageImportsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$VillageImportsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> villageId = const Value.absent(),
+                Value<String> villageTag = const Value.absent(),
+                Value<int> snapshotTimestamp = const Value.absent(),
+                Value<DateTime> importedAtUtc = const Value.absent(),
+                Value<int> importedRecordCount = const Value.absent(),
+                Value<int> skippedRecordCount = const Value.absent(),
+                Value<int> activeUpgradesCount = const Value.absent(),
+                Value<String> importMode = const Value.absent(),
+                Value<String> result = const Value.absent(),
+                Value<String?> summaryJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VillageImportsCompanion(
+                id: id,
+                villageId: villageId,
+                villageTag: villageTag,
+                snapshotTimestamp: snapshotTimestamp,
+                importedAtUtc: importedAtUtc,
+                importedRecordCount: importedRecordCount,
+                skippedRecordCount: skippedRecordCount,
+                activeUpgradesCount: activeUpgradesCount,
+                importMode: importMode,
+                result: result,
+                summaryJson: summaryJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String villageId,
+                required String villageTag,
+                required int snapshotTimestamp,
+                required DateTime importedAtUtc,
+                Value<int> importedRecordCount = const Value.absent(),
+                Value<int> skippedRecordCount = const Value.absent(),
+                Value<int> activeUpgradesCount = const Value.absent(),
+                required String importMode,
+                required String result,
+                Value<String?> summaryJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VillageImportsCompanion.insert(
+                id: id,
+                villageId: villageId,
+                villageTag: villageTag,
+                snapshotTimestamp: snapshotTimestamp,
+                importedAtUtc: importedAtUtc,
+                importedRecordCount: importedRecordCount,
+                skippedRecordCount: skippedRecordCount,
+                activeUpgradesCount: activeUpgradesCount,
+                importMode: importMode,
+                result: result,
+                summaryJson: summaryJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$VillageImportsTable, VillageImportRow>(table),
+                  $$VillageImportsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({villageId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (villageId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.villageId,
+                        referencedTable: $$VillageImportsTableReferences
+                            ._villageIdTable(db),
+                        referencedColumn: $$VillageImportsTableReferences
+                            ._villageIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$VillageImportsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $VillageImportsTable,
+      VillageImportRow,
+      $$VillageImportsTableFilterComposer,
+      $$VillageImportsTableOrderingComposer,
+      $$VillageImportsTableAnnotationComposer,
+      $$VillageImportsTableCreateCompanionBuilder,
+      $$VillageImportsTableUpdateCompanionBuilder,
+      (VillageImportRow, $$VillageImportsTableReferences),
+      VillageImportRow,
+      PrefetchHooks Function({bool villageId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7133,4 +8522,6 @@ class $AppDatabaseManager {
       $$PlannerItemsTableTableManager(_db, _db.plannerItems);
   $$VillageItemLevelsTableTableManager get villageItemLevels =>
       $$VillageItemLevelsTableTableManager(_db, _db.villageItemLevels);
+  $$VillageImportsTableTableManager get villageImports =>
+      $$VillageImportsTableTableManager(_db, _db.villageImports);
 }

@@ -10,6 +10,7 @@ import 'tables/history_events_table.dart';
 import 'tables/notification_preferences_table.dart';
 import 'tables/planner_items_table.dart';
 import 'tables/upgrades_table.dart';
+import 'tables/village_imports_table.dart';
 import 'tables/village_item_levels_table.dart';
 import 'tables/villages_table.dart';
 
@@ -28,6 +29,7 @@ part 'app_database.g.dart';
     CustomUpgradeSuggestions,
     PlannerItems,
     VillageItemLevels,
+    VillageImports,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -37,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -72,6 +74,11 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 6) {
           await m.addColumn(villageItemLevels, villageItemLevels.itemType);
+        }
+        if (from < 7) {
+          await m.addColumn(villageItemLevels, villageItemLevels.quantity);
+          await m.addColumn(villageItemLevels, villageItemLevels.dataId);
+          await m.createTable(villageImports);
         }
       },
     );

@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 import 'villages_table.dart';
 
-/// Stores the current levels of tracked items for a specific village.
+/// Stores the current levels and quantities of tracked items for a specific village.
 @DataClassName('VillageItemLevelRow')
 class VillageItemLevels extends Table {
   TextColumn get id => text()();
@@ -12,6 +12,8 @@ class VillageItemLevels extends Table {
   TextColumn get itemType => text().nullable()();
   TextColumn get itemName => text().withLength(min: 1, max: 200)();
   IntColumn get currentLevel => integer()();
+  IntColumn get quantity => integer().withDefault(const Constant(1))();
+  IntColumn get dataId => integer().nullable()();
   DateTimeColumn get updatedAtUtc => dateTime()();
 
   @override
@@ -19,6 +21,6 @@ class VillageItemLevels extends Table {
 
   @override
   List<Set<Column>> get uniqueKeys => [
-    {villageId, category, itemName},
+    {villageId, category, itemName, currentLevel},
   ];
 }

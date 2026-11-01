@@ -92,6 +92,17 @@ clear.
 -   Upgrade completions display relative dates (`Today`, `Tomorrow`, or localized date for later days).
 -   Audio is restricted to meaningful user actions; no audio on tab switches or passive navigation.
 
+## Data Import and Backup Rules
+
+-   **Village JSON Import**: 100% offline parsing of Clash of Clans village export files.
+-   `CocDataIdCatalog` maps numeric `data` IDs to canonical item names, facilities, and subcategories. Unknown IDs are quarantined into an unmapped preview list.
+-   Levels table supports multi-level quantity aggregation via `quantity` and `dataId` columns with compound uniqueness on `(villageId, category, itemName, currentLevel)`.
+-   Timers calculate `completion_time = snapshot_time + remaining_seconds`. Future timers become active upgrades; expired timers are recorded in Levels for review. Helper timers are ignored.
+-   Interactive preview screen before commit. Merge mode updates records and skips active duplicates; Replace mode wipes village's tracked levels/active upgrades first.
+-   **Full Backup & Restore**: `.clashcommandbackup` archive containing `manifest.json`, `database.json`, and `preferences.json`.
+-   Safety backup (`safety_pre_restore.clashcommandbackup`) is created before destructive restore.
+-   Restoration executes in a single atomic database transaction; notifications and widgets are rescheduled post-restore.
+
 ## Quality gates
 
 Before considering a feature complete: - `dart format` has been run. -

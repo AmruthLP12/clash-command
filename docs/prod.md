@@ -297,3 +297,18 @@ path in ordinary create/edit/complete/cancel workflows.
 -   **Scoped Tabs**: Internal tabs (Dashboard, Planner, Levels, Settings) are strictly scoped to the active village; village switch dropdowns are removed from internal tabs.
 -   **Relative Completion Dates**: Live upgrades show `Today, <time>`, `Tomorrow, <time>`, or localized calendar dates for later days.
 -   **Disciplined Audio**: Sound effects for meaningful user actions only (profile selection, starting an upgrade, planning, level tracking, village save).
+
+## 12. Clash of Clans JSON Import and Full Application Backup/Restore
+
+-   **Village JSON Import (100% Offline)**: Imports official Clash of Clans export JSON via document picker or paste.
+    -   Maps 150+ game IDs across Home Village and Builder Base (`CocDataIdCatalog`). Unknown IDs are quarantined into an unmapped review section.
+    -   Preserves quantities and multi-level distributions (e.g. walls) via `quantity` and `dataId` columns.
+    -   Calculates timers deterministically: `completion_time = snapshot_time + timer`. Future timers become active upgrades; expired timers are recorded in Levels for review. Helper timers are ignored.
+    -   Provides interactive preview screen with Merge vs Replace modes, duplicate snapshot detection, and audit logging (`VillageImports` table).
+-   **Complete Application Backup & Restore**:
+    -   Generates portable `.clashcommandbackup` ZIP archives containing `manifest.json`, `database.json`, and `preferences.json`.
+    -   Captures all 8 Drift tables and user `SharedPreferences`.
+    -   Validates manifest and structure prior to destructive restore.
+    -   Automatically creates a safety backup (`safety_pre_restore.clashcommandbackup`) before wiping and restoring tables.
+    -   Executes restore in a single atomic database transaction; automatically reconciles notifications and widgets post-restore.
+    -   Configurable via Settings → Data Management with last backup date indicator.

@@ -292,6 +292,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         return Icons.archive;
       case HistoryEventType.villageDeleted:
         return Icons.delete_forever;
+      case HistoryEventType.villageImported:
+        return Icons.file_download;
     }
   }
 

@@ -17,6 +17,8 @@ Clash Command is an Android-first, offline-first Flutter application designed to
 
 ## Features
 
+- **Clash of Clans JSON Import**: 100% offline import of official Clash of Clans export JSON via document picker or paste. Recognizes buildings, traps, units, siege machines, heroes, spells, pets, equipment, and Builder Base data. Maps 150+ game IDs, preserves quantities across levels (e.g. walls), schedules future timers as active upgrades, flags expired timers, and provides Merge vs Replace modes with duplicate snapshot detection.
+- **Complete Application Backup & Restore**: Portable `.clashcommandbackup` archive containing versioned manifest, SQLite database, and user preferences. Pre-restore validation, automatic safety backup creation before destructive restore, atomic transactions, and automatic notification reconciliation.
 - **Multi-Village Management**: Profile-first opening screen with quick village switching, inline profile editing, and bottom-right floating action button. Configure Town Hall levels, Builder Hall levels, notes, and builder capacities (1–6 builders).
 - **Light & Dark Theme Modes**: Material 3 dark (default) and light themes with system default option, immediate reactive switching, and dynamic color palettes.
 - **Relative Completion Dates**: Live countdowns and friendly completion targets (`Today, 8:45 PM`, `Tomorrow, 10:30 AM`, or localized calendar dates for later days).

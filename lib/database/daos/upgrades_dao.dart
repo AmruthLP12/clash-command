@@ -71,6 +71,26 @@ class UpgradesDao extends DatabaseAccessor<AppDatabase>
     await into(upgrades).insertOnConflictUpdate(upgrade.toCompanion());
   }
 
+  /// Deletes all active upgrades for a village.
+  Future<void> deleteActiveForVillage(String villageId) async {
+    await (delete(upgrades)..where(
+          (u) =>
+              u.villageId.equals(villageId) &
+              u.status.equals(UpgradeStatus.active.name),
+        ))
+        .go();
+  }
+
+  /// Batch inserts or replaces multiple upgrades.
+  Future<void> batchUpsert(List<Upgrade> items) async {
+    await batch((b) {
+      b.insertAllOnConflictUpdate(
+        upgrades,
+        items.map((u) => u.toCompanion()).toList(),
+      );
+    });
+  }
+
   /// Deletes an upgrade by ID.
   Future<void> deleteUpgrade(String id) async {
     await (delete(upgrades)..where((u) => u.id.equals(id))).go();

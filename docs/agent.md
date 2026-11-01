@@ -96,6 +96,15 @@ instructions for all work in this repository.
     requirements before configuration.
 -   Do not claim exact-time delivery is guaranteed.
 
+## JSON Import and Backup/Restore rules
+
+-   Maintain 100% offline behavior; zero external network requests.
+-   Calculate timers as `completion_time = snapshot_time + timer`; never add remaining time to current import time.
+-   Preserve quantities across multiple levels for the same item ID (e.g. wall distributions).
+-   Always create a safety backup before executing a destructive database restore.
+-   Execute restores and imports inside single atomic transactions with rollback protection.
+-   Always reconcile notifications and sync widgets post-import and post-restore.
+
 ## Completion checklist
 
 -   [ ] Acceptance criteria from `prod.md` are met.

@@ -11,7 +11,11 @@ import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/core/constants/app_support_links.dart';
 import 'package:clash_command/core/formatting/date_time_format.dart';
 import 'package:clash_command/core/theme/theme_preferences.dart';
+import 'package:clash_command/features/backup/application/backup_service.dart';
+import 'package:clash_command/features/backup/presentation/backup_restore_dialogs.dart';
 import 'package:clash_command/features/history/presentation/history_screen.dart';
+import 'package:clash_command/features/import/presentation/import_history_sheet.dart';
+import 'package:clash_command/features/import/presentation/import_village_screen.dart';
 
 /// Settings screen for managing notifications, permissions, and app preferences.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -29,12 +33,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   int _scheduledCount = 0;
   int _activeUpgradesCount = 0;
   DateTime? _nextCompletion;
+  String? _lastBackupDate;
 
   @override
   void initState() {
     super.initState();
     _checkPermission();
     _loadDiagnostics();
+    _loadLastBackupDate();
+  }
+
+  Future<void> _loadLastBackupDate() async {
+    final date = await BackupService.getLastBackupDateString();
+    if (mounted) setState(() => _lastBackupDate = date);
   }
 
   Future<void> _checkPermission() async {
@@ -548,6 +559,162 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       MaterialPageRoute(builder: (_) => const HistoryScreen()),
                     );
                   },
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Section: Data Management
+              Text(
+                'DATA MANAGEMENT',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.1,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.card,
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: Icon(
+                        Icons.file_download_outlined,
+                        color: AppColors.accent,
+                      ),
+                      title: const Text(
+                        'Import Clash of Clans JSON',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        'Import village buildings, troops, heroes, levels, and active timers',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ImportVillageScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: Icon(
+                        Icons.backup_outlined,
+                        color: AppColors.accent,
+                      ),
+                      title: const Text(
+                        'Create Backup',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        'Export all villages, upgrades, levels, and settings (.clashcommandbackup)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        await BackupRestoreDialogs.showCreateBackupWorkflow(
+                          context,
+                          ref,
+                        );
+                        _loadLastBackupDate();
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: Icon(
+                        Icons.restore_outlined,
+                        color: AppColors.accent,
+                      ),
+                      title: const Text(
+                        'Restore Backup',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        'Restore database and preferences from a backup archive with safety rollback',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        await BackupRestoreDialogs.showRestoreWorkflow(
+                          context,
+                          ref,
+                        );
+                        _loadLastBackupDate();
+                      },
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: Icon(
+                        Icons.history_edu_outlined,
+                        color: AppColors.accent,
+                      ),
+                      title: const Text(
+                        'Previous Imports',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        'View JSON snapshot import history and records',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: AppColors.surface,
+                          builder: (_) => const ImportHistorySheet(),
+                        );
+                      },
+                    ),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant.withValues(alpha: 0.5),
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.shield_outlined,
+                            size: 14,
+                            color: AppColors.textMuted,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              _lastBackupDate != null
+                                  ? 'Last backup: ${DateTimeFormat.shortDateTime(DateTime.parse(_lastBackupDate!), dateFormat: displayPrefs.dateFormat, timeFormat: displayPrefs.timeFormat)}'
+                                  : 'No local backup created yet. Tap "Create Backup" to export.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),

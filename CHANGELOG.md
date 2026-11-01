@@ -4,6 +4,29 @@ All notable changes to Clash Command are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] - 2026-11-01
+
+### Added
+- **Clash of Clans Village JSON Import (100% Offline)**:
+  - Import full Clash of Clans exports via Android document picker or paste JSON. Zero network calls; 100% offline.
+  - Comprehensive parsing across Home Village and Builder Base: `buildings`, `traps`, `units`, `siege_machines`, `heroes`, `spells`, `pets`, `equipment`, `buildings2`, `traps2`, `units2`, `heroes2`, `helpers`, `boosts`, `decos`, `obstacles`, and nested `types[].modules[]`.
+  - Built-in maintainable `CocDataIdCatalog` resolving 150+ game data IDs to canonical names, facilities, and subcategories. Unknown IDs are gracefully isolated in an Unsupported/Unmapped review section.
+  - Multi-level and quantity preservation (e.g. 40 level 13 walls and 260 level 14 walls). Extended database with `quantity` and `dataId` columns and added visual badges (`×40`) in Levels screen without breaking manual workflows.
+  - Snapshot timer calculation: `completion_time = snapshot_time + timer`. Future completions are scheduled as active upgrades; expired completions are imported to Levels for review. Helper timers (`helper_timer`, `helper_cooldown`) are safely ignored.
+  - Interactive import preview screen supporting **Merge (Recommended)** vs **Replace** modes, target village selection (or instant creation from tag), and duplicate snapshot timestamp warnings.
+  - Import history recording in `VillageImports` SQLite table and viewer sheet in Settings.
+- **Complete Application Backup & Restore**:
+  - Full portable `.clashcommandbackup` archive containing versioned `manifest.json`, `database.json`, and `preferences.json`.
+  - Includes all 8 Drift tables (`villages`, `upgrades`, `village_item_levels`, `planner_items`, `history_events`, `custom_upgrade_suggestions`, `village_imports`, `notification_preferences`) and user `SharedPreferences`.
+  - Export and restore workflows integrated via Android file picker with document destination selection.
+  - Pre-restore validation with manifest, app name, and schema checks.
+  - Automatic safety backup creation (`safety_pre_restore.clashcommandbackup`) before destructive restores.
+  - Single atomic database transaction on restore with rollback protection and automatic notification rescheduling.
+  - Honest backup documentation and last backup date indicator in Settings.
+- **UI & Entry Point Enhancements**:
+  - Added dedicated `DATA MANAGEMENT` section in Settings with Import Village Data, Create Backup, Restore Backup, and Previous Imports.
+  - Added quick import action button and empty-state action on `VillageProfilesScreen`.
+
 ## [1.0.8] - 2026-10-31
 
 ### Added

@@ -5,6 +5,7 @@ import 'package:clash_command/app/providers.dart';
 import 'package:clash_command/app/theme/app_colors.dart';
 import 'package:clash_command/domain/models/village.dart';
 import 'package:clash_command/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:clash_command/features/import/presentation/import_village_screen.dart';
 import 'package:clash_command/features/settings/presentation/settings_screen.dart';
 import 'package:clash_command/features/villages/application/villages_notifier.dart';
 import 'package:clash_command/features/villages/presentation/add_village_sheet.dart';
@@ -100,6 +101,16 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: 'Import Village JSON',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ImportVillageScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: 'Settings & Support',
@@ -247,9 +258,22 @@ class _VillageProfilesScreenState extends ConsumerState<VillageProfilesScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Create a Home Village or Builder Base to begin tracking upgrades.',
+              'Create a Home Village or Builder Base, or import an existing Clash of Clans export to begin tracking upgrades.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ImportVillageScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.file_download_outlined),
+              label: const Text('Import Village JSON'),
             ),
           ],
         ),

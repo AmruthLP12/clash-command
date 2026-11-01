@@ -446,3 +446,23 @@ Native Android home-screen widgets are implemented using `home_widget` (AppWidge
 
 ### Relative completion date formatting
 - `DateTimeFormat.relativeCompletionDateTime` formats upgrade completion targets into intuitive relative human-readable representations: `Today, <time>`, `Tomorrow, <time>`, or localized calendar dates for later days, with accurate handling for near-midnight transitions across day boundaries.
+
+## 16. Clash of Clans JSON import & backup/restore architecture
+
+### Village JSON import architecture
+- **Parser (`CocVillageJsonParser`)**: 100% offline, deterministic parser supporting all standard CoC export sections (`buildings`, `traps`, `units`, `siege_machines`, `heroes`, `spells`, `pets`, `equipment`, `buildings2`, `traps2`, `units2`, `heroes2`, `helpers`, `boosts`, `decos`, `obstacles`, and nested `types[].modules[]`).
+- **Catalogue mapping (`CocDataIdCatalog`)**: Built-in repository mapping 150+ game data IDs to canonical names, facilities, and subcategories across Home Village and Builder Base. Unrecognized or future IDs are isolated in an unmapped preview list without halting the import.
+- **Quantity and multi-level persistence**: Schema version 7 extends `VillageItemLevels` with `quantity` and `dataId` columns and a composite unique constraint on `(villageId, category, itemName, currentLevel)`, faithfully representing distributions such as 40 level 13 walls and 260 level 14 walls.
+- **Timer calculation**: `snapshot_time = timestamp`, `remaining_seconds = timer`, `completion_time = snapshot_time + remaining_seconds`. Future completions schedule active upgrades with calculated remaining time; past completions record the level in the Levels tab and flag the expired timer for review. Helper timers (`helper_timer`, `helper_cooldown`) are explicitly ignored.
+- **Transactional import service (`CocVillageImportService`)**: Executes entire import inside a single SQLite transaction with Merge vs Replace support, duplicate upgrade skipping, Town Hall / Builder Hall updates, and audit logging to the `VillageImports` table. Automatically reconciles notifications and widgets post-transaction.
+
+### Full application backup & restore (`BackupService`)
+- **Format**: Portable `.clashcommandbackup` ZIP archive containing:
+  - `manifest.json`: Versioned metadata (`appName`, `appVersion`, `backupFormatVersion: 1`, `databaseSchemaVersion: 7`, record counts per table).
+  - `database.json`: Full typed JSON dump of all 8 Drift tables.
+  - `preferences.json`: Exported user key-value preferences from `SharedPreferences`.
+- **Restoration safety**:
+  - Validates archive structure, application identifier, and supported format versions prior to executing restore.
+  - Automatically creates a local safety backup (`safety_pre_restore.clashcommandbackup`) before wiping existing tables.
+  - Clears tables in strict foreign-key order and inserts restored rows within a single atomic database transaction. If an error occurs, the transaction automatically rolls back.
+  - Automatically reschedules all notifications and syncs home-screen widgets following successful restoration.

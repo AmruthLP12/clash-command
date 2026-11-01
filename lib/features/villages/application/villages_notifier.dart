@@ -17,7 +17,7 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
     return ref.watch(villagesDaoProvider).getAll();
   }
 
-  Future<void> createVillage({
+  Future<Village> createVillage({
     required String name,
     int? townHallLevel,
     int? builderHallLevel,
@@ -56,6 +56,7 @@ class VillagesNotifier extends AsyncNotifier<List<Village>> {
     await ref
         .read(homeWidgetSyncServiceProvider)
         .syncWidgets(specificVillageId: id);
+    return village;
   }
 
   Future<void> updateVillage(Village village) async {

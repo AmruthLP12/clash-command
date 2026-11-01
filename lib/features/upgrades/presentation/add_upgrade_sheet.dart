@@ -8,18 +8,10 @@ import 'package:clash_command/domain/catalog/upgrade_catalog_item.dart';
 import 'package:clash_command/domain/models/upgrade.dart';
 import 'package:clash_command/domain/models/upgrade_category.dart';
 import 'package:clash_command/domain/models/village.dart';
+import 'package:clash_command/domain/models/village_realm.dart';
+export 'package:clash_command/domain/models/village_realm.dart';
 import 'package:clash_command/domain/services/upgrade_timer_service.dart';
 import 'package:clash_command/features/upgrades/application/upgrades_notifier.dart';
-
-/// Village realm for category grouping.
-enum VillageRealm {
-  homeVillage('Home Village', Icons.fort_outlined),
-  builderBase('Builder Base', Icons.nightlight_round_outlined);
-
-  const VillageRealm(this.label, this.icon);
-  final String label;
-  final IconData icon;
-}
 
 /// Bottom sheet for adding or editing an upgrade in a village.
 class AddUpgradeSheet extends ConsumerStatefulWidget {
